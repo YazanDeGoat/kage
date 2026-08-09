@@ -1,103 +1,282 @@
 import {
-    searchWeb
-} from "../backend/searchProvider.js";
+    routeSearch
+} from "../backend/searchRouter.js";
+
+import {
+    search
+} from "../backend/providers/searchProvider.js";
 
 
-function json(
-    data,
-    status = 200
+function send(
+    res,
+    status,
+    data
 ) {
 
-    return new Response(
+    res.statusCode =
+        status;
 
-        JSON.stringify(data),
+    res.setHeader(
+        "Content-Type",
+        "application/json"
+    );
 
-        {
-
-            status,
-
-            headers: {
-
-                "Content-Type":
-                    "application/json"
-
-            }
-
-        }
-
+    res.end(
+        JSON.stringify(data)
     );
 
 }
 
 
 export default async function handler(
-    req
+    req,
+    res
 ) {
 
-    if (
-        req.method !== "GET"
-    ) {
+    try {
 
-        return json(
+        if (
+            req.method !== "GET" &&
+            req.method !== "POST"
+        ) {
+
+            return send(
+
+                res,
+
+                405,
+
+                {
+
+                    success: false,
+
+                    error:
+                        "method not allowed"
+
+                }
+
+            );
+
+        }
+
+
+        let prompt = "";
+
+
+        if (
+            req.method === "GET"
+        ) {
+
+            prompt =
+                req.query?.q ||
+                "";
+
+        }
+
+
+        if (
+            req.method === "POST"
+        ) {
+
+            let body =
+                req.body;
+
+
+            if (
+                typeof body === "string"
+            ) {
+
+                try {
+
+                    body =
+                        JSON.parse(body);
+
+                }
+
+                catch {
+
+                    body = {};
+
+                }
+
+            }
+
+
+            prompt =
+                body?.prompt ||
+                body?.query ||
+                "";
+
+        }
+
+
+        prompt =
+            String(prompt)
+                .trim();
+
+
+        if (!prompt) {
+
+            return send(
+
+                res,
+
+                400,
+
+                {
+
+                    success: false,
+
+                    error:
+                        "missing search query"
+
+                }
+
+            );
+
+        }
+
+
+        const routing =
+            routeSearch(prompt);
+
+
+        if (
+            !routing.search
+        ) {
+
+            return send(
+
+                res,
+
+                200,
+
+                {
+
+                    success: true,
+
+                    search: false,
+
+                    query: prompt,
+
+                    results: []
+
+                }
+
+            );
+
+        }
+
+
+        console.log(
+            "KAGE SEARCH QUERY:",
+            prompt
+        );
+
+
+        const result =
+            await search(
+                prompt,
+                []
+            );
+
+
+        if (!result) {
+
+            return send(
+
+                res,
+
+                502,
+
+                {
+
+                    success: false,
+
+                    search: true,
+
+                    query: prompt,
+
+                    error:
+                        "search provider returned no result",
+
+                    results: []
+
+                }
+
+            );
+
+        }
+
+
+        const results =
+            Array.isArray(
+                result.data
+            )
+
+            ? result.data
+
+            : result.data
+                ? [result.data]
+                : [];
+
+
+        return send(
+
+            res,
+
+            200,
 
             {
 
-                success: false,
+                success:
+                    result.success === true,
+
+                search: true,
+
+                query: prompt,
 
                 text:
-                    "method not allowed",
+                    result.text || "",
 
-                results: []
+                results
 
-            },
-
-            405
+            }
 
         );
 
     }
 
+    catch (error) {
 
-    const url =
-        new URL(req.url);
-
-
-    const query =
-        url.searchParams.get(
-            "q"
+        console.error(
+            "KAGE SEARCH API ERROR:",
+            error
         );
 
 
-    if (!query) {
+        return send(
 
-        return json(
+            res,
+
+            500,
 
             {
 
                 success: false,
 
-                text:
-                    "missing search query",
+                search: true,
+
+                error:
+                    error?.message ||
+                    "search failed",
 
                 results: []
 
-            },
-
-            400
+            }
 
         );
 
     }
-
-
-    const result =
-        await searchWeb(
-            query
-        );
-
-
-    return json(
-        result
-    );
 
 }
