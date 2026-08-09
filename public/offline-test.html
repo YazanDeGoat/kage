@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta name="theme-color" content="#000000">
+
+  <title>KAGE Offline Test</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #000;
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+      padding: 24px;
+    }
+
+    main {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    .card {
+      margin-top: 20px;
+      padding: 20px;
+      border: 1px solid #222;
+      border-radius: 14px;
+      background: #050505;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 12px 0;
+      border-bottom: 1px solid #151515;
+    }
+
+    .row:last-child {
+      border-bottom: 0;
+    }
+
+    .value {
+      color: #aaa;
+      text-align: right;
+      word-break: break-word;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      border: 1px solid #333;
+      border-radius: 12px;
+      background: #0a0a0a;
+      color: #fff;
+      font-size: 16px;
+    }
+
+    button:active {
+      background: #151515;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>KAGE Offline Test</h1>
+
+    <div class="card">
+      <div class="row">
+        <span>Connection</span>
+        <span class="value" id="connection">
+          checking...
+        </span>
+      </div>
+
+      <div class="row">
+        <span>Service Worker</span>
+        <span class="value" id="worker">
+          checking...
+        </span>
+      </div>
+
+      <div class="row">
+        <span>Manifest</span>
+        <span class="value" id="manifest">
+          checking...
+        </span>
+      </div>
+
+      <div class="row">
+        <span>Offline Page</span>
+        <span class="value" id="offline">
+          checking...
+        </span>
+      </div>
+    </div>
+
+    <button id="refresh">
+      Refresh Test
+    </button>
+  </main>
+
+  <script>
+    const connection = document.getElementById("connection");
+    const worker = document.getElementById("worker");
+    const manifest = document.getElementById("manifest");
+    const offline = document.getElementById("offline");
+    const refresh = document.getElementById("refresh");
+
+    function updateConnection() {
+      connection.textContent = navigator.onLine
+        ? "ONLINE"
+        : "OFFLINE";
+    }
+
+    async function testServiceWorker() {
+      if (!("serviceWorker" in navigator)) {
+        worker.textContent = "NOT SUPPORTED";
+        return;
+      }
+
+      try {
+        const registration =
+          await navigator.serviceWorker.register("/sw.js");
+
+        worker.textContent =
+          registration.active ||
+          registration.waiting ||
+          registration.installing
+            ? "REGISTERED"
+            : "REGISTERING";
+      } catch (error) {
+        worker.textContent = "FAILED";
+      }
+    }
+
+    async function testFile(url, element) {
+      try {
+        const response = await fetch(url, {
+          cache: "no-store"
+        });
+
+        element.textContent =
+          response.ok ? "AVAILABLE" : "FAILED";
+      } catch {
+        element.textContent = "FAILED";
+      }
+    }
+
+    async function runTests() {
+      updateConnection();
+
+      await testServiceWorker();
+
+      await testFile(
+        "/manifest.webmanifest",
+        manifest
+      );
+
+      await testFile(
+        "/offline.html",
+        offline
+      );
+    }
+
+    window.addEventListener(
+      "online",
+      updateConnection
+    );
+
+    window.addEventListener(
+      "offline",
+      updateConnection
+    );
+
+    refresh.addEventListener(
+      "click",
+      runTests
+    );
+
+    runTests();
+  </script>
+</body>
+</html>
