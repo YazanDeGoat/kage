@@ -1,0 +1,147 @@
+function clean(text) {
+
+    return String(
+        text ?? ""
+    )
+    .trim()
+    .toLowerCase();
+
+}
+
+
+const SEARCH_PHRASES = [
+
+    "search the web",
+
+    "search online",
+
+    "look this up",
+
+    "look it up",
+
+    "look online",
+
+    "google this",
+
+    "find online",
+
+    "find on the internet",
+
+    "search for",
+
+    "latest news",
+
+    "latest",
+
+    "today",
+
+    "right now",
+
+    "currently",
+
+    "current",
+
+    "recent news",
+
+    "what happened today",
+
+    "what is happening",
+
+    "price today",
+
+    "weather today",
+
+    "stock price",
+
+    "news about",
+
+    "who won",
+
+    "when is the next",
+
+    "what time is"
+
+];
+
+
+export function shouldSearch(
+    prompt
+) {
+
+    const text =
+        clean(prompt);
+
+
+    if (!text) {
+
+        return false;
+
+    }
+
+
+    return SEARCH_PHRASES.some(
+        phrase =>
+            text.includes(phrase)
+    );
+
+}
+
+
+export function createSearchQuery(
+    prompt
+) {
+
+    return String(
+        prompt ?? ""
+    ).trim();
+
+}
+
+
+export function routeSearch(
+    prompt
+) {
+
+    const query =
+        createSearchQuery(
+            prompt
+        );
+
+
+    if (!query) {
+
+        return {
+
+            search: false,
+
+            query: ""
+
+        };
+
+    }
+
+
+    if (
+        !shouldSearch(query)
+    ) {
+
+        return {
+
+            search: false,
+
+            query
+
+        };
+
+    }
+
+
+    return {
+
+        search: true,
+
+        query
+
+    };
+
+}
