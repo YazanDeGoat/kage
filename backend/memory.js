@@ -1,30 +1,65 @@
-const MEMORY_KEY = "kage-memory";
+const memoryStore = new Map();
 
-function getMemoryStore() {
-    return {};
+export function getMemory(chatId = "global") {
+    return memoryStore.get(chatId) || [];
 }
 
-export function getMemory() {
-    return getMemoryStore();
-}
+export function saveMemory(chatId = "global", memory) {
+    if (!memory) {
+        return {
+            success: false,
+            error: "memory is empty"
+        };
+    }
 
-export function saveMemory(key, value) {
+    const memories = memoryStore.get(chatId) || [];
+
+    memories.push({
+        id: crypto.randomUUID(),
+        text: String(memory),
+        created: Date.now()
+    });
+
+    memoryStore.set(chatId, memories);
+
     return {
         success: true,
-        key,
-        value
+        memory: memories[memories.length - 1]
     };
 }
 
-export function deleteMemory(key) {
-    return {
-        success: true,
-        key
-    };
-}
+export function deleteMemory(chatId = "global", memoryId) {
+    const memories = memoryStore.get(chatId) || [];
 
-export function clearMemory() {
+    const updated = memories.filter(
+        memory => memory.id !== memoryId
+    );
+
+    memoryStore.set(chatId, updated);
+
     return {
         success: true
     };
+}
+
+export function clearMemory(chatId = "global") {
+    memoryStore.delete(chatId);
+
+    return {
+        success: true
+    };
+}
+
+export function searchMemory(chatId = "global", query = "") {
+    const memories = memoryStore.get(chatId) || [];
+
+    const search = query.toLowerCase().trim();
+
+    if (!search) {
+        return memories;
+    }
+
+    return memories.filter(memory =>
+        memory.text.toLowerCase().includes(search)
+    );
 }
