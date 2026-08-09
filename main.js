@@ -1,6 +1,4 @@
-import {
-    createSidebar
-} from "./components/sidebar.js";
+import { createSidebar } from "./components/sidebar.js";
 
 import {
     createChat,
@@ -9,17 +7,16 @@ import {
     getActiveChat,
     addMessage,
     getMessages,
-    updateMessage,
     renameChat,
     deleteChat
 } from "./database/threads.js";
 
 
+const KAGE_SERVER = "";
+
+
 const app =
     document.getElementById("app");
-
-
-let selectedFiles = [];
 
 
 app.innerHTML = `
@@ -30,79 +27,25 @@ app.innerHTML = `
 
     <main class="chat">
 
-        <header class="chatHeader">
-
-            <div class="chatTitle">
-                KAGE
-            </div>
-
-        </header>
-
-
-        <section
-            id="messages"
-            class="messages"
-        ></section>
-
-
-        <div
-            id="attachmentPreview"
-            class="attachmentPreview"
-        ></div>
-
+        <div id="messages"></div>
 
         <div class="inputBar">
 
-            <button
-                id="upload"
-                class="plusButton"
-                type="button"
-            >
+            <button id="upload">
                 +
             </button>
 
-
-            <input
-                id="fileInput"
-                type="file"
-                multiple
-                hidden
-                accept="
-                    image/*,
-                    video/*,
-                    .pdf,
-                    .txt,
-                    .csv,
-                    .doc,
-                    .docx,
-                    .xls,
-                    .xlsx,
-                    .ppt,
-                    .pptx
-                "
-            >
-
-
             <input
                 id="messageInput"
-                type="text"
                 placeholder="message kage..."
                 autocomplete="off"
             >
 
-
-            <button
-                id="talk"
-                type="button"
-            >
+            <button id="talk">
                 send
             </button>
 
-
-            <button
-                id="voice"
-                type="button"
-            >
+            <button id="voice">
                 🎙
             </button>
 
@@ -127,12 +70,6 @@ const chatList =
     );
 
 
-const messagesElement =
-    document.getElementById(
-        "messages"
-    );
-
-
 const messageInput =
     document.getElementById(
         "messageInput"
@@ -145,940 +82,457 @@ const talkButton =
     );
 
 
-const uploadButton =
+const messagesContainer =
     document.getElementById(
-        "upload"
+        "messages"
     );
-
-
-const fileInput =
-    document.getElementById(
-        "fileInput"
-    );
-
-
-const attachmentPreview =
-    document.getElementById(
-        "attachmentPreview"
-    );
-
-
-function ensureChatExists() {
-
-    if (
-        getChats().length === 0
-    ) {
-
-        createChat();
-
-    }
-
-    if (
-        !getActiveChat()
-    ) {
-
-        setActiveChat(
-            getChats()[0].id
-        );
-
-    }
-
-}
-
-
-ensureChatExists();
 
 
 function renderChats() {
 
     chatList.innerHTML = "";
 
-    getChats().forEach(
-        chat => {
+    getChats().forEach(chat => {
 
-            const item =
-                document.createElement(
-                    "button"
-                );
+        const item =
+            document.createElement("div");
 
-            item.type =
-                "button";
+        item.className = "thread";
 
-            item.className =
-                "thread";
-
-            if (
-                getActiveChat()?.id ===
-                chat.id
-            ) {
-
-                item.classList.add(
-                    "active"
-                );
-
-            }
-
-            item.textContent =
-                chat.title;
-
-
-            item.addEventListener(
-                "click",
-                () => {
-
-                    setActiveChat(
-                        chat.id
-                    );
-
-                    selectedFiles =
-                        [];
-
-                    renderAttachmentPreview();
-
-                    renderChats();
-
-                    renderMessages();
-
-                }
-            );
-
-
-            let timer = null;
-
-
-            item.addEventListener(
-                "pointerdown",
-                event => {
-
-                    if (
-                        event.pointerType ===
-                        "mouse"
-                    ) {
-                        return;
-                    }
-
-                    timer =
-                        setTimeout(
-                            () => {
-
-                                chatOptions(
-                                    chat
-                                );
-
-                            },
-                            650
-                        );
-
-                }
-            );
-
-
-            const cancel =
-                () => {
-
-                    clearTimeout(
-                        timer
-                    );
-
-                };
-
-
-            item.addEventListener(
-                "pointerup",
-                cancel
-            );
-
-            item.addEventListener(
-                "pointercancel",
-                cancel
-            );
-
-            item.addEventListener(
-                "pointerleave",
-                cancel
-            );
-
-
-            item.addEventListener(
-                "contextmenu",
-                event => {
-
-                    event.preventDefault();
-
-                    chatOptions(
-                        chat
-                    );
-
-                }
-            );
-
-
-            chatList.appendChild(
-                item
-            );
-
-        }
-    );
-
-}
-
-
-function chatOptions(chat) {
-
-    const action =
-        prompt(
-            "type rename or delete"
-        );
-
-
-    if (
-        action === "rename"
-    ) {
-
-        const name =
-            prompt(
-                "new chat name",
-                chat.title
-            );
+        item.textContent =
+            chat.title;
 
         if (
-            name &&
-            name.trim()
+            getActiveChat()?.id ===
+            chat.id
         ) {
+            item.classList.add("active");
+        }
 
-            renameChat(
-                chat.id,
-                name
-            );
+        item.onclick = () => {
+
+            setActiveChat(chat.id);
 
             renderChats();
 
-        }
+            renderMessages();
 
-    }
+        };
 
 
-    if (
-        action === "delete"
-    ) {
+        let pressTimer = null;
 
-        deleteChat(
-            chat.id
+
+        item.addEventListener(
+            "pointerdown",
+            () => {
+
+                pressTimer =
+                    setTimeout(() => {
+
+                        const action =
+                            prompt(
+                                "type rename or delete"
+                            );
+
+                        if (
+                            action ===
+                            "rename"
+                        ) {
+
+                            const title =
+                                prompt(
+                                    "new chat name"
+                                );
+
+                            if (title) {
+
+                                renameChat(
+                                    chat.id,
+                                    title
+                                );
+
+                                renderChats();
+
+                            }
+
+                        }
+
+                        if (
+                            action ===
+                            "delete"
+                        ) {
+
+                            deleteChat(
+                                chat.id
+                            );
+
+                            renderChats();
+
+                            renderMessages();
+
+                        }
+
+                    }, 600);
+
+            }
         );
 
-        renderChats();
 
-        renderMessages();
+        item.addEventListener(
+            "pointerup",
+            () => {
 
-    }
+                clearTimeout(
+                    pressTimer
+                );
+
+            }
+        );
+
+
+        item.addEventListener(
+            "pointercancel",
+            () => {
+
+                clearTimeout(
+                    pressTimer
+                );
+
+            }
+        );
+
+
+        chatList.appendChild(item);
+
+    });
 
 }
 
 
-newChatButton.onclick =
-    () => {
+newChatButton.onclick = () => {
 
-        createChat();
+    createChat();
 
-        selectedFiles =
-            [];
+    renderChats();
 
-        renderAttachmentPreview();
+    renderMessages();
 
-        renderChats();
+    messageInput.focus();
 
-        renderMessages();
+};
 
-        messageInput.focus();
 
-    };
+if (getChats().length === 0) {
+
+    createChat();
+
+}
+
+
+if (!getActiveChat()) {
+
+    setActiveChat(
+        getChats()[0].id
+    );
+
+}
 
 
 function renderMessages() {
 
-    messagesElement.innerHTML = "";
+    messagesContainer.innerHTML = "";
 
+    getMessages().forEach(message => {
 
-    const messages =
-        getMessages();
-
-
-    messages.forEach(
-        message => {
-
-            const bubble =
-                document.createElement(
-                    "div"
-                );
-
-
-            bubble.className =
-                message.sender === "user"
-                    ? "message user"
-                    : "message kage";
-
-
-            bubble.dataset.messageId =
-                message.id;
-
-
-            const text =
-                document.createElement(
-                    "div"
-                );
-
-
-            text.className =
-                "messageText";
-
-
-            text.textContent =
-                message.text;
-
-
-            bubble.appendChild(
-                text
+        const bubble =
+            document.createElement(
+                "div"
             );
 
+        bubble.className =
+            message.sender === "user"
+                ? "message user"
+                : "message kage";
 
-            if (
-                message.attachments &&
-                message.attachments.length
-            ) {
+        bubble.textContent =
+            message.text || "";
 
-                renderMessageAttachments(
-                    bubble,
-                    message.attachments
-                );
+        messagesContainer.appendChild(
+            bubble
+        );
 
-            }
+    });
 
-
-            if (
-                message.sender ===
-                "user"
-            ) {
-
-                enableMessageControls(
-                    bubble,
-                    message
-                );
-
-            }
-
-
-            messagesElement.appendChild(
-                bubble
-            );
-
-        }
-    );
-
-
-    messagesElement.scrollTop =
-        messagesElement.scrollHeight;
+    messagesContainer.scrollTop =
+        messagesContainer.scrollHeight;
 
 }
 
 
-function renderMessageAttachments(
-    bubble,
-    attachments
+async function streamKageResponse(
+    prompt,
+    bubble
 ) {
 
-    const container =
+    const response =
+        await fetch(
+            KAGE_SERVER +
+            "/api/chat-stream",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    prompt
+                })
+            }
+        );
+
+
+    if (!response.ok) {
+
+        let errorText =
+            "kage streaming failed";
+
+        try {
+
+            const error =
+                await response.json();
+
+            errorText =
+                error.text ||
+                errorText;
+
+        }
+
+        catch {}
+
+        throw new Error(
+            errorText
+        );
+
+    }
+
+
+    if (!response.body) {
+
+        throw new Error(
+            "stream unavailable"
+        );
+
+    }
+
+
+    const reader =
+        response.body.getReader();
+
+
+    const decoder =
+        new TextDecoder();
+
+
+    let buffer = "";
+
+
+    while (true) {
+
+        const {
+            value,
+            done
+        } = await reader.read();
+
+
+        if (done) {
+            break;
+        }
+
+
+        buffer +=
+            decoder.decode(
+                value,
+                {
+                    stream: true
+                }
+            );
+
+
+        const events =
+            buffer.split("\n");
+
+
+        buffer =
+            events.pop() || "";
+
+
+        for (
+            const line
+            of events
+        ) {
+
+            const trimmed =
+                line.trim();
+
+
+            if (
+                !trimmed ||
+                !trimmed.startsWith(
+                    "data:"
+                )
+            ) {
+                continue;
+            }
+
+
+            const data =
+                trimmed
+                    .slice(5)
+                    .trim();
+
+
+            if (
+                data ===
+                "[DONE]"
+            ) {
+                continue;
+            }
+
+
+            try {
+
+                const json =
+                    JSON.parse(data);
+
+
+                const token =
+                    json?.choices?.[0]
+                        ?.delta
+                        ?.content;
+
+
+                if (token) {
+
+                    bubble.textContent +=
+                        token;
+
+                    messagesContainer.scrollTop =
+                        messagesContainer.scrollHeight;
+
+                }
+
+            }
+
+            catch {}
+
+        }
+
+    }
+
+}
+
+
+async function sendMessage() {
+
+    const text =
+        messageInput.value.trim();
+
+
+    if (!text) {
+        return;
+    }
+
+
+    if (!getActiveChat()) {
+
+        createChat();
+
+        renderChats();
+
+    }
+
+
+    addMessage(
+        "user",
+        text
+    );
+
+
+    messageInput.value = "";
+
+    renderMessages();
+
+
+    const bubble =
         document.createElement(
             "div"
         );
 
 
-    container.className =
-        "messageAttachments";
+    bubble.className =
+        "message kage";
 
-
-    attachments.forEach(
-        file => {
-
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-
-            card.className =
-                "attachmentCard";
-
-
-            if (
-                file.type === "image" &&
-                file.data
-            ) {
-
-                const image =
-                    document.createElement(
-                        "img"
-                    );
-
-
-                image.src =
-                    file.data;
-
-
-                image.className =
-                    "attachmentImage";
-
-
-                card.appendChild(
-                    image
-                );
-
-            } else {
-
-                const icon =
-                    document.createElement(
-                        "span"
-                    );
-
-
-                icon.className =
-                    "attachmentIcon";
-
-
-                icon.textContent =
-                    file.type === "video"
-                        ? "🎥"
-                        : "📄";
-
-
-                card.appendChild(
-                    icon
-                );
-
-            }
-
-
-            const name =
-                document.createElement(
-                    "span"
-                );
-
-
-            name.className =
-                "attachmentName";
-
-
-            name.textContent =
-                file.name;
-
-
-            card.appendChild(
-                name
-            );
-
-
-            container.appendChild(
-                card
-            );
-
-        }
-    );
-
-
-    bubble.appendChild(
-        container
-    );
-
-}
-
-
-function enableMessageControls(
-    bubble,
-    message
-) {
-
-    let timer = null;
-
-
-    bubble.addEventListener(
-        "pointerdown",
-        event => {
-
-            if (
-                event.pointerType ===
-                "mouse"
-            ) {
-                return;
-            }
-
-
-            timer =
-                setTimeout(
-                    () => {
-
-                        messageOptions(
-                            message
-                        );
-
-                    },
-                    650
-                );
-
-        }
-    );
-
-
-    const stop =
-        () => {
-
-            clearTimeout(
-                timer
-            );
-
-        };
-
-
-    bubble.addEventListener(
-        "pointerup",
-        stop
-    );
-
-
-    bubble.addEventListener(
-        "pointercancel",
-        stop
-    );
-
-
-    bubble.addEventListener(
-        "pointerleave",
-        stop
-    );
-
-
-    bubble.addEventListener(
-        "contextmenu",
-        event => {
-
-            event.preventDefault();
-
-            messageOptions(
-                message
-            );
-
-        }
-    );
-
-}
-
-
-async function messageOptions(
-    message
-) {
-
-    const action =
-        prompt(
-            "type edit or copy"
-        );
-
-
-    if (
-        action === "copy"
-    ) {
-
-        try {
-
-            await navigator.clipboard.writeText(
-                message.text
-            );
-
-        } catch {
-
-            const area =
-                document.createElement(
-                    "textarea"
-                );
-
-            area.value =
-                message.text;
-
-            document.body.appendChild(
-                area
-            );
-
-            area.select();
-
-            document.execCommand(
-                "copy"
-            );
-
-            area.remove();
-
-        }
-
-        return;
-
-    }
-
-
-    if (
-        action === "edit"
-    ) {
-
-        const edited =
-            prompt(
-                "edit message",
-                message.text
-            );
-
-
-        if (
-            edited === null
-        ) {
-            return;
-        }
-
-
-        if (
-            !edited.trim()
-        ) {
-            return;
-        }
-
-
-        updateMessage(
-            message.id,
-            edited.trim()
-        );
-
-
-        renderMessages();
-
-
-        sendMessageToKage(
-            edited.trim()
-        );
-
-    }
-
-}
-
-
-uploadButton.onclick =
-    () => {
-
-        fileInput.click();
-
-    };
-
-
-fileInput.onchange =
-    async event => {
-
-        const files =
-            Array.from(
-                event.target.files || []
-            );
-
-
-        selectedFiles =
-            [];
-
-
-        for (
-            const file of files
-        ) {
-
-            const attachment =
-                await convertFile(
-                    file
-                );
-
-
-            selectedFiles.push(
-                attachment
-            );
-
-        }
-
-
-        renderAttachmentPreview();
-
-
-        fileInput.value =
-            "";
-
-    };
-
-
-function convertFile(file) {
-
-    return new Promise(
-        resolve => {
-
-            const reader =
-                new FileReader();
-
-
-            const isImage =
-                file.type.startsWith(
-                    "image/"
-                );
-
-
-            const isVideo =
-                file.type.startsWith(
-                    "video/"
-                );
-
-
-            reader.onload =
-                () => {
-
-                    resolve({
-
-                        name:
-                            file.name,
-
-                        type:
-                            isImage
-                                ? "image"
-                                : isVideo
-                                    ? "video"
-                                    : "file",
-
-                        mime:
-                            file.type,
-
-                        size:
-                            file.size,
-
-                        data:
-                            reader.result
-
-                    });
-
-                };
-
-
-            reader.readAsDataURL(
-                file
-            );
-
-        }
-    );
-
-}
-
-
-function renderAttachmentPreview() {
-
-    attachmentPreview.innerHTML =
+    bubble.textContent =
         "";
 
 
-    if (
-        selectedFiles.length ===
-        0
-    ) {
+    messagesContainer.appendChild(
+        bubble
+    );
 
-        attachmentPreview.classList.remove(
-            "visible"
+
+    messagesContainer.scrollTop =
+        messagesContainer.scrollHeight;
+
+
+    try {
+
+        await streamKageResponse(
+            text,
+            bubble
         );
 
-        return;
+
+        const finalText =
+            bubble.textContent.trim();
+
+
+        if (finalText) {
+
+            addMessage(
+                "kage",
+                finalText
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "KAGE STREAM ERROR:",
+            error
+        );
+
+
+        bubble.textContent =
+            "connection failed: " +
+            error.message;
 
     }
 
 
-    attachmentPreview.classList.add(
-        "visible"
-    );
-
-
-    selectedFiles.forEach(
-        (file, index) => {
-
-            const item =
-                document.createElement(
-                    "div"
-                );
-
-
-            item.className =
-                "previewItem";
-
-
-            if (
-                file.type === "image"
-            ) {
-
-                const image =
-                    document.createElement(
-                        "img"
-                    );
-
-
-                image.src =
-                    file.data;
-
-
-                item.appendChild(
-                    image
-                );
-
-            } else {
-
-                const icon =
-                    document.createElement(
-                        "span"
-                    );
-
-
-                icon.textContent =
-                    file.type === "video"
-                        ? "🎥"
-                        : "📄";
-
-
-                item.appendChild(
-                    icon
-                );
-
-            }
-
-
-            const name =
-                document.createElement(
-                    "span"
-                );
-
-
-            name.textContent =
-                file.name;
-
-
-            item.appendChild(
-                name
-            );
-
-
-            const remove =
-                document.createElement(
-                    "button"
-                );
-
-
-            remove.type =
-                "button";
-
-
-            remove.textContent =
-                "×";
-
-
-            remove.onclick =
-                () => {
-
-                    selectedFiles.splice(
-                        index,
-                        1
-                    );
-
-                    renderAttachmentPreview();
-
-                };
-
-
-            item.appendChild(
-                remove
-            );
-
-
-            attachmentPreview.appendChild(
-                item
-            );
-
-        }
-    );
+    renderChats();
 
 }
 
 
 talkButton.onclick =
-    async () => {
-
-        const text =
-            messageInput.value.trim();
-
-
-        if (
-            !text &&
-            selectedFiles.length === 0
-        ) {
-
-            return;
-
-        }
-
-
-        const attachments =
-            [...selectedFiles];
-
-
-        let prompt =
-            text;
-
-
-        if (
-            attachments.length
-        ) {
-
-            const names =
-                attachments
-                    .map(
-                        file =>
-                            file.name
-                    )
-                    .join(", ");
-
-
-            prompt =
-                text ||
-                "please help me with these files";
-
-
-            prompt +=
-                `\n\nattached files: ${names}`;
-
-        }
-
-
-        addMessage(
-            "user",
-            text ||
-            "attachment",
-            attachments
-        );
-
-
-        messageInput.value =
-            "";
-
-
-        selectedFiles =
-            [];
-
-
-        renderAttachmentPreview();
-
-        renderMessages();
-
-
-        await sendMessageToKage(
-            prompt
-        );
-
-    };
+    sendMessage;
 
 
 messageInput.addEventListener(
@@ -1086,127 +540,16 @@ messageInput.addEventListener(
     event => {
 
         if (
-            event.key === "Enter" &&
-            !event.shiftKey
+            event.key ===
+            "Enter"
         ) {
 
-            event.preventDefault();
-
-            talkButton.click();
+            sendMessage();
 
         }
 
     }
 );
-
-
-async function sendMessageToKage(
-    prompt
-) {
-
-    const loading =
-        document.createElement(
-            "div"
-        );
-
-
-    loading.className =
-        "message kage";
-
-
-    loading.textContent =
-        "thinking...";
-
-
-    messagesElement.appendChild(
-        loading
-    );
-
-
-    messagesElement.scrollTop =
-        messagesElement.scrollHeight;
-
-
-    try {
-
-        const response =
-            await fetch(
-                "/api/chat",
-                {
-
-                    method:
-                        "POST",
-
-                    headers: {
-
-                        "Content-Type":
-                            "application/json"
-
-                    },
-
-                    body:
-                        JSON.stringify({
-                            prompt
-                        })
-
-                }
-            );
-
-
-        const result =
-            await response.json();
-
-
-        loading.remove();
-
-
-        if (
-            !response.ok
-        ) {
-
-            throw new Error(
-                result.text ||
-                "KAGE backend error"
-            );
-
-        }
-
-
-        addMessage(
-            "kage",
-            result.text ||
-            "no response"
-        );
-
-
-        renderMessages();
-
-
-    } catch (
-        error
-    ) {
-
-        loading.remove();
-
-
-        console.log(
-            "KAGE ERROR:",
-            error
-        );
-
-
-        addMessage(
-            "kage",
-            "kage error: " +
-            error.message
-        );
-
-
-        renderMessages();
-
-    }
-
-}
 
 
 renderChats();
