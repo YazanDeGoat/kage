@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>KAGE System Test</title>
+
+<style>
+
+body {
+
+  background: #000;
+
+  color: #fff;
+
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+
+  padding: 30px;
+
+}
+
+button {
+
+  background: #111;
+
+  color: white;
+
+  border: 1px solid #333;
+
+  border-radius: 12px;
+
+  padding: 14px 20px;
+
+  font-size: 16px;
+
+}
+
+pre {
+
+  margin-top: 20px;
+
+  padding: 20px;
+
+  background: #080808;
+
+  border: 1px solid #222;
+
+  border-radius: 14px;
+
+  white-space: pre-wrap;
+
+  word-break: break-word;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<h1>KAGE 🧠</h1>
+
+<p>
+KAGE System Core Test
+</p>
+
+<button id="test">
+Test KAGE System
+</button>
+
+<pre id="result">
+waiting...
+</pre>
+
+
+<script>
+
+const button =
+  document.getElementById(
+    "test"
+  );
+
+
+const result =
+  document.getElementById(
+    "result"
+  );
+
+
+button.onclick =
+  async () => {
+
+    result.textContent =
+      "testing...";
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/kage-system",
+          {
+
+            method: "POST",
+
+            headers: {
+
+              "Content-Type":
+                "application/json"
+
+            },
+
+            body:
+              JSON.stringify({
+
+                settings: {
+
+                  personality: {
+
+                    tone:
+                      "natural",
+
+                    style:
+                      "clear",
+
+                    energy:
+                      "confident"
+
+                  },
+
+                  behavior: {
+
+                    concise:
+                      true,
+
+                    explainClearly:
+                      true
+
+                  }
+
+                }
+
+              })
+
+          }
+
+        );
+
+
+      const data =
+        await response.json();
+
+
+      result.textContent =
+        JSON.stringify(
+          data,
+          null,
+          2
+        );
+
+    }
+
+    catch (error) {
+
+      result.textContent =
+        "ERROR: " +
+        error.message;
+
+    }
+
+  };
+
+</script>
+
+</body>
+
+</html>
