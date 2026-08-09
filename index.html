@@ -1,18 +1,46 @@
-DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     >
 
     <meta
         name="theme-color"
         content="#000000"
+    >
+
+    <meta
+        name="color-scheme"
+        content="dark"
+    >
+
+    <meta
+        name="description"
+        content="KAGE — your AI system and personal AI workspace."
+    >
+
+    <meta
+        name="mobile-web-app-capable"
+        content="yes"
+    >
+
+    <meta
+        name="apple-mobile-web-app-capable"
+        content="yes"
+    >
+
+    <meta
+        name="apple-mobile-web-app-status-bar-style"
+        content="black-translucent"
+    >
+
+    <meta
+        name="apple-mobile-web-app-title"
+        content="KAGE"
     >
 
     <title>KAGE</title>
@@ -21,12 +49,38 @@ DOCTYPE html>
         rel="stylesheet"
         href="style.css"
     >
-
 </head>
 
 <body>
 
-    <div id="app"></div>
+    <div
+        id="app"
+        aria-label="KAGE application"
+    ></div>
+
+    <noscript>
+        <div
+            style="
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 24px;
+                background: #000;
+                color: #fff;
+                font-family: system-ui, sans-serif;
+                text-align: center;
+            "
+        >
+            <div>
+                <h1>KAGE</h1>
+                <p>
+                    JavaScript is required to use KAGE.
+                    Please enable JavaScript and reload the page.
+                </p>
+            </div>
+        </div>
+    </noscript>
 
     <script
         type="module"
@@ -34,5 +88,4 @@ DOCTYPE html>
     ></script>
 
 </body>
-
 </html>
