@@ -1,180 +1,717 @@
-/* KAGE Identity + Install UI */
-.kage-identity-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-  position: relative;
-  z-index: 1000;
-}
-.kage-install-button,
-.kage-profile-button {
-  appearance: none;
-  border: 0;
-  cursor: pointer;
-  font: inherit;
-}
-.kage-install-button {
-  width: 42px;
-  height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  background: transparent;
-  color: inherit;
-}
-.kage-install-button:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-.kage-install-button svg {
-  width: 21px;
-  height: 21px;
-}
-.kage-profile-button {
-  min-height: 42px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 10px 5px 6px;
-  border-radius: 12px;
-  background: transparent;
-  color: inherit;
-}
-.kage-profile-button:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-.kage-profile-button-avatar {
-  width: 30px;
-  height: 30px;
-  flex: 0 0 30px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-color: rgba(255, 255, 255, 0.1);
-  overflow: hidden;
-}
-.kage-profile-button-label {
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.kage-profile-menu,
-.kage-install-menu {
-  position: fixed;
-  width: min(340px, calc(100vw - 24px));
-  max-height: calc(100vh - 24px);
-  overflow-y: auto;
-  padding: 18px;
-  border-radius: 16px;
-  background: rgba(20, 20, 24, 0.98);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
-  z-index: 10000;
+/* =========================================================
+   KAGE — Main UI Styles
+   Dark, responsive, iPad/mobile friendly
+   ========================================================= */
+
+* {
   box-sizing: border-box;
 }
-.kage-profile-title,
-.kage-install-title {
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 16px;
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
-.kage-profile-avatar-section {
+
+html {
+  background: #09090b;
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, rgba(70, 70, 90, 0.16), transparent 35%),
+    radial-gradient(circle at bottom right, rgba(40, 40, 55, 0.12), transparent 35%),
+    #09090b;
+  color: #f4f4f5;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "SF Pro Text",
+    Inter,
+    system-ui,
+    -system-ui,
+    sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+button,
+input,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #8b8bff;
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   APP
+   ========================================================= */
+
+#app {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: transparent;
+}
+
+/* =========================================================
+   MAIN LAYOUT
+   ========================================================= */
+
+.layout {
   display: flex;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  background: transparent;
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.sidebar {
+  width: 280px;
+  min-width: 280px;
+  height: 100%;
+  padding: 18px;
+  background: rgba(15, 15, 18, 0.96);
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+
+.sidebar button {
+  border: 0;
+}
+
+/* =========================================================
+   CHAT AREA
+   ========================================================= */
+
+.chat {
+  position: relative;
+  display: flex;
+  flex: 1;
   flex-direction: column;
-  align-items: center;
-  gap: 9px;
-  margin-bottom: 18px;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(70, 70, 90, 0.10), transparent 45%),
+    #09090b;
 }
-.kage-profile-avatar-preview {
-  width: 82px;
-  height: 82px;
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.header,
+.chatHeader,
+.topBar {
+  position: relative;
+  z-index: 20;
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 18px;
+  background: rgba(9, 9, 11, 0.88);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* Generic right-side header container */
+.headerRight,
+.headerActions,
+.topBarActions,
+.profileArea,
+.profileActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* =========================================================
+   PROFILE + DOWNLOAD BUTTONS
+   ========================================================= */
+
+.profileButton,
+#profileButton,
+.profile-btn,
+[data-profile-button] {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.1);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  font-size: 32px;
-  overflow: hidden;
+  gap: 8px;
+  min-height: 42px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.055);
+  color: #f4f4f5;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
 }
-.kage-profile-label {
+
+.profileButton:hover,
+#profileButton:hover,
+.profile-btn:hover,
+[data-profile-button]:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.profileButton:active,
+#profileButton:active,
+.profile-btn:active,
+[data-profile-button]:active {
+  transform: scale(0.97);
+}
+
+/* Download icon button */
+.downloadButton,
+#downloadButton,
+.download-btn,
+#installButton,
+[data-install-button] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.055);
+  color: #f4f4f5;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.downloadButton svg,
+#downloadButton svg,
+.download-btn svg,
+#installButton svg,
+[data-install-button] svg {
+  width: 21px;
+  height: 21px;
+  display: block;
+}
+
+.downloadButton:hover,
+#downloadButton:hover,
+.download-btn:hover,
+#installButton:hover,
+[data-install-button]:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.downloadButton:active,
+#downloadButton:active,
+.download-btn:active,
+#installButton:active,
+[data-install-button]:active {
+  transform: scale(0.94);
+}
+
+/* =========================================================
+   MESSAGES
+   ========================================================= */
+
+#messages,
+.messages {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 28px 22px 150px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+#messages::-webkit-scrollbar,
+.messages::-webkit-scrollbar {
+  width: 7px;
+}
+
+#messages::-webkit-scrollbar-thumb,
+.messages::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 999px;
+}
+
+/* Generic message styling */
+.message {
+  width: 100%;
+  margin: 0 0 20px;
+  color: #f4f4f5;
+  font-size: 16px;
+}
+
+.user-message {
   display: flex;
-  flex-direction: column;
-  gap: 7px;
-  margin-bottom: 14px;
+  justify-content: flex-end;
+}
+
+.assistant-message {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.user-message > *,
+.assistant-message > * {
+  max-width: min(760px, 88%);
+}
+
+/* =========================================================
+   INPUT AREA
+   ========================================================= */
+
+.inputBar {
+  position: absolute;
+  z-index: 15;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: min(900px, calc(100% - 28px));
+  min-height: 58px;
+  padding: 8px;
+  background: rgba(24, 24, 27, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+#messageInput,
+.messageInput,
+.inputBar input,
+.inputBar textarea {
+  flex: 1;
+  min-width: 0;
+  min-height: 42px;
+  padding: 10px 13px;
+  border: 0;
+  outline: none;
+  border-radius: 12px;
+  background: transparent;
+  color: #f4f4f5;
+  font-size: 16px;
+}
+
+#messageInput::placeholder,
+.messageInput::placeholder,
+.inputBar input::placeholder,
+.inputBar textarea::placeholder {
+  color: #71717a;
+}
+
+#upload,
+#send,
+.sendButton,
+.uploadButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #f4f4f5;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+#upload:hover,
+#send:hover,
+.sendButton:hover,
+.uploadButton:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+#upload:active,
+#send:active,
+.sendButton:active,
+.uploadButton:active {
+  transform: scale(0.94);
+}
+
+/* =========================================================
+   PROFILE MENU
+   ========================================================= */
+
+.profileMenu,
+#profileMenu,
+.profile-menu {
+  position: absolute;
+  z-index: 100;
+  top: 58px;
+  right: 16px;
+  width: min(340px, calc(100vw - 28px));
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 18px;
+  background: rgba(22, 22, 26, 0.97);
+  color: #f4f4f5;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.profileMenu h2,
+.profileMenu h3,
+.profile-menu h2,
+.profile-menu h3 {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.profileMenu label,
+.profile-menu label {
+  display: block;
+  margin: 12px 0 7px;
+  color: #a1a1aa;
   font-size: 13px;
   font-weight: 600;
 }
-.kage-profile-label input {
+
+.profileMenu input[type="text"],
+.profileMenu input:not([type]),
+.profile-menu input[type="text"],
+.profile-menu input:not([type]) {
   width: 100%;
-  box-sizing: border-box;
-  padding: 11px 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 11px;
   outline: none;
+  background: rgba(255, 255, 255, 0.055);
+  color: #f4f4f5;
+  font-size: 15px;
 }
-.kage-profile-label input:focus {
-  border-color: rgba(255, 255, 255, 0.35);
+
+.profileMenu input:focus,
+.profile-menu input:focus {
+  border-color: rgba(139, 139, 255, 0.65);
 }
-.kage-profile-secondary-button,
-.kage-profile-save-button,
-.kage-profile-close-button,
-.kage-install-primary-button,
-.kage-install-close-button {
-  width: 100%;
-  border: 0;
+
+.profileMenu button,
+.profile-menu button {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 10px;
-  padding: 11px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f4f4f5;
   cursor: pointer;
-  font: inherit;
-  margin-top: 8px;
 }
-.kage-profile-secondary-button,
-.kage-profile-close-button,
-.kage-install-close-button {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+
+.profileMenu button:hover,
+.profile-menu button:hover {
+  background: rgba(255, 255, 255, 0.11);
 }
-.kage-profile-save-button,
-.kage-install-primary-button {
-  background: #fff;
-  color: #111;
-  font-weight: 700;
+
+/* =========================================================
+   AVATAR
+   ========================================================= */
+
+.avatar,
+.profileAvatar,
+#profileAvatar,
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  object-fit: cover;
+  overflow: hidden;
+  background: #27272a;
+  border: 1px solid rgba(255, 255, 255, 0.10);
 }
-.kage-install-instructions,
-.kage-install-help,
-.kage-install-status {
-  line-height: 1.5;
-  font-size: 14px;
+
+.avatarPreview,
+.profileAvatarPreview,
+#avatarPreview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #27272a;
+  border: 1px solid rgba(255, 255, 255, 0.10);
 }
-.kage-install-status {
-  padding: 12px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.08);
+
+.avatarPreview img,
+.profileAvatarPreview img,
+#avatarPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
-.kage-install-help {
-  margin-top: 12px;
-  opacity: 0.72;
+
+/* =========================================================
+   INSTALL / DOWNLOAD MENU
+   ========================================================= */
+
+.installMenu,
+#installMenu,
+.install-menu {
+  position: absolute;
+  z-index: 100;
+  top: 58px;
+  right: 16px;
+  width: min(350px, calc(100vw - 28px));
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 18px;
+  background: rgba(22, 22, 26, 0.97);
+  color: #f4f4f5;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
 }
-@media (max-width: 600px) {
-  .kage-profile-button-label {
+
+/* =========================================================
+   MODALS / OVERLAYS
+   ========================================================= */
+
+.modal,
+.overlay,
+.profileOverlay,
+.installOverlay {
+  position: fixed;
+  z-index: 200;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.modalContent,
+.modal-content {
+  width: min(500px, 100%);
+  max-height: min(720px, calc(100vh - 40px));
+  overflow-y: auto;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 20px;
+  background: #18181b;
+  color: #f4f4f5;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6);
+}
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+a {
+  color: #a5b4fc;
+}
+
+a:hover {
+  color: #c7d2fe;
+}
+
+/* =========================================================
+   HIDDEN HELPERS
+   ========================================================= */
+
+.hidden {
+  display: none !important;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* =========================================================
+   MOBILE / IPAD
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: 230px;
+    min-width: 230px;
+  }
+
+  #messages,
+  .messages {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  body {
+    font-size: 15px;
+  }
+
+  .layout {
+    display: block;
+  }
+
+  .sidebar {
     display: none;
   }
-  .kage-profile-button {
-    padding-right: 6px;
+
+  .chat {
+    width: 100%;
   }
-  .kage-identity-controls {
-    gap: 4px;
+
+  .header,
+  .chatHeader,
+  .topBar {
+    min-height: 58px;
+    padding: 8px 12px;
+  }
+
+  .profileButton,
+  #profileButton,
+  .profile-btn,
+  [data-profile-button] {
+    min-height: 40px;
+    padding: 7px 11px;
+    font-size: 14px;
+  }
+
+  .downloadButton,
+  #downloadButton,
+  .download-btn,
+  #installButton,
+  [data-install-button] {
+    width: 40px;
+    height: 40px;
+  }
+
+  #messages,
+  .messages {
+    padding: 20px 12px 130px;
+  }
+
+  .inputBar {
+    bottom: 10px;
+    width: calc(100% - 18px);
+    min-height: 54px;
+    border-radius: 16px;
+  }
+
+  .profileMenu,
+  #profileMenu,
+  .profile-menu,
+  .installMenu,
+  #installMenu,
+  .install-menu {
+    top: 52px;
+    right: 10px;
+    width: min(340px, calc(100vw - 20px));
+  }
+}
+
+/* =========================================================
+   SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 430px) {
+  .header,
+  .chatHeader,
+  .topBar {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  .profileButton,
+  #profileButton,
+  .profile-btn,
+  [data-profile-button] {
+    padding: 7px 10px;
+  }
+
+  .inputBar {
+    gap: 5px;
+  }
+
+  #upload,
+  #send,
+  .sendButton,
+  .uploadButton {
+    width: 39px;
+    height: 39px;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
   }
 }
