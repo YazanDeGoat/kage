@@ -1,25 +1,23 @@
 /* =========================================================
-   KAGE — GLASS DARK UI
-   Full-screen black/glass aesthetic
+   KAGE — GLASS BLACK UI
+   Global visual layer
    ========================================================= */
 :root {
   --kage-bg: #050505;
-  --kage-bg-2: #090909;
-  --kage-panel: rgba(18, 18, 18, 0.72);
-  --kage-panel-strong: rgba(24, 24, 24, 0.88);
+  --kage-bg-2: #080808;
+  --kage-panel: rgba(18, 18, 18, 0.62);
+  --kage-panel-strong: rgba(22, 22, 22, 0.78);
   --kage-glass: rgba(255, 255, 255, 0.055);
-  --kage-glass-hover: rgba(255, 255, 255, 0.085);
-  --kage-border: rgba(255, 255, 255, 0.10);
-  --kage-border-strong: rgba(255, 255, 255, 0.16);
+  --kage-glass-hover: rgba(255, 255, 255, 0.09);
+  --kage-border: rgba(255, 255, 255, 0.09);
+  --kage-border-strong: rgba(255, 255, 255, 0.14);
   --kage-text: #f5f5f5;
-  --kage-text-soft: #b7b7b7;
+  --kage-text-soft: #b8b8b8;
   --kage-text-muted: #777;
-  --kage-shadow: 0 20px 70px rgba(0, 0, 0, 0.55);
+  --kage-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
   --kage-radius: 18px;
   --kage-radius-small: 13px;
   --kage-blur: blur(24px);
-  --kage-sidebar-width: 280px;
-  --kage-transition: 180ms ease;
 }
 * {
   box-sizing: border-box;
@@ -32,52 +30,71 @@ body {
   padding: 0;
   background:
     radial-gradient(
-      circle at 50% -20%,
+      circle at 50% -10%,
       rgba(255, 255, 255, 0.055),
-      transparent 42%
+      transparent 38%
     ),
-    var(--kage-bg);
+    linear-gradient(
+      180deg,
+      var(--kage-bg-2),
+      var(--kage-bg)
+    );
   color: var(--kage-text);
   font-family:
-    Inter,
     -apple-system,
     BlinkMacSystemFont,
     "SF Pro Display",
     "SF Pro Text",
-    "Segoe UI",
-    Roboto,
-    Helvetica,
-    Arial,
+    Inter,
+    system-ui,
     sans-serif;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 body {
-  min-height: 100dvh;
+  min-height: 100vh;
 }
 /* =========================================================
-   ROOT
+   GLOBAL GLASS
+   ========================================================= */
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+button {
+  color: inherit;
+}
+.glass,
+button,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+button {
+  border: 0;
+}
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.24);
+  outline-offset: 2px;
+}
+/* =========================================================
+   MAIN APP / LAYOUT
    ========================================================= */
 #app {
   width: 100%;
-  height: 100dvh;
+  height: 100vh;
   min-height: 100dvh;
-  background:
-    radial-gradient(
-      circle at 80% 0%,
-      rgba(255, 255, 255, 0.035),
-      transparent 30%
-    ),
-    linear-gradient(135deg, #030303 0%, #080808 50%, #030303 100%);
 }
-/* =========================================================
-   MAIN LAYOUT
-   ========================================================= */
 .layout {
   display: flex;
   width: 100%;
-  height: 100dvh;
+  height: 100%;
   min-height: 100dvh;
   background: transparent;
 }
@@ -88,26 +105,30 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  width: var(--kage-sidebar-width);
-  min-width: var(--kage-sidebar-width);
-  height: 100%;
-  padding: 16px;
-  gap: 12px;
-  background: rgba(9, 9, 9, 0.76);
-  border-right: 1px solid var(--kage-border);
+  width: 285px;
+  min-width: 285px;
+  height: calc(100% - 20px);
+  margin: 10px;
+  padding: 14px;
+  background: rgba(15, 15, 15, 0.72);
+  border: 1px solid var(--kage-border);
+  border-radius: 24px;
   backdrop-filter: var(--kage-blur);
   -webkit-backdrop-filter: var(--kage-blur);
-  box-shadow:
-    inset -1px 0 rgba(255, 255, 255, 0.025),
-    20px 0 60px rgba(0, 0, 0, 0.18);
-  z-index: 10;
+  box-shadow: var(--kage-shadow);
+  overflow: hidden;
 }
-/* Sidebar logo / title */
-.sidebar h1,
-.sidebar h2,
-.sidebar .logo,
-.sidebar .brand {
-  color: var(--kage-text);
+/* =========================================================
+   SIDEBAR HEADER
+   ========================================================= */
+.sidebarHeader,
+.sidebar-top,
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  margin-bottom: 10px;
 }
 /* =========================================================
    NEW CHAT
@@ -116,136 +137,141 @@ body {
 .new-chat,
 #newChat,
 button[id*="newChat"],
-button[class*="newChat"] {
-  width: 100%;
-  min-height: 48px;
+button[class*="newChat"],
+button[class*="new-chat"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
+  width: 100%;
+  min-height: 48px;
   padding: 0 16px;
-  color: var(--kage-text);
-  background: var(--kage-glass);
-  border: 1px solid var(--kage-border);
-  border-radius: var(--kage-radius-small);
-  box-shadow:
-    inset 0 1px rgba(255, 255, 255, 0.035),
-    0 8px 25px rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.065);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 15px;
+  color: #f4f4f4;
+  font-size: 14px;
+  font-weight: 600;
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 8px 30px rgba(0, 0, 0, 0.18);
   cursor: pointer;
   transition:
-    transform var(--kage-transition),
-    background var(--kage-transition),
-    border-color var(--kage-transition),
-    box-shadow var(--kage-transition);
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .newChat:hover,
 .new-chat:hover,
 #newChat:hover,
 button[id*="newChat"]:hover,
-button[class*="newChat"]:hover {
-  background: var(--kage-glass-hover);
-  border-color: var(--kage-border-strong);
+button[class*="newChat"]:hover,
+button[class*="new-chat"]:hover {
+  background: rgba(255, 255, 255, 0.095);
+  border-color: rgba(255, 255, 255, 0.16);
   transform: translateY(-1px);
-  box-shadow:
-    inset 0 1px rgba(255, 255, 255, 0.05),
-    0 12px 30px rgba(0, 0, 0, 0.25);
 }
 .newChat:active,
 .new-chat:active,
 #newChat:active,
 button[id*="newChat"]:active,
-button[class*="newChat"]:active {
-  transform: scale(0.98);
+button[class*="newChat"]:active,
+button[class*="new-chat"]:active {
+  transform: scale(0.985);
 }
 /* =========================================================
    CHAT LIST
    ========================================================= */
 .chats,
-.chatList,
 .chat-list,
-#chats,
-#chatList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
+#chatList,
+#chats {
   flex: 1;
+  min-height: 0;
+  margin-top: 8px;
+  padding: 5px 2px 10px;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 4px 2px 12px;
 }
-/* Every common chat item becomes a glass rectangle */
-.chat-item,
+.chats::-webkit-scrollbar,
+.chat-list::-webkit-scrollbar,
+#chatList::-webkit-scrollbar,
+#chats::-webkit-scrollbar {
+  width: 5px;
+}
+.chats::-webkit-scrollbar-thumb,
+.chat-list::-webkit-scrollbar-thumb,
+#chatList::-webkit-scrollbar-thumb,
+#chats::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.11);
+  border-radius: 99px;
+}
+/* Every common chat-row representation becomes a glass card */
 .chatItem,
+.chat-item,
 .chat,
-.chat-row,
-.chatRow,
 .thread,
+.threadItem,
 .thread-item,
-.chat-button,
-button[data-chat-id] {
-  width: 100%;
-  min-height: 50px;
+.chatRow,
+.chat-row {
   display: flex;
   align-items: center;
-  padding: 12px 14px;
-  color: var(--kage-text-soft);
-  background: rgba(255, 255, 255, 0.035);
+  width: 100%;
+  min-height: 48px;
+  margin: 5px 0;
+  padding: 0 13px;
+  background: rgba(255, 255, 255, 0.045);
   border: 1px solid rgba(255, 255, 255, 0.065);
   border-radius: 14px;
+  color: #d9d9d9;
   font-size: 14px;
   font-weight: 500;
-  line-height: 1.3;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   cursor: pointer;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   transition:
-    background var(--kage-transition),
-    color var(--kage-transition),
-    border-color var(--kage-transition),
-    transform var(--kage-transition);
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
 }
-.chat-item:hover,
 .chatItem:hover,
+.chat-item:hover,
 .chat:hover,
-.chat-row:hover,
-.chatRow:hover,
 .thread:hover,
+.threadItem:hover,
 .thread-item:hover,
-.chat-button:hover,
-button[data-chat-id]:hover {
-  color: var(--kage-text);
-  background: rgba(255, 255, 255, 0.075);
-  border-color: rgba(255, 255, 255, 0.12);
-  transform: translateX(2px);
+.chatRow:hover,
+.chat-row:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.11);
 }
-/* Active chat */
-.chat-item.active,
 .chatItem.active,
+.chat-item.active,
 .chat.active,
-.chat-row.active,
-.chatRow.active,
 .thread.active,
+.threadItem.active,
 .thread-item.active,
-.chat-button.active,
-button[data-chat-id].active {
-  color: #fff;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.105),
-      rgba(255, 255, 255, 0.055)
-    );
-  border-color: rgba(255, 255, 255, 0.15);
+.chatRow.active,
+.chat-row.active {
+  background: rgba(255, 255, 255, 0.105);
+  border-color: rgba(255, 255, 255, 0.14);
   box-shadow:
-    inset 0 1px rgba(255, 255, 255, 0.045),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
     0 8px 25px rgba(0, 0, 0, 0.18);
+}
+/* Prevent sidebar text from becoming tiny */
+.sidebar .chatItem,
+.sidebar .chat-item,
+.sidebar .thread,
+.sidebar .threadItem,
+.sidebar .thread-item,
+.sidebar .chatRow,
+.sidebar .chat-row {
+  font-size: 14px;
+  line-height: 1.25;
 }
 /* =========================================================
    MAIN CHAT AREA
@@ -257,43 +283,38 @@ button[data-chat-id].active {
   flex: 1;
   min-width: 0;
   height: 100%;
-  background:
-    radial-gradient(
-      circle at 50% 0%,
-      rgba(255, 255, 255, 0.025),
-      transparent 36%
-    ),
-    transparent;
+  padding: 10px 10px 10px 0;
 }
 /* =========================================================
-   HEADER
+   CHAT HEADER
    ========================================================= */
-header,
+.chatHeader,
+.chat-header,
 .header,
 .topbar,
-.top-bar,
-.chat-header,
-.chatHeader {
-  position: relative;
+.top-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  min-height: 64px;
-  padding: 10px 18px;
-  background: rgba(8, 8, 8, 0.72);
-  border-bottom: 1px solid var(--kage-border);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  z-index: 20;
+  min-height: 60px;
+  padding: 8px 12px;
 }
-/* Header right-side controls */
-.header-actions,
+.chatHeader > *,
+.chat-header > *,
+.header > *,
+.topbar > *,
+.top-bar > * {
+  min-width: 0;
+}
+/* =========================================================
+   HEADER ACTIONS
+   ========================================================= */
 .headerActions,
-.header-buttons,
-.headerButtons,
-.profile-area,
-.profileArea {
+.header-actions,
+.profileActions,
+.profile-actions,
+.actions {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -306,26 +327,28 @@ header,
 .profileButton,
 button[data-profile],
 button[id*="profile"] {
-  min-width: 44px;
-  min-height: 42px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 8px 13px;
-  color: var(--kage-text);
+  min-height: 42px;
+  padding: 0 14px;
   background: rgba(255, 255, 255, 0.055);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.095);
+  border-radius: 14px;
+  color: #f2f2f2;
   font-size: 14px;
   font-weight: 600;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 8px 28px rgba(0, 0, 0, 0.22);
   cursor: pointer;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
   transition:
-    background var(--kage-transition),
-    border-color var(--kage-transition),
-    transform var(--kage-transition);
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
 }
 #profileButton:hover,
 .profile-button:hover,
@@ -333,15 +356,8 @@ button[id*="profile"] {
 button[data-profile]:hover,
 button[id*="profile"]:hover {
   background: rgba(255, 255, 255, 0.095);
-  border-color: rgba(255, 255, 255, 0.17);
+  border-color: rgba(255, 255, 255, 0.15);
   transform: translateY(-1px);
-}
-#profileButton:active,
-.profile-button:active,
-.profileButton:active,
-button[data-profile]:active,
-button[id*="profile"]:active {
-  transform: scale(0.96);
 }
 /* =========================================================
    DOWNLOAD ICON BUTTON
@@ -354,24 +370,28 @@ button[id*="profile"]:active {
 .installButton,
 button[data-install],
 button[data-download] {
-  width: 44px;
-  height: 42px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
   padding: 0;
-  color: #fff;
   background: rgba(255, 255, 255, 0.055);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.095);
+  border-radius: 14px;
+  color: #f5f5f5;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 8px 28px rgba(0, 0, 0, 0.22);
   cursor: pointer;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
   transition:
-    background var(--kage-transition),
-    border-color var(--kage-transition),
-    transform var(--kage-transition),
-    box-shadow var(--kage-transition);
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 #downloadKage:hover,
 #downloadButton:hover,
@@ -382,166 +402,123 @@ button[data-download] {
 button[data-install]:hover,
 button[data-download]:hover {
   background: rgba(255, 255, 255, 0.10);
-  border-color: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.17);
   transform: translateY(-1px);
   box-shadow:
-    0 8px 25px rgba(0, 0, 0, 0.25);
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 12px 32px rgba(0, 0, 0, 0.30);
 }
-#downloadKage:active,
-#downloadButton:active,
-.download-button:active,
-.downloadButton:active,
-.install-button:active,
-.installButton:active,
-button[data-install]:active,
-button[data-download]:active {
-  transform: scale(0.94);
-}
-/* Any SVG inside the download control */
 #downloadKage svg,
 #downloadButton svg,
 .download-button svg,
 .downloadButton svg,
 .install-button svg,
-.installButton svg,
-button[data-install] svg,
-button[data-download] svg {
+.installButton svg {
   width: 20px;
   height: 20px;
-  display: block;
-  fill: none;
   stroke: currentColor;
-  stroke-width: 2;
-  pointer-events: none;
 }
 /* =========================================================
-   PROFILE MENU / GLASS PANEL
+   PROFILE MENU
    ========================================================= */
-#profileMenu,
 .profile-menu,
 .profileMenu,
+#profileMenu,
 .profile-panel,
-.profilePanel {
+.profilePanel,
+#profilePanel {
   position: absolute;
-  top: calc(100% + 10px);
-  right: 14px;
+  z-index: 1000;
   width: min(340px, calc(100vw - 28px));
   padding: 18px;
-  color: var(--kage-text);
-  background:
-    linear-gradient(
-      145deg,
-      rgba(28, 28, 28, 0.92),
-      rgba(10, 10, 10, 0.90)
-    );
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(16, 16, 16, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.105);
   border-radius: 20px;
+  color: #f5f5f5;
+  backdrop-filter: blur(30px) saturate(120%);
+  -webkit-backdrop-filter: blur(30px) saturate(120%);
   box-shadow:
-    0 30px 80px rgba(0, 0, 0, 0.65),
-    inset 0 1px rgba(255, 255, 255, 0.045);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  z-index: 100;
-  animation: kageMenuIn 160ms ease-out;
+    0 25px 80px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
-@keyframes kageMenuIn {
-  from {
-    opacity: 0;
-    transform: translateY(-6px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.profile-menu input,
+.profileMenu input,
+#profileMenu input,
+.profile-panel input,
+.profilePanel input,
+#profilePanel input {
+  width: 100%;
+  height: 44px;
+  margin-top: 7px;
+  padding: 0 13px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.profile-menu input:focus,
+.profileMenu input:focus,
+#profileMenu input:focus,
+.profile-panel input:focus,
+.profilePanel input:focus,
+#profilePanel input:focus {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.075);
+}
+.profile-menu button,
+.profileMenu button,
+#profileMenu button,
+.profile-panel button,
+.profilePanel button,
+#profilePanel button {
+  min-height: 40px;
+  padding: 0 13px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 12px;
+  color: #eee;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: 0.18s ease;
+}
+.profile-menu button:hover,
+.profileMenu button:hover,
+#profileMenu button:hover,
+.profile-panel button:hover,
+.profilePanel button:hover,
+#profilePanel button:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 /* =========================================================
-   PROFILE AVATAR
+   AVATAR
    ========================================================= */
 .profile-avatar,
 .profileAvatar,
-.avatar,
-.user-avatar,
-#profileAvatar {
-  width: 72px;
-  height: 72px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  color: #fff;
+#profileAvatar,
+.avatar {
+  width: 76px;
+  height: 76px;
+  min-width: 76px;
+  border-radius: 50%;
+  object-fit: cover;
   background:
     radial-gradient(
       circle at 35% 25%,
-      rgba(255, 255, 255, 0.18),
-      transparent 35%
-    ),
-    rgba(255, 255, 255, 0.065);
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 50%;
+      rgba(255, 255, 255, 0.14),
+      rgba(255, 255, 255, 0.035)
+    );
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
-    0 12px 30px rgba(0, 0, 0, 0.30),
-    inset 0 1px rgba(255, 255, 255, 0.05);
-}
-.profile-avatar img,
-.profileAvatar img,
-.avatar img,
-.user-avatar img,
-#profileAvatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-/* =========================================================
-   PROFILE INPUTS
-   ========================================================= */
-input,
-textarea,
-select {
-  color: var(--kage-text);
-  background: rgba(255, 255, 255, 0.055);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 13px;
-  outline: none;
-  font-family: inherit;
-  transition:
-    background var(--kage-transition),
-    border-color var(--kage-transition),
-    box-shadow var(--kage-transition);
-}
-input {
-  min-height: 44px;
-  padding: 0 13px;
-}
-textarea {
-  padding: 12px 13px;
-  resize: vertical;
-}
-input::placeholder,
-textarea::placeholder {
-  color: #686868;
-}
-input:focus,
-textarea:focus,
-select:focus {
-  background: rgba(255, 255, 255, 0.075);
-  border-color: rgba(255, 255, 255, 0.20);
-  box-shadow:
-    0 0 0 3px rgba(255, 255, 255, 0.035);
-}
-/* =========================================================
-   GENERIC BUTTONS
-   ========================================================= */
-button {
-  font-family: inherit;
-  -webkit-tap-highlight-color: transparent;
-}
-button:not(:disabled) {
-  cursor: pointer;
-}
-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+    0 12px 35px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 /* =========================================================
    MESSAGES
@@ -551,161 +528,248 @@ button:disabled {
 .message-list,
 .messageList {
   flex: 1;
+  min-height: 0;
   width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px 22px 28px;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 28px clamp(16px, 4vw, 48px) 140px;
   scroll-behavior: smooth;
 }
-/* Message bubbles */
-.message {
-  max-width: min(820px, 90%);
-  margin: 0 auto 18px;
-  color: var(--kage-text);
-  font-size: 15px;
-  line-height: 1.65;
+#messages::-webkit-scrollbar,
+.messages::-webkit-scrollbar,
+.message-list::-webkit-scrollbar,
+.messageList::-webkit-scrollbar {
+  width: 5px;
 }
-.user-message,
-.userMessage {
-  width: fit-content;
-  max-width: min(760px, 88%);
-  margin-left: auto;
-  margin-right: 0;
-  padding: 12px 16px;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.09),
-      rgba(255, 255, 255, 0.045)
-    );
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 18px;
-  box-shadow:
-    inset 0 1px rgba(255, 255, 255, 0.035),
-    0 8px 25px rgba(0, 0, 0, 0.16);
+#messages::-webkit-scrollbar-thumb,
+.messages::-webkit-scrollbar-thumb,
+.message-list::-webkit-scrollbar-thumb,
+.messageList::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 99px;
 }
 /* =========================================================
-   INPUT BAR
+   MESSAGE BUBBLES
+   ========================================================= */
+.message,
+.messageBubble,
+.message-bubble,
+.chat-message {
+  max-width: min(760px, 88%);
+  margin: 10px 0;
+  padding: 13px 16px;
+  border-radius: 17px;
+  color: #eee;
+  font-size: 15px;
+  line-height: 1.55;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025),
+    0 8px 25px rgba(0, 0, 0, 0.14);
+}
+.user-message,
+.userMessage,
+.message.user,
+.message.user-message {
+  margin-left: auto;
+  background: rgba(255, 255, 255, 0.075);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+/* =========================================================
+   INPUT AREA
    ========================================================= */
 .inputBar,
 .input-bar,
 .composer,
 .chat-input,
 .chatInput {
-  position: absolute;
-  left: 50%;
-  bottom: 18px;
-  transform: translateX(-50%);
-  width: min(900px, calc(100% - 32px));
+  position: relative;
   display: flex;
   align-items: flex-end;
   gap: 9px;
+  width: min(1000px, calc(100% - 28px));
+  margin: 0 auto 13px;
   padding: 9px;
-  background:
-    linear-gradient(
-      145deg,
-      rgba(27, 27, 27, 0.90),
-      rgba(9, 9, 9, 0.88)
-    );
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(16, 16, 16, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 20px;
+  backdrop-filter: blur(28px) saturate(120%);
+  -webkit-backdrop-filter: blur(28px) saturate(120%);
   box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.50),
-    inset 0 1px rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  z-index: 30;
+    0 20px 55px rgba(0, 0, 0, 0.40),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
-.inputBar input,
-.input-bar input,
-.composer input,
-.chat-input input,
-.chatInput input,
+/* =========================================================
+   TEXTBOX
+   ========================================================= */
+#messageInput,
+.messageInput,
+textarea#messageInput,
+textarea.message-input,
 .inputBar textarea,
 .input-bar textarea,
-.composer textarea,
-.chat-input textarea,
-.chatInput textarea {
+.composer textarea {
   flex: 1;
-  min-width: 0;
   min-height: 44px;
-  color: #fff;
-  background: transparent;
-  border: 0;
-  outline: 0;
+  max-height: 180px;
+  padding: 11px 13px;
+  resize: none;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 14px;
+  color: #f5f5f5;
   font-size: 15px;
+  line-height: 1.4;
+  outline: none;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
 }
-.inputBar input:focus,
-.input-bar input:focus,
-.composer input:focus,
-.chat-input input:focus,
-.chatInput input:focus,
-.inputBar textarea:focus,
-.input-bar textarea:focus,
-.composer textarea:focus,
-.chat-input textarea:focus,
-.chatInput textarea:focus {
-  box-shadow: none;
-  background: transparent;
+#messageInput::placeholder,
+.messageInput::placeholder,
+textarea::placeholder {
+  color: #777;
+}
+#messageInput:focus,
+.messageInput:focus,
+textarea#messageInput:focus,
+textarea.message-input:focus {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+/* =========================================================
+   PLUS / ATTACHMENT BUTTON
+   ========================================================= */
+#upload,
+#plus,
+.upload,
+.upload-button,
+.plus-button,
+button[id="upload"],
+button[data-upload] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.095);
+  border-radius: 14px;
+  color: #eee;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 8px 25px rgba(0, 0, 0, 0.20);
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+#upload:hover,
+#plus:hover,
+.upload:hover,
+.upload-button:hover,
+.plus-button:hover,
+button[id="upload"]:hover,
+button[data-upload]:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
+#upload svg,
+#plus svg,
+.upload svg,
+.upload-button svg,
+.plus-button svg {
+  width: 20px;
+  height: 20px;
+}
+/* =========================================================
+   SEND BUTTON
+   ========================================================= */
+#send,
+.send,
+.send-button,
+.sendButton,
+button[type="submit"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.095);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
+  color: #fff;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease,
+    border-color 0.18s ease;
+}
+#send:hover,
+.send:hover,
+.send-button:hover,
+.sendButton:hover,
+button[type="submit"]:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.19);
+  transform: translateY(-1px);
+}
+/* =========================================================
+   GENERIC BUTTON GLASS
+   ========================================================= */
+button:not(.unstyled) {
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* =========================================================
+   MODALS / INSTALL UI
+   ========================================================= */
+.modal,
+.modal-content,
+.install-modal,
+.installModal,
+.install-panel,
+.installPanel {
+  background: rgba(14, 14, 14, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 20px;
+  backdrop-filter: blur(30px) saturate(120%);
+  -webkit-backdrop-filter: blur(30px) saturate(120%);
+  box-shadow:
+    0 30px 100px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
 /* =========================================================
    SCROLLBARS
    ========================================================= */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.13) transparent;
-}
-*::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
-}
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
-*::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.13);
-  border-radius: 999px;
-}
-*::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.20);
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
 /* =========================================================
-   MOBILE / IPAD
+   MOBILE / IPHONE / IPAD
    ========================================================= */
-@media (max-width: 800px) {
-  :root {
-    --kage-sidebar-width: 235px;
-  }
+@media (max-width: 850px) {
   .sidebar {
-    padding: 12px;
-  }
-  header,
-  .header,
-  .topbar,
-  .top-bar,
-  .chat-header,
-  .chatHeader {
-    min-height: 58px;
-    padding: 8px 12px;
-  }
-  #profileButton,
-  .profile-button,
-  .profileButton,
-  button[data-profile],
-  button[id*="profile"] {
-    min-height: 40px;
-    padding: 7px 11px;
-  }
-  #downloadKage,
-  #downloadButton,
-  .download-button,
-  .downloadButton,
-  .install-button,
-  .installButton,
-  button[data-install],
-  button[data-download] {
-    width: 42px;
-    height: 40px;
+    width: 245px;
+    min-width: 245px;
   }
   #messages,
   .messages,
@@ -719,35 +783,115 @@ button:disabled {
   .composer,
   .chat-input,
   .chatInput {
-    bottom: 10px;
-    width: calc(100% - 20px);
+    width: calc(100% - 18px);
   }
 }
-@media (max-width: 600px) {
-  .sidebar {
-    width: 220px;
-    min-width: 220px;
+@media (max-width: 650px) {
+  html,
+  body {
+    overflow: hidden;
   }
-  .chat-item,
-  .chatItem,
-  .chat,
-  .chat-row,
-  .chatRow,
-  .thread,
-  .thread-item,
-  .chat-button,
-  button[data-chat-id] {
-    min-height: 48px;
-    padding: 10px 12px;
-    font-size: 13px;
+  .layout {
+    display: block;
+  }
+  .sidebar {
+    position: fixed;
+    z-index: 500;
+    left: 8px;
+    top: 8px;
+    bottom: 8px;
+    width: min(285px, calc(100vw - 16px));
+    min-width: 0;
+    height: auto;
+    transform: translateX(-110%);
+    transition: transform 0.22s ease;
+  }
+  .sidebar.open,
+  .sidebar.active,
+  .sidebar.visible {
+    transform: translateX(0);
+  }
+  .chat {
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+  }
+  .chatHeader,
+  .chat-header,
+  .header,
+  .topbar,
+  .top-bar {
+    min-height: 54px;
+    padding: 6px 8px;
+  }
+  #messages,
+  .messages,
+  .message-list,
+  .messageList {
+    padding: 12px 9px 20px;
+  }
+  .message,
+  .messageBubble,
+  .message-bubble,
+  .chat-message {
+    max-width: 92%;
+    font-size: 15px;
+  }
+  .inputBar,
+  .input-bar,
+  .composer,
+  .chat-input,
+  .chatInput {
+    width: calc(100% - 10px);
+    margin-bottom: 7px;
+    padding: 7px;
+    border-radius: 18px;
+  }
+  #messageInput,
+  .messageInput,
+  textarea#messageInput,
+  textarea.message-input {
+    font-size: 16px;
+  }
+  #profileButton,
+  .profile-button,
+  .profileButton {
+    min-height: 40px;
+    padding: 0 11px;
+  }
+  #downloadKage,
+  #downloadButton,
+  .download-button,
+  .downloadButton,
+  .install-button,
+  .installButton {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
   }
   .profile-menu,
   .profileMenu,
   #profileMenu,
   .profile-panel,
-  .profilePanel {
-    right: 8px;
-    width: min(330px, calc(100vw - 16px));
+  .profilePanel,
+  #profilePanel {
+    width: calc(100vw - 24px);
+    max-width: 360px;
+  }
+}
+/* =========================================================
+   SAFE AREA — iOS
+   ========================================================= */
+@supports (padding: env(safe-area-inset-top)) {
+  .chat {
+    padding-top: max(5px, env(safe-area-inset-top));
+  }
+  .inputBar,
+  .input-bar,
+  .composer,
+  .chat-input,
+  .chatInput {
+    margin-bottom: max(7px, env(safe-area-inset-bottom));
   }
 }
 /* =========================================================
@@ -757,9 +901,7 @@ button:disabled {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
