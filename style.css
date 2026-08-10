@@ -1,27 +1,36 @@
-/* KAGE — Glass Black UI */
-
+/* =========================================================
+   KAGE — ORIGINAL DARK GLASS UI
+   Restores the full-width chat layout while keeping the
+   newer Profile / Install controls compatible.
+   ========================================================= */
 :root {
   --kage-bg: #050505;
-  --kage-panel: rgba(18, 18, 18, 0.72);
-  --kage-panel-strong: rgba(24, 24, 24, 0.86);
-  --kage-border: rgba(255, 255, 255, 0.10);
-  --kage-border-hover: rgba(255, 255, 255, 0.18);
+  --kage-panel: rgba(18, 18, 20, 0.72);
+  --kage-panel-strong: rgba(24, 24, 27, 0.86);
+  --kage-border: rgba(255, 255, 255, 0.09);
+  --kage-border-hover: rgba(255, 255, 255, 0.16);
   --kage-text: #f5f5f5;
-  --kage-muted: #8d8d8d;
-  --kage-glow: rgba(255, 255, 255, 0.07);
+  --kage-muted: #929292;
+  --kage-accent: #ffffff;
   --kage-radius: 18px;
+  --kage-sidebar-width: 270px;
+  --kage-blur: 22px;
 }
-
+/* ---------- RESET ---------- */
 * {
   box-sizing: border-box;
 }
-
 html,
 body {
-  margin: 0;
   width: 100%;
   height: 100%;
-  background: var(--kage-bg);
+  margin: 0;
+  padding: 0;
+}
+body {
+  background:
+    radial-gradient(circle at 50% -10%, rgba(255,255,255,.055), transparent 35%),
+    var(--kage-bg);
   color: var(--kage-text);
   font-family:
     Inter,
@@ -31,378 +40,465 @@ body {
     "SF Pro Text",
     system-ui,
     sans-serif;
-}
-
-body {
   overflow: hidden;
 }
-
-/* Main glass surfaces */
-
-button,
-input,
-textarea {
-  font: inherit;
+/* ---------- MAIN APP ---------- */
+#app {
+  width: 100%;
+  height: 100dvh;
 }
-
-button {
-  color: inherit;
+.layout {
+  width: 100%;
+  height: 100dvh;
+  display: flex;
+  overflow: hidden;
+  background: transparent;
 }
-
-.glass,
-button,
-input,
-textarea {
-  -webkit-backdrop-filter: blur(22px) saturate(130%);
-  backdrop-filter: blur(22px) saturate(130%);
+/* ---------- SIDEBAR ---------- */
+.sidebar {
+  width: var(--kage-sidebar-width);
+  min-width: var(--kage-sidebar-width);
+  height: 100%;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(10, 10, 12, 0.78);
+  border-right: 1px solid var(--kage-border);
+  backdrop-filter: blur(var(--kage-blur));
+  -webkit-backdrop-filter: blur(var(--kage-blur));
+  overflow: hidden;
 }
-
-/* =========================================================
-   NEW CHAT
-   ========================================================= */
-
-#newChat,
-#new-chat,
+/* New Chat must be a full glass rectangle */
 .new-chat,
+#newChat,
 .newChat,
-button[id*="newChat"],
-button[id*="new-chat"],
-button[class*="new-chat"],
-button[class*="newChat"] {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  gap: 10px !important;
-
-  width: calc(100% - 20px) !important;
-  min-height: 48px !important;
-
-  margin: 8px 10px !important;
-  padding: 0 15px !important;
-
-  border: 1px solid var(--kage-border) !important;
-  border-radius: 16px !important;
-
+button.new-chat {
+  width: 100%;
+  min-height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid var(--kage-border);
+  border-radius: 15px;
   background:
     linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.075),
-      rgba(255, 255, 255, 0.025)
-    ) !important;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 8px 30px rgba(0, 0, 0, 0.24) !important;
-
-  color: var(--kage-text) !important;
-
-  transition:
-    transform 0.18s ease,
-    background 0.18s ease,
-    border-color 0.18s ease,
-    box-shadow 0.18s ease !important;
-}
-
-#newChat:hover,
-#new-chat:hover,
-.new-chat:hover,
-.newChat:hover,
-button[id*="newChat"]:hover,
-button[id*="new-chat"]:hover,
-button[class*="new-chat"]:hover,
-button[class*="newChat"]:hover {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.12),
-      rgba(255, 255, 255, 0.045)
-    ) !important;
-
-  border-color: var(--kage-border-hover) !important;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.10),
-    0 10px 34px rgba(0, 0, 0, 0.34) !important;
-
-  transform: translateY(-1px);
-}
-
-#newChat:active,
-#new-chat:active,
-.new-chat:active,
-.newChat:active,
-button[id*="newChat"]:active,
-button[id*="new-chat"]:active,
-button[class*="new-chat"]:active,
-button[class*="newChat"]:active {
-  transform: scale(0.98);
-}
-
-/* =========================================================
-   SIDEBAR
-   ========================================================= */
-
-aside,
-.sidebar,
-#sidebar {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(12, 12, 12, 0.90),
-      rgba(5, 5, 5, 0.96)
-    ) !important;
-
-  border-right: 1px solid var(--kage-border) !important;
-
-  -webkit-backdrop-filter: blur(28px);
-  backdrop-filter: blur(28px);
-}
-
-/* Chat items */
-
-.chat,
-.chat-item,
-.chatList,
-.chat-list,
-.thread,
-.thread-item {
-  border-radius: 15px !important;
-}
-
-.chat-item,
-.thread-item,
-.chatList > *,
-.chat-list > * {
-  min-height: 46px;
-
-  margin: 5px 8px;
-  padding: 12px 14px;
-
-  border: 1px solid rgba(255, 255, 255, 0.07);
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.055),
-      rgba(255, 255, 255, 0.018)
+      rgba(255,255,255,.085),
+      rgba(255,255,255,.035)
     );
-
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.045),
-    0 6px 20px rgba(0, 0, 0, 0.16);
-
   color: var(--kage-text);
-
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.045),
+    0 8px 25px rgba(0,0,0,.18);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  cursor: pointer;
   transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    transform 0.18s ease;
+    background .18s ease,
+    border-color .18s ease,
+    transform .18s ease;
 }
-
-.chat-item:hover,
-.thread-item:hover,
-.chatList > *:hover,
-.chat-list > *:hover {
+.new-chat:hover,
+#newChat:hover,
+.newChat:hover,
+button.new-chat:hover {
   background:
     linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.09),
-      rgba(255, 255, 255, 0.03)
+      rgba(255,255,255,.13),
+      rgba(255,255,255,.055)
     );
-
-  border-color: rgba(255, 255, 255, 0.13);
-}
-
-/* =========================================================
-   INPUT BAR
-   ========================================================= */
-
-.inputBar,
-.input-bar,
-.chat-input,
-.composer {
-  border: 1px solid var(--kage-border) !important;
-  border-radius: 22px !important;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(22, 22, 22, 0.82),
-      rgba(8, 8, 8, 0.72)
-    ) !important;
-
-  -webkit-backdrop-filter: blur(26px) saturate(140%);
-  backdrop-filter: blur(26px) saturate(140%);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 12px 45px rgba(0, 0, 0, 0.35) !important;
-}
-
-/* Text box */
-
-#messageInput,
-#message-input,
-textarea,
-input[type="text"] {
-  color: var(--kage-text) !important;
-  background: transparent !important;
-  border: none !important;
-  outline: none !important;
-}
-
-#messageInput::placeholder,
-#message-input::placeholder,
-textarea::placeholder {
-  color: #707070 !important;
-}
-
-/* =========================================================
-   GLASS ICON BUTTONS
-   ========================================================= */
-
-#upload,
-#send,
-#microphone,
-#mic,
-.upload,
-.send,
-.microphone,
-.mic,
-button[aria-label*="upload" i],
-button[aria-label*="send" i],
-button[aria-label*="microphone" i],
-button[aria-label*="mic" i] {
-  width: 44px !important;
-  height: 44px !important;
-
-  min-width: 44px !important;
-
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-
-  border: 1px solid rgba(255, 255, 255, 0.10) !important;
-  border-radius: 14px !important;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.085),
-      rgba(255, 255, 255, 0.025)
-    ) !important;
-
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 6px 22px rgba(0, 0, 0, 0.22) !important;
-
-  transition:
-    transform 0.18s ease,
-    background 0.18s ease,
-    border-color 0.18s ease;
-}
-
-#upload:hover,
-#send:hover,
-#microphone:hover,
-#mic:hover,
-.upload:hover,
-.send:hover,
-.microphone:hover,
-.mic:hover {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.14),
-      rgba(255, 255, 255, 0.045)
-    ) !important;
-
-  border-color: rgba(255, 255, 255, 0.18) !important;
-
+  border-color: var(--kage-border-hover);
   transform: translateY(-1px);
 }
-
-/* =========================================================
-   DOWNLOAD / PROFILE
-   ========================================================= */
-
+.new-chat:active,
+#newChat:active,
+.newChat:active,
+button.new-chat:active {
+  transform: scale(.98);
+}
+/* ---------- CHAT LIST ---------- */
+.chat-list,
+.chats,
+#chats,
+#chatList {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  overflow-y: auto;
+  padding: 2px;
+}
+.chat-item,
+.chat,
+.chat-row,
+.chat-list button {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 13px;
+  display: flex;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: rgba(255,255,255,.035);
+  color: #e9e9e9;
+  font-size: 14px;
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition:
+    background .18s ease,
+    border-color .18s ease;
+}
+.chat-item:hover,
+.chat:hover,
+.chat-row:hover,
+.chat-list button:hover {
+  background: rgba(255,255,255,.075);
+  border-color: rgba(255,255,255,.075);
+}
+/* ---------- MAIN CHAT AREA ---------- */
+.chat {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(255,255,255,.025),
+      transparent 40%
+    );
+}
+/* ---------- HEADER ---------- */
+.chat-header,
+.header,
+.topbar,
+#header {
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  background: rgba(5,5,5,.48);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  z-index: 20;
+}
+/* ---------- HEADER ACTIONS ---------- */
+.header-actions,
+.profile-actions,
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Profile + install controls */
 .profile-button,
 #profileButton,
-#profile-button,
-.download-button,
-#downloadButton,
-#download-button {
-  border: 1px solid var(--kage-border) !important;
-  border-radius: 14px !important;
-
+.profile-btn,
+.install-button,
+#installButton,
+.download-button {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 13px;
   background:
     linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.075),
-      rgba(255, 255, 255, 0.025)
-    ) !important;
-
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-
+      rgba(255,255,255,.085),
+      rgba(255,255,255,.035)
+    );
+  color: #fff;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 6px 22px rgba(0, 0, 0, 0.22) !important;
+    inset 0 1px 0 rgba(255,255,255,.045),
+    0 7px 22px rgba(0,0,0,.2);
+  cursor: pointer;
+  transition:
+    background .18s ease,
+    border-color .18s ease,
+    transform .18s ease;
 }
-
-/* =========================================================
-   SCROLLBARS
-   ========================================================= */
-
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+.profile-button:hover,
+#profileButton:hover,
+.profile-btn:hover,
+.install-button:hover,
+#installButton:hover,
+.download-button:hover {
+  background: rgba(255,255,255,.12);
+  border-color: rgba(255,255,255,.17);
+  transform: translateY(-1px);
 }
-
+.profile-button:active,
+#profileButton:active,
+.profile-btn:active,
+.install-button:active,
+#installButton:active,
+.download-button:active {
+  transform: scale(.96);
+}
+/* ---------- MESSAGES ---------- */
+/*
+   IMPORTANT:
+   Do NOT center the conversation in a tiny column.
+   Messages occupy the normal KAGE chat width.
+*/
+#messages,
+.messages,
+.message-container,
+.chat-messages {
+  width: 100%;
+  max-width: none;
+  flex: 1;
+  min-height: 0;
+  padding:
+    26px
+    clamp(18px, 5vw, 72px)
+    150px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+/* Message rows */
+.message,
+.message-row,
+.chat-message {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  line-height: 1.65;
+  font-size: 15px;
+}
+/* User messages */
+.user-message,
+.message.user,
+.user {
+  align-self: flex-end;
+  max-width: min(720px, 80%);
+  padding: 12px 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.095),
+      rgba(255,255,255,.045)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.035),
+    0 10px 28px rgba(0,0,0,.16);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+/* KAGE messages */
+.assistant-message,
+.message.assistant,
+.ai-message,
+.kage-message {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 4px 0;
+  color: #f0f0f0;
+  background: transparent;
+}
+/* ---------- INPUT BAR ---------- */
+.inputBar,
+.input-bar,
+.composer {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  width: min(900px, calc(100% - 32px));
+  min-height: 58px;
+  padding: 7px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(255,255,255,.095);
+  border-radius: 19px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(28,28,31,.84),
+      rgba(13,13,15,.78)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 15px 45px rgba(0,0,0,.4);
+  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(26px);
+  z-index: 30;
+}
+/* Input */
+#messageInput,
+.message-input,
+.inputBar input {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  padding: 0 12px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 15px;
+}
+#messageInput::placeholder,
+.message-input::placeholder,
+.inputBar input::placeholder {
+  color: #777;
+}
+/* Glass input buttons */
+#upload,
+.upload,
+#send,
+.send,
+#microphone,
+.microphone,
+.mic-button,
+.inputBar button {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.085);
+  border-radius: 13px;
+  background: rgba(255,255,255,.055);
+  color: #fff;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  cursor: pointer;
+  transition:
+    background .18s ease,
+    transform .18s ease;
+}
+#upload:hover,
+.upload:hover,
+#send:hover,
+.send:hover,
+#microphone:hover,
+.microphone:hover,
+.mic-button:hover,
+.inputBar button:hover {
+  background: rgba(255,255,255,.12);
+}
+#upload:active,
+.upload:active,
+#send:active,
+.send:active,
+#microphone:active,
+.microphone:active,
+.mic-button:active,
+.inputBar button:active {
+  transform: scale(.94);
+}
+/* ---------- PROFILE MENU ---------- */
+.profile-menu,
+#profileMenu {
+  position: fixed;
+  top: 70px;
+  right: 18px;
+  width: 310px;
+  max-width: calc(100vw - 36px);
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(28,28,31,.94),
+      rgba(10,10,12,.91)
+    );
+  box-shadow:
+    0 25px 70px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.045);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  z-index: 100;
+  color: #fff;
+}
+/* ---------- SCROLLBARS ---------- */
 ::-webkit-scrollbar {
   width: 7px;
+  height: 7px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.13);
+  background: rgba(255,255,255,.12);
   border-radius: 999px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255,255,255,.2);
 }
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 700px) {
+/* ---------- MOBILE ---------- */
+@media (max-width: 760px) {
+  .sidebar {
+    width: 76px;
+    min-width: 76px;
+    padding: 10px;
+  }
+  .sidebar .chat-item,
+  .sidebar .chat,
+  .sidebar .chat-row {
+    font-size: 0;
+    justify-content: center;
+  }
+  .new-chat,
+  #newChat,
+  .newChat {
+    font-size: 0;
+  }
+  #messages,
+  .messages,
+  .message-container,
+  .chat-messages {
+    padding:
+      20px
+      14px
+      135px;
+  }
+  .message,
+  .message-row,
+  .chat-message {
+    max-width: 100%;
+  }
   .inputBar,
   .input-bar,
-  .chat-input,
   .composer {
-    border-radius: 18px !important;
+    width: calc(100% - 22px);
+    bottom: 10px;
   }
-
-  #newChat,
-  #new-chat,
-  .new-chat,
-  .newChat,
-  button[id*="newChat"],
-  button[id*="new-chat"],
-  button[class*="new-chat"],
-  button[class*="newChat"] {
-    min-height: 46px !important;
-    border-radius: 15px !important;
-  }
+}
+/* ---------- ACCESSIBILITY ---------- */
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid rgba(255,255,255,.3);
+  outline-offset: 2px;
 }
