@@ -1,45 +1,78 @@
-const CAPABILITIES = Object.freeze({
-  CHAT: "chat",
-  MEMORY: "memory",
-  SEARCH: "search",
-  TOOLS: "tools",
-  IMAGE: "image",
-  VIDEO: "video",
-  VOICE: "voice",
-  OFFLINE: "offline",
-  LOCAL_AI: "local_ai",
-  CLOUD_AI: "cloud_ai"
+const capabilities = Object.freeze({
+  chat: Object.freeze({
+    id: "chat",
+    name: "Chat",
+    available: true,
+  }),
+
+  memory: Object.freeze({
+    id: "memory",
+    name: "Memory",
+    available: true,
+  }),
+
+  search: Object.freeze({
+    id: "search",
+    name: "Search",
+    available: true,
+  }),
+
+  tools: Object.freeze({
+    id: "tools",
+    name: "Tools",
+    available: true,
+  }),
+
+  image: Object.freeze({
+    id: "image",
+    name: "Image",
+    available: true,
+  }),
+
+  video: Object.freeze({
+    id: "video",
+    name: "Video",
+    available: true,
+  }),
+
+  voice: Object.freeze({
+    id: "voice",
+    name: "Voice",
+    available: true,
+  }),
+
+  offline: Object.freeze({
+    id: "offline",
+    name: "Offline",
+    available: true,
+  }),
+
+  localAI: Object.freeze({
+    id: "local-ai",
+    name: "Local AI",
+    available: true,
+  }),
+
+  cloudAI: Object.freeze({
+    id: "cloud-ai",
+    name: "Cloud AI",
+    available: true,
+  }),
 });
 
-const CAPABILITY_DESCRIPTIONS = Object.freeze({
-  [CAPABILITIES.CHAT]: "Normal conversational responses.",
-  [CAPABILITIES.MEMORY]: "Read or update KAGE memory.",
-  [CAPABILITIES.SEARCH]: "Retrieve current or external information.",
-  [CAPABILITIES.TOOLS]: "Execute an available KAGE tool.",
-  [CAPABILITIES.IMAGE]: "Generate or process images.",
-  [CAPABILITIES.VIDEO]: "Generate or process video.",
-  [CAPABILITIES.VOICE]: "Speech or voice interaction.",
-  [CAPABILITIES.OFFLINE]: "Use capabilities without a network connection.",
-  [CAPABILITIES.LOCAL_AI]: "Use a model running locally on the user's device.",
-  [CAPABILITIES.CLOUD_AI]: "Use a remote/cloud AI provider."
-});
-
-function isCapability(value) {
-  return Object.values(CAPABILITIES).includes(value);
+export function getKageCapabilities() {
+  return capabilities;
 }
 
-function getCapabilityDescription(value) {
-  return CAPABILITY_DESCRIPTIONS[value] || null;
+export function hasKageCapability(capabilityId) {
+  return Object.values(capabilities).some(
+    (capability) =>
+      capability.id === capabilityId && capability.available === true
+  );
 }
 
-function listCapabilities() {
-  return Object.values(CAPABILITIES);
+export function getAvailableKageCapabilities() {
+  return Object.values(capabilities).filter(
+    (capability) => capability.available === true
+  );
 }
-
-export {
-  CAPABILITIES,
-  CAPABILITY_DESCRIPTIONS,
-  isCapability,
-  getCapabilityDescription,
-  listCapabilities
-};
