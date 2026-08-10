@@ -1,97 +1,127 @@
-const PROFILE_STORAGE_KEY = "kage.profile";
+"use strict";
 
-const DEFAULT_PROFILE = Object.freeze({
+const KAGE_PROFILE_STORAGE_KEY = "kage_profile";
+
+const DEFAULT_PROFILE = {
   nickname: "",
-  avatar: null,
-});
+  avatar: ""
+};
 
-function normalizeProfile(value) {
-  if (!value || typeof value !== "object") {
-    return { ...DEFAULT_PROFILE };
-  }
-
-  return {
-    nickname:
-      typeof value.nickname === "string"
-        ? value.nickname.trim()
-        : "",
-
-    avatar:
-      typeof value.avatar === "string" && value.avatar.length > 0
-        ? value.avatar
-        : null,
-  };
-}
-
-export function getKageProfile() {
-  if (typeof window === "undefined") {
-    return { ...DEFAULT_PROFILE };
-  }
-
+function readKageProfile() {
   try {
-    const stored = window.localStorage.getItem(PROFILE_STORAGE_KEY);
+    const raw = localStorage.getItem(
+      KAGE_PROFILE_STORAGE_KEY
+    );
 
-    if (!stored) {
+    if (!raw) {
       return { ...DEFAULT_PROFILE };
     }
 
-    return normalizeProfile(JSON.parse(stored));
+    const parsed = JSON.parse(raw);
+
+    return {
+      nickname:
+        typeof parsed.nickname === "string"
+          ? parsed.nickname
+          : "",
+      avatar:
+        typeof parsed.avatar === "string"
+          ? parsed.avatar
+          : ""
+    };
   } catch {
     return { ...DEFAULT_PROFILE };
   }
 }
 
-export function saveKageProfile(profile) {
-  if (typeof window === "undefined") {
-    return { ...DEFAULT_PROFILE };
-  }
+function writeKageProfile(profile) {
+  const cleanProfile = {
+    nickname:
+      typeof profile.nickname === "string"
+        ? profile.nickname.trim().slice(0, 40)
+        : "",
 
-  const normalized = normalizeProfile(profile);
+    avatar:
+      typeof profile.avatar === "string"
+        ? profile.avatar
+        : ""
+  };
 
-  window.localStorage.setItem(
-    PROFILE_STORAGE_KEY,
-    JSON.stringify(normalized)
+  localStorage.setItem(
+    KAGE_PROFILE_STORAGE_KEY,
+    JSON.stringify(cleanProfile)
   );
 
-  return normalized;
+  window.dispatchEvent(
+    new CustomEvent("kage-profile-updated", {
+      detail: {
+        profile: cleanProfile
+      }
+    })
+  );
+
+  window.dispatchEvent(
+    new CustomEvent("kage-identity-updated", {
+      detail: {
+        nickname: cleanProfile.nickname,
+        profile: cleanProfile
+      }
+    })
+  );
+
+  return cleanProfile;
 }
 
-export function setKageNickname(nickname) {
-  const profile = getKageProfile();
+function getProfile() {
+  return readKageProfile();
+}
 
-  return saveKageProfile({
-    ...profile,
-    nickname:
-      typeof nickname === "string"
-        ? nickname.trim()
-        : "",
+function getNickname() {
+  return readKageProfile().nickname;
+}
+
+function setNickname(nickname) {
+  const profile = readKageProfile();
+
+  profile.nickname =
+    typeof nickname === "string"
+      ? nickname.trim().slice(0, 40)
+      : "";
+
+  return writeKageProfile(profile);
+}
+
+function getAvatar() {
+  return readKageProfile().avatar;
+}
+
+function setAvatar(avatar) {
+  const profile = readKageProfile();
+
+  profile.avatar =
+    typeof avatar === "string"
+      ? avatar
+      : "";
+
+  return writeKageProfile(profile);
+}
+
+function removeAvatar() {
+  return setAvatar("");
+}
+
+function clearProfile() {
+  return writeKageProfile({
+    ...DEFAULT_PROFILE
   });
 }
 
-export function setKageAvatar(avatar) {
-  const profile = getKageProfile();
-
-  return saveKageProfile({
-    ...profile,
-    avatar:
-      typeof avatar === "string" && avatar.length > 0
-        ? avatar
-        : null,
-  });
-}
-
-export function removeKageAvatar() {
-  return setKageAvatar(null);
-}
-
-export function getKageNickname() {
-  return getKageProfile().nickname;
-}
-
-export function clearKageProfile() {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.removeItem(PROFILE_STORAGE_KEY);
-}
+window.KAGEProfile = {
+  getProfile,
+  getNickname,
+  setNickname,
+  getAvatar,
+  setAvatar,
+  removeAvatar,
+  clearProfile
+};
