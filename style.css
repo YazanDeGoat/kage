@@ -423,3 +423,74 @@ button.newChat:hover {
     margin-bottom: 9px;
   }
 }
+/* =========================================================
+   KAGE — NEW CHAT GLASS BUTTON FIX
+   ========================================================= */
+
+.sidebar .new-chat,
+.sidebar .newChat,
+.sidebar #newChat,
+.sidebar button[id="newChat"],
+.sidebar button[class*="new-chat"],
+.sidebar button[class*="newChat"] {
+  width: 100% !important;
+  min-height: 54px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 0 18px !important;
+
+  border-radius: 16px !important;
+
+  background: rgba(255, 255, 255, 0.065) !important;
+
+  border: 1px solid rgba(255, 255, 255, 0.11) !important;
+
+  color: #ffffff !important;
+
+  font-size: 15px !important;
+  font-weight: 600 !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.07),
+    0 8px 25px rgba(0,0,0,0.20) !important;
+
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+
+  cursor: pointer !important;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease !important;
+}
+
+.sidebar .new-chat:hover,
+.sidebar .newChat:hover,
+.sidebar #newChat:hover,
+.sidebar button[id="newChat"]:hover,
+.sidebar button[class*="new-chat"]:hover,
+.sidebar button[class*="newChat"]:hover {
+  background: rgba(255, 255, 255, 0.10) !important;
+
+  border-color: rgba(255,255,255,0.17) !important;
+
+  transform: translateY(-1px) !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.09),
+    0 12px 32px rgba(0,0,0,0.28) !important;
+}
+
+.sidebar .new-chat:active,
+.sidebar .newChat:active,
+.sidebar #newChat:active,
+.sidebar button[id="newChat"]:active,
+.sidebar button[class*="new-chat"]:active,
+.sidebar button[class*="newChat"]:active {
+  transform: scale(0.98) !important;
+}
