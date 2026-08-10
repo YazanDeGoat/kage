@@ -1,55 +1,78 @@
-import {
-  getKageProfile,
-  setKageNickname,
-  setKageAvatar,
-  removeKageAvatar,
-} from "./profile.js";
+const PROFILE_STORAGE_KEY = "kage-profile";
 
-const DEFAULT_AVATAR = `
-<svg
-  width="72"
-  height="72"
-  viewBox="0 0 72 72"
-  xmlns="http://www.w3.org/2000/svg"
-  aria-hidden="true"
->
-  <circle cx="36" cy="36" r="36" fill="#e5e7eb"/>
-  <circle cx="36" cy="27" r="12" fill="#9ca3af"/>
-  <path
-    d="M15 61c3-12 11-18 21-18s18 6 21 18"
-    fill="#9ca3af"
-  />
-</svg>
-`;
+const defaultProfile = {
+  nickname: "",
+  avatar: ""
+};
 
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+function loadProfile() {
+  try {
+    const saved = localStorage.getItem(PROFILE_STORAGE_KEY);
+
+    if (!saved) {
+      return { ...defaultProfile };
+    }
+
+    const parsed = JSON.parse(saved);
+
+    return {
+      nickname:
+        typeof parsed.nickname === "string"
+          ? parsed.nickname
+          : "",
+      avatar:
+        typeof parsed.avatar === "string"
+          ? parsed.avatar
+          : ""
+    };
+  } catch {
+    return { ...defaultProfile };
+  }
 }
 
-function createAvatarMarkup(profile) {
+function saveProfile(profile) {
+  localStorage.setItem(
+    PROFILE_STORAGE_KEY,
+    JSON.stringify(profile)
+  );
+
+  window.dispatchEvent(
+    new CustomEvent("kage-profile-updated", {
+      detail: profile
+    })
+  );
+}
+
+function getProfile() {
+  return loadProfile();
+}
+
+function getNickname() {
+  return loadProfile().nickname;
+}
+
+function createAvatar(profile, small = false) {
+  const avatar = document.createElement("div");
+
+  avatar.className = small
+    ? "kage-profile-avatar kage-profile-avatar-small"
+    : "kage-profile-avatar";
+
   if (profile.avatar) {
-    return `
-      <img
-        class="kage-profile-avatar"
-        src="${escapeHtml(profile.avatar)}"
-        alt="Profile picture"
-      />
-    `;
+    const image = document.createElement("img");
+
+    image.src = profile.avatar;
+    image.alt = "Profile picture";
+
+    avatar.appendChild(image);
+  } else {
+    avatar.textContent = "◉";
   }
 
-  return `
-    <div class="kage-profile-avatar kage-profile-default-avatar">
-      ${DEFAULT_AVATAR}
-    </div>
-  `;
+  return avatar;
 }
 
-function createStyles() {
+function injectStyles() {
   if (document.getElementById("kage-profile-menu-styles")) {
     return;
   }
@@ -59,441 +82,723 @@ function createStyles() {
   style.id = "kage-profile-menu-styles";
 
   style.textContent = `
-    .kage-profile-menu {
-      position: fixed;
-      top: 72px;
-      right: 20px;
-      width: 320px;
-      max-width: calc(100vw - 40px);
-      padding: 20px;
-      border: 1px solid rgba(128, 128, 128, 0.22);
-      border-radius: 18px;
-      background: var(--kage-profile-background, #ffffff);
-      color: var(--kage-profile-text, #111111);
-      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
-      z-index: 9999;
-      font-family: inherit;
-    }
-
-    .kage-profile-menu[hidden] {
-      display: none;
-    }
-
-    .kage-profile-header {
+    .kage-identity-controls {
       display: flex;
       align-items: center;
-      gap: 14px;
-      margin-bottom: 20px;
+      gap: 8px;
+      position: relative;
+      z-index: 1000;
     }
 
-    .kage-profile-avatar,
-    .kage-profile-default-avatar {
-      width: 72px;
-      height: 72px;
-      min-width: 72px;
+    .kage-icon-button {
+      width: 38px;
+      height: 38px;
+      border: 1px solid #151515;
+      background: #050505;
+      color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      font-size: 16px;
+      transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.15s ease;
+    }
+
+    .kage-icon-button:hover {
+      background: #0b0b0b;
+      border-color: #292929;
+    }
+
+    .kage-icon-button:active {
+      transform: scale(0.95);
+    }
+
+    .kage-profile-avatar {
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
+      background: #111111;
+      color: #777777;
+      font-size: 14px;
+      font-weight: 600;
     }
 
-    .kage-profile-avatar {
+    .kage-profile-avatar img {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
+      display: block;
     }
 
-    .kage-profile-default-avatar svg {
-      width: 72px;
-      height: 72px;
+    .kage-profile-avatar-small {
+      width: 30px;
+      height: 30px;
+    }
+
+    .kage-profile-panel {
+      position: absolute;
+      top: 48px;
+      right: 0;
+      width: 290px;
+      background: #050505;
+      border: 1px solid #171717;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+      color: #ffffff;
+      display: none;
+    }
+
+    .kage-profile-panel.open {
       display: block;
     }
 
     .kage-profile-title {
-      margin: 0;
-      font-size: 19px;
-      font-weight: 700;
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 14px;
     }
 
-    .kage-profile-subtitle {
-      margin: 4px 0 0;
-      font-size: 13px;
-      opacity: 0.65;
-    }
-
-    .kage-profile-field {
+    .kage-profile-preview {
+      display: flex;
+      align-items: center;
+      gap: 12px;
       margin-bottom: 16px;
+    }
+
+    .kage-profile-preview .kage-profile-avatar {
+      width: 58px;
+      height: 58px;
+      flex: 0 0 58px;
+      font-size: 18px;
+    }
+
+    .kage-profile-name-preview {
+      min-width: 0;
+    }
+
+    .kage-profile-name-preview strong {
+      display: block;
+      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .kage-profile-name-preview span {
+      display: block;
+      margin-top: 3px;
+      color: #666666;
+      font-size: 12px;
     }
 
     .kage-profile-label {
       display: block;
-      margin-bottom: 7px;
-      font-size: 13px;
-      font-weight: 600;
+      color: #777777;
+      font-size: 11px;
+      margin-bottom: 6px;
     }
 
     .kage-profile-input {
       width: 100%;
       box-sizing: border-box;
-      padding: 11px 12px;
-      border: 1px solid rgba(128, 128, 128, 0.35);
-      border-radius: 11px;
-      background: transparent;
-      color: inherit;
-      font: inherit;
+      border: 1px solid #181818;
+      background: #090909;
+      color: #ffffff;
+      border-radius: 9px;
+      padding: 10px 11px;
       outline: none;
+      margin-bottom: 10px;
     }
 
     .kage-profile-input:focus {
-      border-color: currentColor;
+      border-color: #303030;
     }
 
     .kage-profile-actions {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
+      margin-top: 8px;
     }
 
-    .kage-profile-button {
-      border: 0;
-      border-radius: 10px;
-      padding: 10px 13px;
+    .kage-profile-action {
+      border: 1px solid #181818;
+      background: #090909;
+      color: #ffffff;
+      border-radius: 9px;
+      padding: 9px;
       cursor: pointer;
-      font: inherit;
-      font-size: 13px;
-      font-weight: 600;
-      background: rgba(128, 128, 128, 0.13);
-      color: inherit;
+      font-size: 12px;
     }
 
-    .kage-profile-button:hover {
-      background: rgba(128, 128, 128, 0.2);
+    .kage-profile-action:hover {
+      background: #101010;
     }
 
-    .kage-profile-save {
-      width: 100%;
-      margin-top: 4px;
+    .kage-profile-action.primary {
+      background: #ffffff;
+      color: #000000;
+      border-color: #ffffff;
     }
 
     .kage-profile-status {
-      min-height: 18px;
-      margin-top: 10px;
-      font-size: 12px;
-      opacity: 0.7;
+      min-height: 15px;
+      color: #666666;
+      font-size: 11px;
+      margin-top: 9px;
     }
 
     .kage-profile-file {
       display: none;
     }
 
-    @media (max-width: 600px) {
-      .kage-profile-menu {
-        top: 64px;
-        right: 12px;
-        width: calc(100vw - 24px);
-        max-width: none;
-      }
+    .kage-install-panel {
+      position: absolute;
+      top: 48px;
+      right: 48px;
+      width: 290px;
+      background: #050505;
+      border: 1px solid #171717;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+      color: #ffffff;
+      display: none;
+      z-index: 1001;
+    }
+
+    .kage-install-panel.open {
+      display: block;
+    }
+
+    .kage-install-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .kage-install-text {
+      color: #888888;
+      font-size: 12px;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .kage-install-button {
+      width: 100%;
+      border: 1px solid #181818;
+      background: #ffffff;
+      color: #000000;
+      border-radius: 9px;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .kage-install-close {
+      margin-top: 8px;
+      width: 100%;
+      border: 1px solid #181818;
+      background: #090909;
+      color: #ffffff;
+      border-radius: 9px;
+      padding: 9px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .kage-install-state {
+      color: #777777;
+      font-size: 11px;
+      margin-top: 10px;
+      line-height: 1.5;
     }
   `;
 
   document.head.appendChild(style);
 }
 
-function readImageFile(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) {
-      reject(new Error("No image selected."));
+function findHeaderMount() {
+  const candidates = [
+    "[data-kage-header]",
+    ".header",
+    ".topbar",
+    ".top-bar",
+    ".navbar",
+    ".nav",
+    "header"
+  ];
+
+  for (const selector of candidates) {
+    const element = document.querySelector(selector);
+
+    if (element) {
+      return element;
+    }
+  }
+
+  return document.body;
+}
+
+function mountControls() {
+  if (document.getElementById("kage-identity-controls")) {
+    return;
+  }
+
+  injectStyles();
+
+  const header = findHeaderMount();
+
+  const controls = document.createElement("div");
+
+  controls.id = "kage-identity-controls";
+  controls.className = "kage-identity-controls";
+
+  const profileButton = document.createElement("button");
+
+  profileButton.type = "button";
+  profileButton.className = "kage-icon-button";
+  profileButton.id = "kage-profile-button";
+  profileButton.title = "Profile";
+  profileButton.setAttribute("aria-label", "Profile");
+
+  const downloadButton = document.createElement("button");
+
+  downloadButton.type = "button";
+  downloadButton.className = "kage-icon-button";
+  downloadButton.id = "kage-download-button";
+  downloadButton.title = "Install KAGE";
+  downloadButton.setAttribute("aria-label", "Install KAGE");
+  downloadButton.textContent = "↓";
+
+  const profilePanel = document.createElement("div");
+
+  profilePanel.id = "kage-profile-panel";
+  profilePanel.className = "kage-profile-panel";
+
+  const installPanel = document.createElement("div");
+
+  installPanel.id = "kage-install-panel";
+  installPanel.className = "kage-install-panel";
+
+  controls.appendChild(profileButton);
+  controls.appendChild(downloadButton);
+  controls.appendChild(profilePanel);
+  controls.appendChild(installPanel);
+
+  header.appendChild(controls);
+
+  renderProfile();
+
+  profileButton.addEventListener("click", (event) => {
+    event.stopPropagation();
+
+    installPanel.classList.remove("open");
+    profilePanel.classList.toggle("open");
+  });
+
+  downloadButton.addEventListener("click", (event) => {
+    event.stopPropagation();
+
+    profilePanel.classList.remove("open");
+
+    openInstallExperience();
+  });
+
+  document.addEventListener("click", () => {
+    profilePanel.classList.remove("open");
+    installPanel.classList.remove("open");
+  });
+
+  profilePanel.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+
+  installPanel.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+
+  window.addEventListener("kage-profile-updated", renderProfile);
+
+  window.addEventListener("appinstalled", () => {
+    renderInstallPanel();
+  });
+
+  window.addEventListener("beforeinstallprompt", () => {
+    renderInstallPanel();
+  });
+}
+
+function renderProfile() {
+  const button = document.getElementById("kage-profile-button");
+  const panel = document.getElementById("kage-profile-panel");
+
+  if (!button || !panel) {
+    return;
+  }
+
+  const profile = loadProfile();
+
+  button.replaceChildren(
+    createAvatar(profile, true)
+  );
+
+  panel.innerHTML = "";
+
+  const title = document.createElement("div");
+
+  title.className = "kage-profile-title";
+  title.textContent = "Profile";
+
+  const preview = document.createElement("div");
+
+  preview.className = "kage-profile-preview";
+
+  preview.appendChild(
+    createAvatar(profile)
+  );
+
+  const previewText = document.createElement("div");
+
+  previewText.className = "kage-profile-name-preview";
+
+  const name = document.createElement("strong");
+
+  name.textContent =
+    profile.nickname || "KAGE user";
+
+  const description = document.createElement("span");
+
+  description.textContent =
+    "Your KAGE identity";
+
+  previewText.appendChild(name);
+  previewText.appendChild(description);
+  preview.appendChild(previewText);
+
+  const label = document.createElement("label");
+
+  label.className = "kage-profile-label";
+  label.textContent = "Nickname";
+
+  const input = document.createElement("input");
+
+  input.className = "kage-profile-input";
+  input.type = "text";
+  input.maxLength = 40;
+  input.placeholder = "What should KAGE call you?";
+  input.value = profile.nickname;
+
+  const file = document.createElement("input");
+
+  file.className = "kage-profile-file";
+  file.type = "file";
+  file.accept = "image/*";
+
+  const actions = document.createElement("div");
+
+  actions.className = "kage-profile-actions";
+
+  const photoButton = document.createElement("button");
+
+  photoButton.type = "button";
+  photoButton.className = "kage-profile-action";
+  photoButton.textContent =
+    profile.avatar
+      ? "Change photo"
+      : "Add photo";
+
+  const removeButton = document.createElement("button");
+
+  removeButton.type = "button";
+  removeButton.className = "kage-profile-action";
+  removeButton.textContent = "Remove photo";
+
+  const saveButton = document.createElement("button");
+
+  saveButton.type = "button";
+  saveButton.className =
+    "kage-profile-action primary";
+  saveButton.textContent = "Save profile";
+
+  const status = document.createElement("div");
+
+  status.className = "kage-profile-status";
+
+  photoButton.addEventListener("click", () => {
+    file.click();
+  });
+
+  removeButton.addEventListener("click", () => {
+    const current = loadProfile();
+
+    saveProfile({
+      ...current,
+      avatar: ""
+    });
+
+    status.textContent = "Profile photo removed.";
+    renderProfile();
+
+    document
+      .getElementById("kage-profile-panel")
+      ?.classList.add("open");
+  });
+
+  file.addEventListener("change", () => {
+    const selected = file.files?.[0];
+
+    if (!selected) {
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
-      reject(new Error("Please choose an image file."));
+    if (!selected.type.startsWith("image/")) {
+      status.textContent = "Please choose an image.";
       return;
     }
 
     const reader = new FileReader();
 
     reader.onload = () => {
-      if (typeof reader.result !== "string") {
-        reject(new Error("Unable to read the image."));
-        return;
-      }
+      const current = loadProfile();
 
-      resolve(reader.result);
-    };
-
-    reader.onerror = () => {
-      reject(new Error("Unable to read the image."));
-    };
-
-    reader.readAsDataURL(file);
-  });
-}
-
-export function createKageProfileMenu() {
-  createStyles();
-
-  const existing = document.getElementById("kage-profile-menu");
-
-  if (existing) {
-    return existing;
-  }
-
-  const menu = document.createElement("section");
-
-  menu.id = "kage-profile-menu";
-  menu.className = "kage-profile-menu";
-  menu.hidden = true;
-  menu.setAttribute("aria-label", "KAGE Profile");
-
-  menu.innerHTML = `
-    <div class="kage-profile-header">
-      <div id="kage-profile-avatar-container"></div>
-
-      <div>
-        <h2 class="kage-profile-title">Your Profile</h2>
-        <p class="kage-profile-subtitle">
-          Customize how KAGE knows you.
-        </p>
-      </div>
-    </div>
-
-    <div class="kage-profile-field">
-      <label
-        class="kage-profile-label"
-        for="kage-profile-nickname"
-      >
-        Nickname
-      </label>
-
-      <input
-        id="kage-profile-nickname"
-        class="kage-profile-input"
-        type="text"
-        maxlength="40"
-        autocomplete="nickname"
-        placeholder="What should KAGE call you?"
-      />
-    </div>
-
-    <div class="kage-profile-field">
-      <span class="kage-profile-label">
-        Profile picture
-      </span>
-
-      <div class="kage-profile-actions">
-        <button
-          id="kage-profile-upload"
-          class="kage-profile-button"
-          type="button"
-        >
-          Edit Profile Picture
-        </button>
-
-        <button
-          id="kage-profile-remove"
-          class="kage-profile-button"
-          type="button"
-        >
-          No Picture
-        </button>
-      </div>
-
-      <input
-        id="kage-profile-file"
-        class="kage-profile-file"
-        type="file"
-        accept="image/*"
-      />
-    </div>
-
-    <button
-      id="kage-profile-save"
-      class="kage-profile-button kage-profile-save"
-      type="button"
-    >
-      Save Profile
-    </button>
-
-    <div
-      id="kage-profile-status"
-      class="kage-profile-status"
-      aria-live="polite"
-    ></div>
-  `;
-
-  document.body.appendChild(menu);
-
-  const avatarContainer = menu.querySelector(
-    "#kage-profile-avatar-container"
-  );
-
-  const nicknameInput = menu.querySelector(
-    "#kage-profile-nickname"
-  );
-
-  const uploadButton = menu.querySelector(
-    "#kage-profile-upload"
-  );
-
-  const removeButton = menu.querySelector(
-    "#kage-profile-remove"
-  );
-
-  const fileInput = menu.querySelector(
-    "#kage-profile-file"
-  );
-
-  const saveButton = menu.querySelector(
-    "#kage-profile-save"
-  );
-
-  const status = menu.querySelector(
-    "#kage-profile-status"
-  );
-
-  let currentProfile = getKageProfile();
-
-  function renderProfile() {
-    avatarContainer.innerHTML = createAvatarMarkup(currentProfile);
-
-    nicknameInput.value = currentProfile.nickname || "";
-  }
-
-  function showStatus(message) {
-    status.textContent = message;
-  }
-
-  uploadButton.addEventListener("click", () => {
-    fileInput.click();
-  });
-
-  fileInput.addEventListener("change", async () => {
-    const file = fileInput.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    try {
-      const avatar = await readImageFile(file);
-
-      currentProfile = {
-        ...currentProfile,
-        avatar,
-      };
+      saveProfile({
+        ...current,
+        avatar: String(reader.result || "")
+      });
 
       renderProfile();
 
-      showStatus("Profile picture selected. Tap Save Profile.");
-    } catch (error) {
-      showStatus(
-        error instanceof Error
-          ? error.message
-          : "Unable to select that picture."
-      );
-    }
-
-    fileInput.value = "";
-  });
-
-  removeButton.addEventListener("click", () => {
-    currentProfile = {
-      ...currentProfile,
-      avatar: null,
+      document
+        .getElementById("kage-profile-panel")
+        ?.classList.add("open");
     };
 
-    renderProfile();
-
-    showStatus("Profile picture removed. Tap Save Profile.");
+    reader.readAsDataURL(selected);
   });
 
   saveButton.addEventListener("click", () => {
-    currentProfile = setKageNickname(
-      nicknameInput.value
-    );
+    const nickname = input.value.trim();
 
-    if (currentProfile.avatar) {
-      currentProfile = setKageAvatar(
-        currentProfile.avatar
-      );
-    } else {
-      currentProfile = removeKageAvatar();
-    }
+    const current = loadProfile();
+
+    saveProfile({
+      ...current,
+      nickname
+    });
+
+    status.textContent =
+      nickname
+        ? `KAGE will call you ${nickname}.`
+        : "Nickname cleared.";
 
     renderProfile();
 
-    showStatus("Profile saved.");
-
-    menu.dispatchEvent(
-      new CustomEvent("kage-profile-updated", {
-        bubbles: true,
-        detail: {
-          profile: currentProfile,
-        },
-      })
-    );
+    document
+      .getElementById("kage-profile-panel")
+      ?.classList.add("open");
   });
 
-  renderProfile();
+  label.htmlFor = input.id = "kage-nickname-input";
 
-  return menu;
+  actions.appendChild(photoButton);
+  actions.appendChild(removeButton);
+
+  panel.appendChild(title);
+  panel.appendChild(preview);
+  panel.appendChild(label);
+  panel.appendChild(input);
+  panel.appendChild(file);
+  panel.appendChild(actions);
+  panel.appendChild(saveButton);
+  panel.appendChild(status);
 }
 
-export function openKageProfileMenu() {
-  const menu = createKageProfileMenu();
-
-  menu.hidden = false;
-
-  const nicknameInput = menu.querySelector(
-    "#kage-profile-nickname"
+function isIOS() {
+  return /iphone|ipad|ipod/i.test(
+    navigator.userAgent
   );
-
-  nicknameInput?.focus();
-
-  return menu;
 }
 
-export function closeKageProfileMenu() {
-  const menu = document.getElementById(
-    "kage-profile-menu"
+function isStandalone() {
+  return (
+    window.matchMedia?.(
+      "(display-mode: standalone)"
+    ).matches ||
+    window.navigator.standalone === true
+  );
+}
+
+function openInstallExperience() {
+  const panel = document.getElementById(
+    "kage-install-panel"
   );
 
-  if (!menu) {
+  if (!panel) {
     return;
   }
 
-  menu.hidden = true;
+  panel.classList.add("open");
+
+  renderInstallPanel();
 }
 
-export function toggleKageProfileMenu() {
-  const menu = createKageProfileMenu();
+function renderInstallPanel() {
+  const panel = document.getElementById(
+    "kage-install-panel"
+  );
 
-  menu.hidden = !menu.hidden;
-
-  if (!menu.hidden) {
-    const profile = getKageProfile();
-
-    const nicknameInput = menu.querySelector(
-      "#kage-profile-nickname"
-    );
-
-    const avatarContainer = menu.querySelector(
-      "#kage-profile-avatar-container"
-    );
-
-    if (nicknameInput) {
-      nicknameInput.value = profile.nickname || "";
-    }
-
-    if (avatarContainer) {
-      avatarContainer.innerHTML =
-        createAvatarMarkup(profile);
-    }
+  if (!panel) {
+    return;
   }
 
-  return menu;
+  panel.innerHTML = "";
+
+  const title = document.createElement("div");
+
+  title.className = "kage-install-title";
+  title.textContent = "Install KAGE";
+
+  const text = document.createElement("div");
+
+  text.className = "kage-install-text";
+
+  const installButton =
+    document.createElement("button");
+
+  installButton.type = "button";
+  installButton.className =
+    "kage-install-button";
+
+  const closeButton =
+    document.createElement("button");
+
+  closeButton.type = "button";
+  closeButton.className =
+    "kage-install-close";
+  closeButton.textContent = "Close";
+
+  const state =
+    document.createElement("div");
+
+  state.className =
+    "kage-install-state";
+
+  if (isStandalone()) {
+    text.textContent =
+      "KAGE is already installed on this device.";
+
+    state.textContent =
+      "You are running the installed KAGE app.";
+
+    installButton.style.display = "none";
+  } else if (isIOS()) {
+    text.textContent =
+      "On iPhone or iPad, use your browser's Share menu and choose Add to Home Screen.";
+
+    installButton.style.display = "none";
+
+    state.textContent =
+      "Safari and supported iOS browsers use the system Add to Home Screen flow.";
+  } else if (window.__kageInstallPrompt) {
+    text.textContent =
+      "Install KAGE as an app on this device.";
+
+    installButton.textContent =
+      "Install KAGE";
+
+    installButton.style.display = "block";
+
+    installButton.addEventListener(
+      "click",
+      async () => {
+        const prompt =
+          window.__kageInstallPrompt;
+
+        if (!prompt) {
+          renderInstallPanel();
+          return;
+        }
+
+        try {
+          await prompt.prompt();
+          await prompt.userChoice;
+        } catch {
+          // User dismissed or browser rejected the prompt.
+        }
+
+        window.__kageInstallPrompt = null;
+
+        renderInstallPanel();
+      }
+    );
+  } else {
+    text.textContent =
+      "KAGE can be installed when this browser exposes its installation option.";
+
+    installButton.style.display = "none";
+
+    state.textContent =
+      "If your browser supports installation, use its browser install control.";
+  }
+
+  closeButton.addEventListener("click", () => {
+    panel.classList.remove("open");
+  });
+
+  panel.appendChild(title);
+  panel.appendChild(text);
+  panel.appendChild(installButton);
+  panel.appendChild(state);
+  panel.appendChild(closeButton);
 }
 
-export function getCurrentKageProfile() {
-  return getKageProfile();
+window.addEventListener(
+  "beforeinstallprompt",
+  (event) => {
+    event.preventDefault();
+
+    window.__kageInstallPrompt = event;
+
+    renderInstallPanel();
+  }
+);
+
+window.addEventListener(
+  "appinstalled",
+  () => {
+    window.__kageInstallPrompt = null;
+
+    renderInstallPanel();
+  }
+);
+
+window.KAGE_PROFILE = {
+  get: getProfile,
+  getNickname,
+  save: saveProfile
+};
+
+function startKageIdentity() {
+  mountControls();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener(
+    "DOMContentLoaded",
+    startKageIdentity,
+    { once: true }
+  );
+} else {
+  startKageIdentity();
 }
