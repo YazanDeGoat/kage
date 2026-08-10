@@ -1,0 +1,21 @@
+{
+  "name": "KAGE",
+  "short_name": "KAGE",
+  "description": "KAGE — an independent AI system and orchestrator.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
+  "orientation": "any",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "prefer_related_applications": false,
+  "categories": [
+    "productivity",
+    "utilities",
+    "ai"
+  ]
+}
