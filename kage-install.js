@@ -1,196 +1,128 @@
-/*
- * KAGE Install Controller
- * Phase 20
- *
- * Handles:
- * - Chromium/Android PWA installation
- * - iPhone/iPad installation instructions
- * - Desktop installation instructions
- * - Already-installed state
- */
+/* =========================================================
+   KAGE INSTALL CONTROLLER
+   ========================================================= */
 
 (() => {
   "use strict";
 
   let deferredInstallPrompt = null;
 
-  const IOS =
-    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (
-      navigator.platform === "MacIntel" &&
-      navigator.maxTouchPoints > 1
-    );
+  const INSTALL_BUTTON_SELECTORS = [
+    "#downloadButton",
+    "#download-button",
+    "#kageDownload",
+    "#kage-download",
+    ".downloadButton",
+    ".download-button",
+    "[data-kage-install]"
+  ];
 
-  const STANDALONE =
-    window.matchMedia?.(
-      "(display-mode: standalone)"
-    )?.matches ||
-    window.navigator.standalone === true;
+  function getInstallButton() {
+    for (const selector of INSTALL_BUTTON_SELECTORS) {
+      const button = document.querySelector(selector);
 
-  function isInstalled() {
-    return STANDALONE;
+      if (button) {
+        return button;
+      }
+    }
+
+    return null;
+  }
+
+  function isStandalone() {
+    return (
+      window.matchMedia &&
+      window.matchMedia("(display-mode: standalone)").matches
+    ) || window.navigator.standalone === true;
   }
 
   function isIOS() {
-    return IOS;
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   }
 
-  function isChromiumInstallAvailable() {
-    return Boolean(deferredInstallPrompt);
+  function isAndroid() {
+    return /Android/i.test(navigator.userAgent);
   }
 
-  function createStyles() {
-    if (document.getElementById("kage-install-style")) {
-      return;
-    }
-
-    const style = document.createElement("style");
-
-    style.id = "kage-install-style";
-
-    style.textContent = `
-      .kage-install-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 100000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        background: rgba(0,0,0,.66);
-        backdrop-filter: blur(8px);
-      }
-
-      .kage-install-overlay[hidden] {
-        display: none;
-      }
-
-      .kage-install-card {
-        width: min(420px, 100%);
-        background: #111214;
-        border: 1px solid rgba(255,255,255,.12);
-        border-radius: 18px;
-        box-shadow: 0 24px 80px rgba(0,0,0,.5);
-        padding: 22px;
-        color: #fff;
-      }
-
-      .kage-install-title {
-        font-size: 20px;
-        font-weight: 750;
-        margin-bottom: 8px;
-      }
-
-      .kage-install-description {
-        color: rgba(255,255,255,.66);
-        font-size: 14px;
-        line-height: 1.5;
-        margin-bottom: 18px;
-      }
-
-      .kage-install-instructions {
-        background: rgba(255,255,255,.05);
-        border: 1px solid rgba(255,255,255,.08);
-        border-radius: 12px;
-        padding: 14px;
-        font-size: 14px;
-        line-height: 1.55;
-        margin-bottom: 18px;
-      }
-
-      .kage-install-instructions strong {
-        color: #fff;
-      }
-
-      .kage-install-actions {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-
-      .kage-install-action {
-        appearance: none;
-        min-height: 42px;
-        border-radius: 10px;
-        border: 1px solid rgba(255,255,255,.13);
-        background: rgba(255,255,255,.06);
-        color: #fff;
-        padding: 0 14px;
-        cursor: pointer;
-        font-size: 14px;
-      }
-
-      .kage-install-action.primary {
-        background: #fff;
-        color: #111;
-        border-color: #fff;
-        font-weight: 700;
-      }
-
-      .kage-install-action:hover {
-        background: rgba(255,255,255,.11);
-      }
-
-      .kage-install-action.primary:hover {
-        background: #e8e8e8;
-      }
-    `;
-
-    document.head.appendChild(style);
+  function isChromium() {
+    return /Chrome|Chromium|Edg|OPR/i.test(navigator.userAgent);
   }
 
-  function createOverlay() {
-    if (document.getElementById("kage-install-overlay")) {
-      return;
+  function showMessage(title, message) {
+    const existing = document.getElementById("kageInstallDialog");
+
+    if (existing) {
+      existing.remove();
     }
 
     const overlay = document.createElement("div");
 
-    overlay.id = "kage-install-overlay";
-
-    overlay.className = "kage-install-overlay";
-
-    overlay.hidden = true;
+    overlay.id = "kageInstallDialog";
 
     overlay.innerHTML = `
       <div
-        class="kage-install-card"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="kage-install-title"
+        style="
+          position:fixed;
+          inset:0;
+          z-index:99999;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          padding:20px;
+          background:rgba(0,0,0,.62);
+          backdrop-filter:blur(12px);
+          -webkit-backdrop-filter:blur(12px);
+        "
       >
         <div
-          id="kage-install-title"
-          class="kage-install-title"
+          style="
+            width:min(420px,100%);
+            padding:24px;
+            border-radius:22px;
+            background:rgba(22,22,24,.94);
+            border:1px solid rgba(255,255,255,.14);
+            box-shadow:0 30px 90px rgba(0,0,0,.55);
+            color:#fff;
+            font-family:-apple-system,BlinkMacSystemFont,Inter,system-ui,sans-serif;
+          "
         >
-          Install KAGE
-        </div>
-
-        <div
-          id="kage-install-description"
-          class="kage-install-description"
-        ></div>
-
-        <div
-          id="kage-install-instructions"
-          class="kage-install-instructions"
-        ></div>
-
-        <div class="kage-install-actions">
-          <button
-            id="kage-install-now"
-            class="kage-install-action primary"
-            type="button"
+          <div
+            style="
+              font-size:20px;
+              font-weight:700;
+              margin-bottom:10px;
+            "
           >
-            Install KAGE
-          </button>
+            ${escapeHTML(title)}
+          </div>
+
+          <div
+            style="
+              color:#b8b8b8;
+              font-size:15px;
+              line-height:1.55;
+              white-space:pre-line;
+            "
+          >
+            ${escapeHTML(message)}
+          </div>
 
           <button
-            id="kage-install-close"
-            class="kage-install-action"
-            type="button"
+            id="kageInstallClose"
+            style="
+              width:100%;
+              margin-top:20px;
+              height:46px;
+              border-radius:14px;
+              border:1px solid rgba(255,255,255,.14);
+              background:rgba(255,255,255,.08);
+              color:#fff;
+              font-weight:600;
+              cursor:pointer;
+            "
           >
-            Close
+            Done
           </button>
         </div>
       </div>
@@ -199,195 +131,202 @@
     document.body.appendChild(overlay);
 
     document
-      .getElementById("kage-install-close")
-      .addEventListener("click", close);
+      .getElementById("kageInstallClose")
+      ?.addEventListener("click", () => {
+        overlay.remove();
+      });
 
-    overlay.addEventListener("click", event => {
-      if (event.target === overlay) {
-        close();
+    overlay.addEventListener("click", (event) => {
+      if (event.target === overlay.firstElementChild) {
+        overlay.remove();
       }
     });
-
-    document
-      .getElementById("kage-install-now")
-      .addEventListener("click", install);
   }
 
-  function setContent() {
-    const description = document.getElementById(
-      "kage-install-description"
-    );
+  function escapeHTML(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
 
-    const instructions = document.getElementById(
-      "kage-install-instructions"
-    );
-
-    const installButton = document.getElementById(
-      "kage-install-now"
-    );
-
-    if (!description || !instructions || !installButton) {
-      return;
-    }
-
-    if (isInstalled()) {
-      description.textContent =
-        "KAGE is already installed on this device.";
-
-      instructions.innerHTML =
-        "<strong>You're all set.</strong><br>" +
-        "Open KAGE from your Home Screen or installed apps.";
-
-      installButton.hidden = true;
+  async function installKage() {
+    if (isStandalone()) {
+      showMessage(
+        "KAGE is already installed",
+        "KAGE is already running as an installed app on this device."
+      );
 
       return;
     }
 
-    if (isChromiumInstallAvailable()) {
-      description.textContent =
-        "Install KAGE as an app for a faster, app-like experience.";
+    /*
+     * Chromium / Android / compatible desktop browsers
+     *
+     * beforeinstallprompt is the real browser installation flow.
+     */
 
-      instructions.innerHTML =
-        "<strong>Ready to install.</strong><br>" +
-        "Tap Install KAGE and your browser will add KAGE to your device.";
+    if (deferredInstallPrompt) {
+      try {
+        deferredInstallPrompt.prompt();
 
-      installButton.hidden = false;
+        const result = await deferredInstallPrompt.userChoice;
 
-      return;
+        if (result?.outcome === "accepted") {
+          deferredInstallPrompt = null;
+          updateButton();
+        }
+
+        return;
+      } catch (error) {
+        console.error("KAGE install prompt failed:", error);
+      }
     }
+
+    /*
+     * iPhone / iPad Safari
+     */
 
     if (isIOS()) {
-      description.textContent =
-        "KAGE can be added to your iPhone or iPad Home Screen.";
-
-      instructions.innerHTML =
-        "<strong>Safari:</strong><br>" +
-        "1. Open KAGE in Safari.<br>" +
-        "2. Tap the Share button.<br>" +
-        "3. Choose <strong>Add to Home Screen</strong>.<br>" +
-        "4. Tap Add.";
-
-      installButton.hidden = true;
+      showMessage(
+        "Install KAGE on iPhone / iPad",
+        "1. Tap the Share button in Safari.\n\n2. Choose “Add to Home Screen”.\n\n3. Tap “Add”.\n\nKAGE will then open like an installed app."
+      );
 
       return;
     }
 
-    description.textContent =
-      "KAGE can be installed from a supported browser.";
+    /*
+     * Desktop browsers without beforeinstallprompt
+     */
 
-    instructions.innerHTML =
-      "<strong>Desktop:</strong><br>" +
-      "Look for the browser's install icon in the address bar or browser menu and choose the option to install KAGE.";
-
-    installButton.hidden = true;
-  }
-
-  async function install() {
-    if (!deferredInstallPrompt) {
-      setContent();
+    if (!isAndroid()) {
+      showMessage(
+        "Install KAGE",
+        "Your browser does not currently expose the automatic install prompt.\n\nOpen the browser menu and look for “Install KAGE”, “Install app”, or “Add to Home Screen”."
+      );
 
       return;
     }
 
-    try {
-      deferredInstallPrompt.prompt();
-
-      const result =
-        await deferredInstallPrompt.userChoice;
-
-      if (result?.outcome === "accepted") {
-        deferredInstallPrompt = null;
-
-        close();
-      }
-    } catch {
-      setContent();
-    }
-  }
-
-  function open() {
-    createStyles();
-
-    createOverlay();
-
-    setContent();
-
-    const overlay = document.getElementById(
-      "kage-install-overlay"
+    showMessage(
+      "Install KAGE",
+      "Open your browser menu and choose “Install app” or “Add to Home screen”."
     );
-
-    if (overlay) {
-      overlay.hidden = false;
-    }
   }
 
-  function close() {
-    const overlay = document.getElementById(
-      "kage-install-overlay"
-    );
+  function updateButton() {
+    const button = getInstallButton();
 
-    if (overlay) {
-      overlay.hidden = true;
+    if (!button) {
+      return;
     }
+
+    if (isStandalone()) {
+      button.setAttribute("aria-label", "KAGE is installed");
+      button.setAttribute("title", "KAGE is already installed");
+      button.dataset.installed = "true";
+
+      return;
+    }
+
+    button.setAttribute("aria-label", "Install KAGE");
+    button.setAttribute("title", "Install KAGE");
+    button.dataset.installed = "false";
   }
 
-  window.addEventListener(
-    "beforeinstallprompt",
-    event => {
+  function bindButton() {
+    const button = getInstallButton();
+
+    if (!button) {
+      return false;
+    }
+
+    if (button.dataset.kageInstallBound === "true") {
+      return true;
+    }
+
+    button.dataset.kageInstallBound = "true";
+
+    button.addEventListener("click", (event) => {
       event.preventDefault();
+      event.stopPropagation();
 
-      deferredInstallPrompt = event;
+      installKage();
+    });
 
-      window.dispatchEvent(
-        new CustomEvent(
-          "kage:install-available"
-        )
-      );
-    }
-  );
+    updateButton();
 
-  window.addEventListener(
-    "appinstalled",
-    () => {
-      deferredInstallPrompt = null;
-
-      const overlay = document.getElementById(
-        "kage-install-overlay"
-      );
-
-      if (overlay) {
-        setContent();
-      }
-    }
-  );
-
-  window.addEventListener(
-    "kage:install-requested",
-    open
-  );
-
-  window.KAGEInstall = {
-    open,
-    close,
-    install,
-    isInstalled,
-    isIOS,
-    isChromiumInstallAvailable
-  };
-
-  function initialize() {
-    createStyles();
-
-    createOverlay();
+    return true;
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener(
+  /*
+   * Browser tells us the app is installable.
+   */
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+
+    deferredInstallPrompt = event;
+
+    updateButton();
+
+    bindButton();
+  });
+
+  /*
+   * Browser tells us installation finished.
+   */
+
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+
+    updateButton();
+
+    console.log("KAGE installed successfully.");
+  });
+
+  /*
+   * Bind immediately if the button already exists.
+   */
+
+  bindButton();
+
+  /*
+   * The KAGE UI may mount dynamically.
+   * This observer ONLY looks for the install button and then disconnects.
+   */
+
+  const observer = new MutationObserver(() => {
+    if (bindButton()) {
+      observer.disconnect();
+    }
+  });
+
+  if (document.body) {
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  } else {
+    window.addEventListener(
       "DOMContentLoaded",
-      initialize,
+      () => {
+        bindButton();
+
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+      },
       { once: true }
     );
-  } else {
-    initialize();
   }
+
+  window.KAGEInstall = {
+    install: installKage,
+    isInstalled: isStandalone
+  };
 })();
