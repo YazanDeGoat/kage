@@ -1,32 +1,53 @@
 /* =========================================================
-   KAGE — GLASS BLACK UI
-   Full application stylesheet
+   KAGE — GLASS DARK UI
+   Global visual layer
    ========================================================= */
+
 :root {
+  color-scheme: dark;
+
   --bg: #050505;
   --bg-soft: #080808;
-  --panel: rgba(18, 18, 18, 0.68);
-  --panel-strong: rgba(24, 24, 24, 0.82);
+  --panel: rgba(17, 17, 18, 0.72);
+  --panel-strong: rgba(22, 22, 23, 0.86);
   --glass: rgba(255, 255, 255, 0.055);
-  --glass-hover: rgba(255, 255, 255, 0.09);
-  --glass-active: rgba(255, 255, 255, 0.12);
-  --border: rgba(255, 255, 255, 0.095);
+  --glass-hover: rgba(255, 255, 255, 0.085);
+  --glass-active: rgba(255, 255, 255, 0.11);
+
+  --border: rgba(255, 255, 255, 0.09);
   --border-strong: rgba(255, 255, 255, 0.15);
+
   --text: #f5f5f5;
-  --text-soft: #b9b9b9;
-  --text-muted: #777;
-  --shadow: 0 18px 60px rgba(0, 0, 0, 0.5);
-  --radius: 18px;
-  --radius-small: 13px;
-  --blur: blur(22px);
+  --text-soft: #b5b5b8;
+  --text-muted: #77777d;
+
+  --shadow:
+    0 20px 60px rgba(0, 0, 0, 0.45),
+    0 2px 12px rgba(0, 0, 0, 0.35);
+
+  --glass-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 8px 30px rgba(0, 0, 0, 0.28);
+
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
+
+  --sidebar-width: 280px;
+  --header-height: 68px;
+
   --transition: 180ms ease;
 }
+
 /* =========================================================
    RESET
    ========================================================= */
+
 * {
   box-sizing: border-box;
 }
+
 html,
 body {
   width: 100%;
@@ -34,25 +55,29 @@ body {
   margin: 0;
   padding: 0;
 }
+
 html {
   background: var(--bg);
   color-scheme: dark;
 }
+
 body {
-  min-height: 100vh;
+  min-height: 100%;
   overflow: hidden;
+
   background:
     radial-gradient(
-      circle at 50% -10%,
-      rgba(255, 255, 255, 0.055),
-      transparent 38%
+      circle at 18% 10%,
+      rgba(255, 255, 255, 0.035),
+      transparent 28%
     ),
     radial-gradient(
-      circle at 0% 100%,
+      circle at 82% 85%,
       rgba(255, 255, 255, 0.025),
-      transparent 35%
+      transparent 32%
     ),
     #050505;
+
   color: var(--text);
   font-family:
     -apple-system,
@@ -62,383 +87,527 @@ body {
     Inter,
     system-ui,
     sans-serif;
+
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-/* =========================================================
-   GLOBAL GLASS
-   ========================================================= */
+
 button,
 input,
 textarea,
 select {
   font: inherit;
 }
+
 button {
   color: inherit;
 }
+
 button,
-.glass,
-.glass-button,
-.glass-card {
-  -webkit-backdrop-filter: var(--blur);
-  backdrop-filter: var(--blur);
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
 }
-button {
-  border: 0;
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.3);
+  outline-offset: 2px;
 }
+
 /* =========================================================
-   MAIN APP
+   SCROLLBARS
    ========================================================= */
-#app {
-  width: 100%;
-  height: 100vh;
-  min-height: 100vh;
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.13) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+*::-webkit-scrollbar-track {
   background: transparent;
 }
-.layout {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  width: 100%;
-  height: 100vh;
-  min-height: 0;
-  gap: 0;
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
 }
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* =========================================================
+   COMMON GLASS
+   ========================================================= */
+
+.glass,
+.glass-panel,
+.panel,
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(24px) saturate(130%);
+  -webkit-backdrop-filter: blur(24px) saturate(130%);
+}
+
+/* =========================================================
+   MAIN KAGE LAYOUT
+   ========================================================= */
+
+#app {
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  background: transparent;
+}
+
+.layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: transparent;
+}
+
 /* =========================================================
    SIDEBAR
    ========================================================= */
+
 .sidebar {
   position: relative;
+
   display: flex;
   flex-direction: column;
-  width: 280px;
+
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
   height: 100%;
-  min-height: 0;
-  padding: 16px;
-  gap: 14px;
+
+  padding: 14px;
+
   background:
     linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.045),
-      rgba(255, 255, 255, 0.018)
+      rgba(18, 18, 19, 0.78),
+      rgba(8, 8, 9, 0.88)
     );
+
   border-right: 1px solid var(--border);
-  box-shadow: 12px 0 50px rgba(0, 0, 0, 0.28);
-  overflow: hidden;
+
+  box-shadow:
+    inset -1px 0 rgba(255, 255, 255, 0.025),
+    12px 0 40px rgba(0, 0, 0, 0.18);
+
+  backdrop-filter: blur(30px) saturate(135%);
+  -webkit-backdrop-filter: blur(30px) saturate(135%);
+
+  z-index: 20;
 }
-.sidebar::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      circle at 20% 0%,
-      rgba(255, 255, 255, 0.045),
-      transparent 32%
-    );
-}
+
 /* =========================================================
    SIDEBAR HEADER / BRAND
    ========================================================= */
+
 .sidebar-header,
-.sidebar-top,
-.sidebarTitle,
-.sidebar-title {
-  position: relative;
-  z-index: 1;
+.sidebarTop,
+.sidebar-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 48px;
+
+  min-height: 52px;
+  margin-bottom: 10px;
 }
+
 .logo,
 .brand,
-.logo-text,
 .sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
   color: var(--text);
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
+
 /* =========================================================
    NEW CHAT
    ========================================================= */
+
 .new-chat,
 #newChat,
 .newChat,
-button[id*="new-chat"],
-button[id*="newChat"] {
-  position: relative;
-  z-index: 1;
+button.new-chat {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  gap: 10px;
+
   width: 100%;
   min-height: 48px;
-  padding: 0 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-small);
+
+  padding: 0 15px;
+
+  margin: 4px 0 12px;
+
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+
   background:
     linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.085),
+      rgba(255, 255, 255, 0.09),
       rgba(255, 255, 255, 0.035)
     );
+
   color: var(--text);
+
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.045),
-    0 8px 25px rgba(0, 0, 0, 0.2);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 25px rgba(0, 0, 0, 0.22);
+
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+
   cursor: pointer;
+
   transition:
     transform var(--transition),
     background var(--transition),
     border-color var(--transition),
     box-shadow var(--transition);
 }
+
 .new-chat:hover,
 #newChat:hover,
 .newChat:hover,
-button[id*="new-chat"]:hover,
-button[id*="newChat"]:hover {
-  transform: translateY(-1px);
+button.new-chat:hover {
   background: var(--glass-hover);
-  border-color: var(--border-strong);
+  border-color: rgba(255, 255, 255, 0.18);
+
+  transform: translateY(-1px);
+
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 12px 30px rgba(0, 0, 0, 0.3);
 }
+
 .new-chat:active,
 #newChat:active,
 .newChat:active,
-button[id*="new-chat"]:active,
-button[id*="newChat"]:active {
+button.new-chat:active {
   transform: scale(0.985);
 }
+
 /* =========================================================
    CHAT LIST
    ========================================================= */
-.chats,
+
 .chat-list,
-.sidebar-chats,
 #chatList,
-#chats {
-  position: relative;
-  z-index: 1;
-  display: flex;
+.chats,
+.threads {
   flex: 1;
-  flex-direction: column;
+
   min-height: 0;
-  gap: 8px;
+
   overflow-y: auto;
-  padding: 2px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+
+  padding: 2px 0 12px;
 }
-.chats::-webkit-scrollbar,
-.chat-list::-webkit-scrollbar,
-.sidebar-chats::-webkit-scrollbar,
-#chatList::-webkit-scrollbar,
-#chats::-webkit-scrollbar {
-  width: 5px;
-}
-.chats::-webkit-scrollbar-thumb,
-.chat-list::-webkit-scrollbar-thumb,
-.sidebar-chats::-webkit-scrollbar-thumb,
-#chatList::-webkit-scrollbar-thumb,
-#chats::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-}
-/* Chat rows become proper glass rectangles */
+
+/*
+   Chat entries are intentionally large glass rectangles.
+   Not tiny text links.
+*/
+
 .chat-item,
-.chat-row,
 .chat,
-.thread,
-.chat-button,
-.chat-entry,
-.sidebar-chat,
-[class*="chat-item"],
-[class*="chat-row"] {
-  position: relative;
+.chat-row,
+.thread-item,
+.conversation-item,
+.sidebar-chat {
+  display: flex;
+  align-items: center;
+
   width: 100%;
-  min-height: 48px;
-  padding: 13px 14px;
+  min-height: 52px;
+
+  margin: 5px 0;
+
+  padding: 0 14px;
+
   border: 1px solid transparent;
-  border-radius: 14px;
+  border-radius: 15px;
+
   background: rgba(255, 255, 255, 0.035);
+
   color: var(--text-soft);
+
+  font-size: 14px;
+  font-weight: 500;
+
   overflow: hidden;
+
   cursor: pointer;
+
   transition:
     background var(--transition),
     border-color var(--transition),
     color var(--transition),
-    transform var(--transition);
+    transform var(--transition),
+    box-shadow var(--transition);
 }
+
 .chat-item:hover,
+.chat:hover,
 .chat-row:hover,
-.chat-button:hover,
-.chat-entry:hover,
-.sidebar-chat:hover,
-[class*="chat-item"]:hover,
-[class*="chat-row"]:hover {
+.thread-item:hover,
+.conversation-item:hover,
+.sidebar-chat:hover {
+  color: var(--text);
   background: rgba(255, 255, 255, 0.065);
   border-color: var(--border);
-  color: var(--text);
-  transform: translateX(1px);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 7px 22px rgba(0, 0, 0, 0.18);
 }
-/* Active chat */
+
 .chat-item.active,
+.chat.active,
 .chat-row.active,
-.chat-button.active,
-.chat-entry.active,
-.sidebar-chat.active,
-.active.chat-item,
-.active.chat-row {
+.thread-item.active,
+.conversation-item.active,
+.sidebar-chat.active {
+  color: var(--text);
+
   background:
     linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.09),
+      rgba(255, 255, 255, 0.105),
       rgba(255, 255, 255, 0.045)
     );
-  border-color: var(--border-strong);
-  color: var(--text);
+
+  border-color: rgba(255, 255, 255, 0.12);
+
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.045),
-    0 8px 22px rgba(0, 0, 0, 0.2);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 25px rgba(0, 0, 0, 0.22);
 }
+
 /* =========================================================
-   MAIN CHAT AREA
+   CHAT CONTENT AREA
    ========================================================= */
+
 .chat {
   position: relative;
+
   display: flex;
   flex-direction: column;
+
+  flex: 1;
+
   min-width: 0;
   min-height: 0;
+
   height: 100%;
+
   background: transparent;
 }
+
+/*
+  Some projects use .chat as a sidebar item.
+  The main chat gets priority when it is a direct child
+  of .layout.
+*/
+
+.layout > .chat {
+  background:
+    radial-gradient(
+      circle at 50% 20%,
+      rgba(255, 255, 255, 0.018),
+      transparent 42%
+    ),
+    transparent;
+}
+
 /* =========================================================
-   HEADER
+   TOP HEADER
    ========================================================= */
+
+.chat-header,
 .header,
 .topbar,
-.chat-header,
-.headerBar,
-.top-bar {
+.top-bar,
+#header {
   position: relative;
-  z-index: 20;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  min-height: 68px;
-  padding: 10px 18px;
+
+  min-height: var(--header-height);
+  height: var(--header-height);
+
+  padding: 0 18px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(8, 8, 9, 0.76),
+      rgba(8, 8, 9, 0.48)
+    );
+
   border-bottom: 1px solid var(--border);
-  background: rgba(5, 5, 5, 0.62);
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
+
+  backdrop-filter: blur(28px) saturate(130%);
+  -webkit-backdrop-filter: blur(28px) saturate(130%);
+
+  z-index: 15;
 }
+
 .header-left,
+.headerRight,
 .header-right,
-.topbar-left,
-.topbar-right,
-.header-actions,
-.header-buttons {
+.topbar-actions,
+.header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
 }
+
 /* =========================================================
-   PROFILE + DOWNLOAD CONTROLS
+   PROFILE BUTTON
    ========================================================= */
+
 .profile-button,
 #profileButton,
 .profile-btn,
-.profile-control,
-button[id*="profile"] {
-  position: relative;
+button[data-profile],
+button[aria-label*="Profile"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
+  gap: 8px;
+
   min-height: 42px;
-  padding: 0 14px;
+
+  padding: 0 13px;
+
   border: 1px solid var(--border);
   border-radius: 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.035)
+    );
+
+  color: var(--text);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 8px 22px rgba(0, 0, 0, 0.2);
+
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  cursor: pointer;
+
+  transition:
+    background var(--transition),
+    border-color var(--transition),
+    transform var(--transition);
+}
+
+.profile-button:hover,
+#profileButton:hover,
+.profile-btn:hover,
+button[data-profile]:hover,
+button[aria-label*="Profile"]:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.profile-button:active,
+#profileButton:active,
+.profile-btn:active {
+  transform: scale(0.97);
+}
+
+/* =========================================================
+   DOWNLOAD ICON BUTTON
+   ========================================================= */
+
+.download-button,
+#downloadButton,
+.download-btn,
+.install-button,
+#installButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 42px;
+  height: 42px;
+
+  padding: 0;
+
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
   background:
     linear-gradient(
       135deg,
       rgba(255, 255, 255, 0.08),
       rgba(255, 255, 255, 0.035)
     );
+
   color: var(--text);
+
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.045),
-    0 8px 24px rgba(0, 0, 0, 0.25);
-  -webkit-backdrop-filter: blur(20px);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 22px rgba(0, 0, 0, 0.2);
+
   backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
   cursor: pointer;
+
   transition:
     background var(--transition),
     border-color var(--transition),
     transform var(--transition),
     box-shadow var(--transition);
 }
-.profile-button:hover,
-#profileButton:hover,
-.profile-btn:hover,
-.profile-control:hover,
-button[id*="profile"]:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--border-strong);
-  transform: translateY(-1px);
-}
-.download-button,
-#downloadButton,
-.download-btn,
-.install-button,
-#installButton,
-button[data-action="install"] {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 42px;
-  padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.085),
-      rgba(255, 255, 255, 0.035)
-    );
-  color: var(--text);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.045),
-    0 8px 24px rgba(0, 0, 0, 0.25);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  cursor: pointer;
-  transition:
-    background var(--transition),
-    border-color var(--transition),
-    transform var(--transition),
-    box-shadow var(--transition);
-}
+
 .download-button:hover,
 #downloadButton:hover,
 .download-btn:hover,
 .install-button:hover,
-#installButton:hover,
-button[data-action="install"]:hover {
-  background: rgba(255, 255, 255, 0.11);
+#installButton:hover {
+  background: rgba(255, 255, 255, 0.105);
   border-color: var(--border-strong);
+
   transform: translateY(-1px);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 28px rgba(0, 0, 0, 0.28);
 }
+
 .download-button:active,
 #downloadButton:active,
 .download-btn:active,
@@ -446,540 +615,676 @@ button[data-action="install"]:hover {
 #installButton:active {
   transform: scale(0.94);
 }
-/* Make SVG icons look professional */
+
 .download-button svg,
 #downloadButton svg,
 .download-btn svg,
 .install-button svg,
-#installButton svg,
-.profile-button svg,
-#profileButton svg {
-  width: 20px;
-  height: 20px;
-  flex: 0 0 auto;
+#installButton svg {
+  width: 21px;
+  height: 21px;
+
+  stroke: currentColor;
+  fill: none;
+
+  stroke-width: 1.9;
 }
+
 /* =========================================================
-   PROFILE MENU / MODAL
+   PROFILE MENU / INSTALL MENU
    ========================================================= */
+
 .profile-menu,
 #profileMenu,
 .profile-panel,
-.profile-modal,
-.profile-editor {
+.install-menu,
+#installMenu,
+.install-panel,
+.download-menu {
   position: absolute;
-  top: 62px;
-  right: 18px;
-  z-index: 100;
+
+  top: calc(var(--header-height) - 4px);
+  right: 16px;
+
   width: min(360px, calc(100vw - 28px));
-  padding: 18px;
-  border: 1px solid var(--border-strong);
-  border-radius: 20px;
+
+  padding: 16px;
+
   background:
     linear-gradient(
       145deg,
-      rgba(28, 28, 28, 0.88),
-      rgba(10, 10, 10, 0.82)
+      rgba(28, 28, 30, 0.88),
+      rgba(11, 11, 12, 0.84)
     );
+
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 22px;
+
   box-shadow:
-    0 30px 90px rgba(0, 0, 0, 0.62),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  -webkit-backdrop-filter: blur(30px);
-  backdrop-filter: blur(30px);
-  color: var(--text);
+    0 30px 80px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.065);
+
+  backdrop-filter: blur(34px) saturate(145%);
+  -webkit-backdrop-filter: blur(34px) saturate(145%);
+
+  z-index: 100;
 }
+
 .profile-menu h2,
 .profile-menu h3,
 .profile-panel h2,
 .profile-panel h3,
-.profile-modal h2,
-.profile-modal h3 {
-  margin: 0 0 14px;
-  font-size: 17px;
+.install-menu h2,
+.install-panel h2 {
+  margin: 0 0 12px;
+
+  color: var(--text);
+
+  font-size: 18px;
   font-weight: 700;
+  letter-spacing: -0.02em;
 }
-.profile-menu label,
-.profile-panel label,
-.profile-modal label,
-.profile-editor label {
-  display: block;
-  margin: 12px 0 7px;
-  color: var(--text-soft);
-  font-size: 13px;
-  font-weight: 600;
-}
-.profile-menu input,
-.profile-panel input,
-.profile-modal input,
-.profile-editor input {
-  width: 100%;
-  min-height: 44px;
-  padding: 0 13px;
-  border: 1px solid var(--border);
-  border-radius: 13px;
-  outline: none;
-  background: rgba(255, 255, 255, 0.055);
-  color: var(--text);
-  transition:
-    background var(--transition),
-    border-color var(--transition),
-    box-shadow var(--transition);
-}
-.profile-menu input:focus,
-.profile-panel input:focus,
-.profile-modal input:focus,
-.profile-editor input:focus {
-  background: rgba(255, 255, 255, 0.075);
-  border-color: rgba(255, 255, 255, 0.23);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.045);
-}
+
+/* =========================================================
+   PROFILE AVATAR
+   ========================================================= */
+
 .profile-avatar,
+#profileAvatar,
 .avatar,
-.profile-picture,
-#profileAvatar {
-  display: block;
-  width: 82px;
-  height: 82px;
-  margin: 0 auto 14px;
-  border: 1px solid var(--border-strong);
-  border-radius: 50%;
-  object-fit: cover;
-  background:
-    radial-gradient(
-      circle,
-      rgba(255, 255, 255, 0.11),
-      rgba(255, 255, 255, 0.025)
-    );
-  box-shadow:
-    0 15px 35px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-/* Profile action buttons */
-.profile-menu button,
-.profile-panel button,
-.profile-modal button,
-.profile-editor button {
-  min-height: 42px;
-  padding: 0 13px;
-  margin-top: 8px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.055);
-  color: var(--text);
-  cursor: pointer;
-  transition:
-    background var(--transition),
-    border-color var(--transition),
-    transform var(--transition);
-}
-.profile-menu button:hover,
-.profile-panel button:hover,
-.profile-modal button:hover,
-.profile-editor button:hover {
-  background: rgba(255, 255, 255, 0.095);
-  border-color: var(--border-strong);
-  transform: translateY(-1px);
-}
-/* =========================================================
-   MESSAGES
-   ========================================================= */
-#messages,
-.messages,
-.message-list {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  overflow-y: auto;
-  padding: 28px clamp(18px, 6vw, 100px) 150px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.13) transparent;
-}
-#messages::-webkit-scrollbar,
-.messages::-webkit-scrollbar,
-.message-list::-webkit-scrollbar {
-  width: 6px;
-}
-#messages::-webkit-scrollbar-thumb,
-.messages::-webkit-scrollbar-thumb,
-.message-list::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.13);
-}
-/* Message wrappers */
-.message {
-  width: 100%;
-  margin: 0 auto 18px;
-}
-.user-message,
-.message.user {
+.user-avatar {
+  width: 72px;
+  height: 72px;
+
+  margin: 4px auto 14px;
+
   display: flex;
-  justify-content: flex-end;
-}
-.assistant-message,
-.message.assistant {
-  display: flex;
-  justify-content: flex-start;
-}
-/* Glass message bubbles */
-.user-message > *,
-.message.user > * {
-  max-width: min(760px, 88%);
-  padding: 13px 17px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.09),
-      rgba(255, 255, 255, 0.045)
-    );
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.045);
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
-}
-.assistant-message > *,
-.message.assistant > * {
-  max-width: min(820px, 92%);
-}
-/* =========================================================
-   INPUT AREA
-   ========================================================= */
-.inputBar,
-.input-bar,
-.composer,
-.chat-input,
-.message-input-container {
-  position: absolute;
-  left: 50%;
-  bottom: 18px;
-  z-index: 30;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: min(900px, calc(100% - 28px));
-  min-height: 62px;
-  padding: 8px;
-  transform: translateX(-50%);
-  border: 1px solid var(--border-strong);
-  border-radius: 20px;
-  background:
-    linear-gradient(
-      145deg,
-      rgba(25, 25, 25, 0.82),
-      rgba(8, 8, 8, 0.78)
-    );
-  box-shadow:
-    0 25px 70px rgba(0, 0, 0, 0.58),
-    inset 0 1px 0 rgba(255, 255, 255, 0.055);
-  -webkit-backdrop-filter: blur(28px);
-  backdrop-filter: blur(28px);
-}
-#messageInput,
-.messageInput,
-.message-input,
-textarea {
-  flex: 1;
-  min-width: 0;
-  min-height: 44px;
-  max-height: 180px;
-  padding: 11px 13px;
-  border: 1px solid transparent;
-  border-radius: 14px;
-  outline: none;
-  resize: none;
-  background: rgba(255, 255, 255, 0.035);
-  color: var(--text);
-  font-size: 15px;
-  line-height: 1.45;
-  transition:
-    background var(--transition),
-    border-color var(--transition);
-}
-#messageInput::placeholder,
-.messageInput::placeholder,
-.message-input::placeholder,
-textarea::placeholder {
-  color: #707070;
-}
-#messageInput:focus,
-.messageInput:focus,
-.message-input:focus,
-textarea:focus {
-  background: rgba(255, 255, 255, 0.055);
-  border-color: var(--border);
-}
-/* =========================================================
-   GLASS COMPOSER BUTTONS
-   ========================================================= */
-.inputBar button,
-.input-bar button,
-.composer button,
-.chat-input button,
-#upload,
-#send,
-#mic,
-#microphone,
-#voice,
-.send-button,
-.mic-button,
-.upload-button {
-  display: inline-flex;
-  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 14px;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+
   background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.085),
+    radial-gradient(
+      circle at 35% 25%,
+      rgba(255, 255, 255, 0.13),
       rgba(255, 255, 255, 0.035)
     );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.profile-avatar img,
+#profileAvatar img,
+.avatar img,
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+input,
+textarea,
+select {
   color: var(--text);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.065),
+      rgba(255, 255, 255, 0.03)
+    );
+
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  transition:
+    border-color var(--transition),
+    background var(--transition),
+    box-shadow var(--transition);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+input:hover,
+textarea:hover,
+select:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: rgba(255, 255, 255, 0.23);
+
+  background: rgba(255, 255, 255, 0.075);
+
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.035),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* =========================================================
+   GENERAL BUTTONS
+   ========================================================= */
+
+button {
+  border: 1px solid var(--border);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.07),
+      rgba(255, 255, 255, 0.035)
+    );
+
+  border-radius: 13px;
+
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.045),
-    0 8px 22px rgba(0, 0, 0, 0.25);
+    0 7px 20px rgba(0, 0, 0, 0.18);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
   cursor: pointer;
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
+
   transition:
     background var(--transition),
     border-color var(--transition),
     transform var(--transition),
     box-shadow var(--transition);
 }
-.inputBar button:hover,
-.input-bar button:hover,
-.composer button:hover,
-.chat-input button:hover,
-#upload:hover,
-#send:hover,
-#mic:hover,
-#microphone:hover,
-#voice:hover,
-.send-button:hover,
-.mic-button:hover,
-.upload-button:hover {
-  background: rgba(255, 255, 255, 0.105);
-  border-color: var(--border-strong);
-  transform: translateY(-1px);
+
+button:hover {
+  background: rgba(255, 255, 255, 0.095);
+  border-color: rgba(255, 255, 255, 0.16);
 }
-.inputBar button:active,
-.input-bar button:active,
-.composer button:active,
-.chat-input button:active,
-#upload:active,
-#send:active,
-#mic:active,
-#microphone:active,
-#voice:active,
-.send-button:active,
-.mic-button:active,
-.upload-button:active {
-  transform: scale(0.92);
+
+button:active {
+  transform: scale(0.97);
 }
-.inputBar button svg,
-.input-bar button svg,
-.composer button svg,
-.chat-input button svg,
-#upload svg,
-#send svg,
-#mic svg,
-#microphone svg,
-#voice svg,
-.send-button svg,
-.mic-button svg,
-.upload-button svg {
-  width: 19px;
-  height: 19px;
-}
+
 /* =========================================================
-   GENERAL BUTTONS
+   MESSAGE AREA
    ========================================================= */
-button {
-  -webkit-tap-highlight-color: transparent;
+
+.messages,
+#messages,
+.message-list {
+  flex: 1;
+
+  min-height: 0;
+
+  overflow-y: auto;
+
+  padding:
+    28px
+    max(20px, 5vw)
+    150px
+    max(20px, 5vw);
+
+  scroll-behavior: smooth;
 }
-button:focus-visible,
-input:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.25);
-  outline-offset: 2px;
-}
+
 /* =========================================================
-   INSTALL / DOWNLOAD POPUP
+   MESSAGE BUBBLES
    ========================================================= */
-.install-menu,
-.install-panel,
-.download-menu,
-#installMenu,
-#installPanel {
-  position: fixed;
-  right: 18px;
-  top: 72px;
-  z-index: 200;
-  width: min(380px, calc(100vw - 28px));
-  padding: 18px;
-  border: 1px solid var(--border-strong);
-  border-radius: 20px;
+
+.message,
+.message-row,
+.user-message,
+.assistant-message {
+  max-width: 850px;
+
+  margin-left: auto;
+  margin-right: auto;
+
+  line-height: 1.65;
+
+  font-size: 15px;
+}
+
+.user-message {
+  width: fit-content;
+  max-width: min(78%, 720px);
+
+  margin-left: auto;
+  margin-right: 0;
+
+  padding: 12px 16px;
+
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 18px 18px 6px 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.085),
+      rgba(255, 255, 255, 0.04)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 10px 28px rgba(0, 0, 0, 0.2);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.assistant-message {
+  padding: 8px 0;
+
+  color: #e7e7e8;
+}
+
+/* =========================================================
+   COMPOSER
+   ========================================================= */
+
+.inputBar,
+.input-bar,
+.composer,
+.chat-input,
+#inputBar {
+  position: absolute;
+
+  left: 50%;
+  bottom: 18px;
+
+  width: min(920px, calc(100% - 32px));
+
+  transform: translateX(-50%);
+
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+
+  padding: 8px;
+
   background:
     linear-gradient(
       145deg,
-      rgba(27, 27, 27, 0.92),
-      rgba(8, 8, 8, 0.88)
+      rgba(24, 24, 25, 0.86),
+      rgba(10, 10, 11, 0.82)
     );
-  color: var(--text);
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+
   box-shadow:
-    0 30px 90px rgba(0, 0, 0, 0.65),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  -webkit-backdrop-filter: blur(30px);
-  backdrop-filter: blur(30px);
+    0 25px 70px rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+
+  backdrop-filter: blur(30px) saturate(140%);
+  -webkit-backdrop-filter: blur(30px) saturate(140%);
+
+  z-index: 30;
 }
+
 /* =========================================================
-   MODALS / OVERLAYS
+   MESSAGE TEXTBOX
    ========================================================= */
-.modal,
-.overlay,
-.dialog,
-#modal,
-#overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 500;
-  display: flex;
+
+#messageInput,
+.messageInput,
+.message-input,
+textarea#messageInput {
+  flex: 1;
+
+  min-width: 0;
+  min-height: 46px;
+  max-height: 180px;
+
+  resize: none;
+
+  padding: 12px 13px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: var(--text);
+
+  outline: none;
+
+  box-shadow: none;
+
+  backdrop-filter: none;
+}
+
+#messageInput:focus,
+.messageInput:focus,
+.message-input:focus,
+textarea#messageInput:focus {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+/* =========================================================
+   PLUS / ATTACHMENT
+   ========================================================= */
+
+#upload,
+.upload,
+.upload-button,
+.attach-button,
+#attachButton,
+.plus-button {
+  flex: 0 0 auto;
+
+  width: 44px;
+  height: 44px;
+
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.62);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-}
-.modal-content,
-.dialog-content,
-.modal-card {
-  width: min(520px, 100%);
-  padding: 22px;
-  border: 1px solid var(--border-strong);
-  border-radius: 22px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 14px;
+
   background:
     linear-gradient(
-      145deg,
-      rgba(28, 28, 28, 0.94),
-      rgba(8, 8, 8, 0.92)
+      135deg,
+      rgba(255, 255, 255, 0.08),
+      rgba(255, 255, 255, 0.035)
     );
-  box-shadow: var(--shadow);
-  -webkit-backdrop-filter: blur(30px);
-  backdrop-filter: blur(30px);
+
+  color: var(--text);
+
+  font-size: 21px;
+  line-height: 1;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 7px 20px rgba(0, 0, 0, 0.22);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  cursor: pointer;
 }
+
+#upload:hover,
+.upload:hover,
+.upload-button:hover,
+.attach-button:hover,
+#attachButton:hover,
+.plus-button:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: var(--border-strong);
+}
+
 /* =========================================================
-   HIDDEN ELEMENTS
+   MICROPHONE
    ========================================================= */
-[hidden],
-.hidden,
-.is-hidden {
-  display: none !important;
+
+#microphone,
+#mic,
+.microphone,
+.mic-button,
+.voice-button,
+button[aria-label*="icrophone"],
+button[aria-label*="ic"] {
+  flex: 0 0 auto;
+
+  width: 44px;
+  height: 44px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.08),
+      rgba(255, 255, 255, 0.035)
+    );
+
+  color: var(--text);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 7px 20px rgba(0, 0, 0, 0.22);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  cursor: pointer;
 }
+
+#microphone:hover,
+#mic:hover,
+.microphone:hover,
+.mic-button:hover,
+.voice-button:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: var(--border-strong);
+}
+
+/* =========================================================
+   SEND BUTTON
+   ========================================================= */
+
+#send,
+#sendButton,
+.send-button,
+.send {
+  flex: 0 0 auto;
+
+  width: 46px;
+  height: 46px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 15px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.13),
+      rgba(255, 255, 255, 0.055)
+    );
+
+  color: #fff;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.075),
+    0 9px 25px rgba(0, 0, 0, 0.3);
+
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  cursor: pointer;
+}
+
+#send:hover,
+#sendButton:hover,
+.send-button:hover,
+.send:hover {
+  background: rgba(255, 255, 255, 0.17);
+  border-color: rgba(255, 255, 255, 0.23);
+}
+
+/* =========================================================
+   ICONS
+   ========================================================= */
+
+button svg {
+  width: 20px;
+  height: 20px;
+
+  flex: 0 0 auto;
+
+  stroke: currentColor;
+  fill: none;
+
+  stroke-width: 1.9;
+
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* =========================================================
+   PROFILE FORM CONTROLS
+   ========================================================= */
+
+.profile-menu button,
+.profile-panel button,
+.install-menu button,
+.install-panel button {
+  min-height: 42px;
+
+  padding: 0 13px;
+
+  color: var(--text);
+}
+
+.profile-menu input,
+.profile-panel input {
+  width: 100%;
+
+  min-height: 44px;
+
+  padding: 0 13px;
+
+  margin: 6px 0 10px;
+}
+
+/* =========================================================
+   FILE UPLOAD
+   ========================================================= */
+
+input[type="file"] {
+  width: 100%;
+
+  padding: 9px;
+
+  color: var(--text-soft);
+
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.035);
+}
+
+input[type="file"]::file-selector-button {
+  margin-right: 9px;
+
+  padding: 8px 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text);
+
+  cursor: pointer;
+}
+
 /* =========================================================
    MOBILE / IPAD
    ========================================================= */
-@media (max-width: 900px) {
-  .layout {
-    grid-template-columns: 230px minmax(0, 1fr);
+
+@media (max-width: 850px) {
+  :root {
+    --sidebar-width: 235px;
   }
+
   .sidebar {
-    width: 230px;
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+
+    padding: 10px;
   }
-  #messages,
+
   .messages,
+  #messages,
   .message-list {
-    padding-left: 18px;
-    padding-right: 18px;
+    padding:
+      20px
+      15px
+      140px
+      15px;
   }
-}
-@media (max-width: 700px) {
-  body {
-    overflow: hidden;
-  }
-  .layout {
-    display: block;
-  }
-  .sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    z-index: 80;
-    width: min(290px, 84vw);
-    transform: translateX(-100%);
-    transition: transform 220ms ease;
-  }
-  .sidebar.open,
-  .sidebar.active {
-    transform: translateX(0);
-  }
-  .chat {
-    width: 100%;
-    height: 100vh;
-  }
-  .header,
-  .topbar,
-  .chat-header,
-  .headerBar,
-  .top-bar {
-    min-height: 60px;
-    padding: 8px 10px;
-  }
+
   .inputBar,
   .input-bar,
   .composer,
   .chat-input,
-  .message-input-container {
-    bottom: 10px;
-    width: calc(100% - 18px);
-    border-radius: 18px;
-  }
-  #messages,
-  .messages,
-  .message-list {
-    padding-bottom: 130px;
-  }
-  .profile-menu,
-  #profileMenu,
-  .profile-panel,
-  .profile-modal,
-  .profile-editor,
-  .install-menu,
-  .install-panel,
-  .download-menu,
-  #installMenu,
-  #installPanel {
-    right: 10px;
-    top: 64px;
-    width: calc(100vw - 20px);
+  #inputBar {
+    bottom: max(12px, env(safe-area-inset-bottom));
+
+    width: calc(100% - 20px);
   }
 }
-/* =========================================================
-   SMALL PHONES
-   ========================================================= */
-@media (max-width: 430px) {
+
+@media (max-width: 680px) {
+  :root {
+    --header-height: 62px;
+  }
+
+  .sidebar {
+    width: 220px;
+    min-width: 220px;
+  }
+
+  .chat-item,
+  .chat,
+  .chat-row,
+  .thread-item,
+  .conversation-item,
+  .sidebar-chat {
+    min-height: 48px;
+
+    padding: 0 11px;
+
+    font-size: 13px;
+  }
+
   .profile-button,
   #profileButton,
-  .profile-btn,
-  .profile-control {
+  .profile-btn {
     min-width: 42px;
     width: 42px;
+
     padding: 0;
   }
+
   .profile-button span,
   #profileButton span,
-  .profile-btn span,
-  .profile-control span {
+  .profile-btn span {
     display: none;
   }
+
   .download-button,
   #downloadButton,
   .download-btn,
@@ -988,39 +1293,126 @@ textarea:focus-visible {
     width: 42px;
     height: 42px;
   }
+
+  .messages,
+  #messages,
+  .message-list {
+    padding:
+      18px
+      11px
+      132px
+      11px;
+  }
+
+  .user-message {
+    max-width: 88%;
+  }
+
+  #upload,
+  .upload,
+  .upload-button,
+  .attach-button,
+  #attachButton,
+  .plus-button,
+  #microphone,
+  #mic,
+  .microphone,
+  .mic-button,
+  .voice-button {
+    width: 42px;
+    height: 42px;
+  }
+
+  #send,
+  #sendButton,
+  .send-button,
+  .send {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* =========================================================
+   VERY SMALL SCREENS
+   ========================================================= */
+
+@media (max-width: 520px) {
+  .sidebar {
+    width: 205px;
+    min-width: 205px;
+  }
+
+  .sidebar-header,
+  .sidebarTop,
+  .sidebar-top {
+    min-height: 48px;
+  }
+
+  .new-chat,
+  #newChat,
+  .newChat {
+    min-height: 46px;
+  }
+
+  .chat-item,
+  .chat,
+  .chat-row,
+  .thread-item,
+  .conversation-item,
+  .sidebar-chat {
+    min-height: 45px;
+  }
+
+  .chat-header,
+  .header,
+  .topbar,
+  .top-bar,
+  #header {
+    padding: 0 10px;
+  }
+
   .inputBar,
   .input-bar,
   .composer,
   .chat-input,
-  .message-input-container {
+  #inputBar {
     gap: 5px;
     padding: 6px;
+    border-radius: 19px;
   }
-  .inputBar button,
-  .input-bar button,
-  .composer button,
-  .chat-input button,
-  #upload,
-  #send,
-  #mic,
-  #microphone,
-  #voice,
-  .send-button,
-  .mic-button,
-  .upload-button {
-    width: 42px;
-    height: 42px;
-  }
+
   #messageInput,
   .messageInput,
   .message-input,
-  textarea {
+  textarea#messageInput {
+    min-height: 43px;
+    padding: 10px 7px;
     font-size: 14px;
   }
 }
+
+/* =========================================================
+   SAFE AREA
+   ========================================================= */
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  .sidebar {
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
+  .inputBar,
+  .input-bar,
+  .composer,
+  .chat-input,
+  #inputBar {
+    bottom: max(14px, env(safe-area-inset-bottom));
+  }
+}
+
 /* =========================================================
    REDUCED MOTION
    ========================================================= */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1028,5 +1420,6 @@ textarea:focus-visible {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
