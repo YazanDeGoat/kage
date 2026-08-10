@@ -1,161 +1,67 @@
-const {
-  createKageSystem
-} = require("../backend/kageSystem");
+import {
+  createOrchestrationResponse,
+  validatePlan
+} from "../kage/orchestrator.js";
 
-
-function sendJson(
-  res,
-  status,
-  data
-) {
-
-  res.status(status);
-
-  res.setHeader(
-    "Content-Type",
-    "application/json"
-  );
-
-  res.end(
-    JSON.stringify(data)
-  );
-
-}
-
-
-function parseBody(req) {
-
-  if (!req.body) {
-    return {};
-  }
-
-
-  if (typeof req.body === "object") {
-    return req.body;
-  }
-
-
-  if (typeof req.body === "string") {
-
-    try {
-
-      return JSON.parse(
-        req.body
-      );
-
-    } catch {
-
-      return {};
-
-    }
-
-  }
-
-
-  return {};
-
-}
-
-
-module.exports = async function handler(
-  req,
-  res
-) {
-
-  if (
-    req.method !== "POST"
-  ) {
-
-    return sendJson(
-
-      res,
-
-      405,
-
-      {
-
-        success: false,
-
-        text:
-          "method not allowed"
-
+function json(data, status = 200) {
+  return new Response(
+    JSON.stringify(data),
+    {
+      status,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store"
       }
+    }
+  );
+}
 
+export default async function handler(request) {
+  if (request.method !== "POST") {
+    return json(
+      {
+        success: false,
+        error: "method_not_allowed"
+      },
+      405
     );
-
   }
-
 
   try {
+    const body = await request.json();
 
-    const body =
-      parseBody(req);
-
-
-    const custom =
-      body.settings || {};
-
-
-    const result =
-      createKageSystem(
-        custom
+    if (!body || typeof body.message !== "string") {
+      return json(
+        {
+          success: false,
+          error: "message_required"
+        },
+        400
       );
+    }
 
+    const result = createOrchestrationResponse(body.message);
 
-    return sendJson(
+    if (!validatePlan(result.plan)) {
+      return json(
+        {
+          success: false,
+          error: "invalid_kage_plan"
+        },
+        500
+      );
+    }
 
-      res,
+    return json(result);
+  } catch (error) {
+    console.error("[KAGE] orchestration error:", error);
 
-      200,
-
+    return json(
       {
-
-        success: true,
-
-        name:
-          result.system.name,
-
-        system:
-          result.system,
-
-        systemPrompt:
-          result.systemPrompt
-
-      }
-
-    );
-
-  }
-
-  catch (error) {
-
-    console.log(
-      "KAGE SYSTEM ERROR:",
-      error
-    );
-
-
-    return sendJson(
-
-      res,
-
-      500,
-
-      {
-
         success: false,
-
-        text:
-          "kage system error: " +
-          (
-            error?.message ||
-            "unknown error"
-          )
-
-      }
-
+        error: "orchestration_failed"
+      },
+      500
     );
-
   }
-
-};
+}
