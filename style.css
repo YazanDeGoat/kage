@@ -1,433 +1,180 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+/* KAGE Identity + Install UI */
+.kage-identity-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  position: relative;
+  z-index: 1000;
 }
-
-html,
-body {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    background: #000;
-    color: #fff;
-    overflow: hidden;
+.kage-install-button,
+.kage-profile-button {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
 }
-
-body {
-    min-height: 100vh;
+.kage-install-button {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
 }
-
-#app {
-    width: 100%;
-    height: 100%;
+.kage-install-button:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
-
-.layout {
-    display: flex;
-    width: 100%;
-    height: 100vh;
-    min-height: 0;
-    background: #000;
+.kage-install-button svg {
+  width: 21px;
+  height: 21px;
 }
-
-/* =========================
-   SIDEBAR
-========================= */
-
-.sidebar {
-    width: 280px;
-    height: 100%;
-    flex-shrink: 0;
-
-    background: #050505;
-    border-right: 1px solid #151515;
-
-    display: flex;
-    flex-direction: column;
-
-    padding: 20px;
-
-    overflow: hidden;
+.kage-profile-button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 5px 6px;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
 }
-
-.logo {
-    font-size: 30px;
-    font-weight: 700;
-    letter-spacing: 5px;
-    margin-bottom: 25px;
+.kage-profile-button:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
-
-#newChatButton {
-    width: 100%;
-
-    background: #101010;
-    color: #fff;
-
-    border: 1px solid #202020;
-    border-radius: 14px;
-
-    padding: 14px;
-
-    cursor: pointer;
-
-    margin-bottom: 20px;
+.kage-profile-button-avatar {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
 }
-
-#newChatButton:active {
-    transform: scale(.98);
+.kage-profile-button-label {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-
-#chatList {
-    flex: 1;
-    min-height: 0;
-
-    overflow-y: auto;
-    overflow-x: hidden;
+.kage-profile-menu,
+.kage-install-menu {
+  position: fixed;
+  width: min(340px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  padding: 18px;
+  border-radius: 16px;
+  background: rgba(20, 20, 24, 0.98);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+  z-index: 10000;
+  box-sizing: border-box;
 }
-
-.thread {
-    background: #090909;
-
-    border: 1px solid #151515;
-
-    padding: 14px;
-
-    border-radius: 12px;
-
-    margin-bottom: 10px;
-
-    cursor: pointer;
-
-    transition: .2s;
+.kage-profile-title,
+.kage-install-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
 }
-
-.thread:hover {
-    background: #141414;
+.kage-profile-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 18px;
 }
-
-.thread.active {
-    background: #1d1d1d;
-    border-color: #555;
+.kage-profile-avatar-preview {
+  width: 82px;
+  height: 82px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-size: 32px;
+  overflow: hidden;
 }
-
-#profileCard {
-    display: flex;
-    align-items: center;
-
-    gap: 12px;
-
-    padding: 14px;
-
-    border: 1px solid #151515;
-    border-radius: 14px;
-
-    margin-top: 20px;
-
-    flex-shrink: 0;
+.kage-profile-label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  font-weight: 600;
 }
-
-.avatar {
-    width: 42px;
-    height: 42px;
-
-    border-radius: 50%;
-
-    background: #181818;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    font-weight: bold;
+.kage-profile-label input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  outline: none;
 }
-
-/* =========================
-   CHAT AREA
-========================= */
-
-.chat {
-    flex: 1;
-
-    min-width: 0;
-    min-height: 0;
-
-    height: 100%;
-
-    display: flex;
-    flex-direction: column;
-
-    background: #000;
+.kage-profile-label input:focus {
+  border-color: rgba(255, 255, 255, 0.35);
 }
-
-/* =========================
-   MESSAGES
-========================= */
-
-#messages {
-    flex: 1;
-
-    min-height: 0;
-
-    width: 100%;
-
-    padding: 30px;
-
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    display: flex;
-    flex-direction: column;
-
+.kage-profile-secondary-button,
+.kage-profile-save-button,
+.kage-profile-close-button,
+.kage-install-primary-button,
+.kage-install-close-button {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 12px;
+  cursor: pointer;
+  font: inherit;
+  margin-top: 8px;
+}
+.kage-profile-secondary-button,
+.kage-profile-close-button,
+.kage-install-close-button {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.kage-profile-save-button,
+.kage-install-primary-button {
+  background: #fff;
+  color: #111;
+  font-weight: 700;
+}
+.kage-install-instructions,
+.kage-install-help,
+.kage-install-status {
+  line-height: 1.5;
+  font-size: 14px;
+}
+.kage-install-status {
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.kage-install-help {
+  margin-top: 12px;
+  opacity: 0.72;
+}
+@media (max-width: 600px) {
+  .kage-profile-button-label {
+    display: none;
+  }
+  .kage-profile-button {
+    padding-right: 6px;
+  }
+  .kage-identity-controls {
     gap: 4px;
-}
-
-/* =========================
-   MESSAGE BUBBLES
-========================= */
-
-.message {
-    max-width: 75%;
-
-    padding: 14px 18px;
-
-    margin: 6px 0;
-
-    border-radius: 18px;
-
-    word-break: break-word;
-
-    white-space: pre-wrap;
-
-    border: 1px solid #151515;
-
-    line-height: 1.45;
-}
-
-.message.user {
-    margin-left: auto;
-
-    background: #202020;
-
-    border-bottom-right-radius: 6px;
-}
-
-.message.kage {
-    margin-right: auto;
-
-    background: #090909;
-
-    border-bottom-left-radius: 6px;
-}
-
-/* =========================
-   BOTTOM INPUT BAR
-========================= */
-
-.inputBar {
-    width: 100%;
-
-    flex-shrink: 0;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 10px;
-
-    padding: 14px 20px;
-
-    background: #000;
-
-    border-top: 1px solid #151515;
-}
-
-/* =========================
-   PLUS BUTTON
-========================= */
-
-#upload {
-    width: 46px;
-    height: 46px;
-
-    flex-shrink: 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: #101010;
-
-    color: #fff;
-
-    border: 1px solid #202020;
-
-    border-radius: 50%;
-
-    font-size: 24px;
-
-    cursor: pointer;
-}
-
-#upload:active {
-    transform: scale(.94);
-}
-
-/* =========================
-   MESSAGE INPUT
-========================= */
-
-.inputBar input {
-    flex: 1;
-
-    min-width: 0;
-
-    height: 46px;
-
-    background: #101010;
-
-    border: 1px solid #202020;
-
-    border-radius: 23px;
-
-    padding: 0 18px;
-
-    color: #fff;
-
-    outline: none;
-
-    font-size: 16px;
-}
-
-.inputBar input::placeholder {
-    color: #777;
-}
-
-.inputBar input:focus {
-    border-color: #333;
-}
-
-/* =========================
-   SEND + VOICE
-========================= */
-
-#talk,
-#voice {
-    height: 46px;
-
-    flex-shrink: 0;
-
-    background: #101010;
-
-    border: 1px solid #202020;
-
-    color: #fff;
-
-    border-radius: 23px;
-
-    padding: 0 16px;
-
-    cursor: pointer;
-}
-
-#talk:active,
-#voice:active {
-    transform: scale(.95);
-}
-
-/* =========================
-   MEDIA
-========================= */
-
-.generatedImage {
-    max-width: 75%;
-
-    border-radius: 16px;
-
-    margin: 10px 0;
-}
-
-.generatedVideo {
-    max-width: 75%;
-
-    border-radius: 16px;
-
-    margin: 10px 0;
-}
-
-/* =========================
-   MOBILE / IPAD
-========================= */
-
-@media (max-width: 700px) {
-
-    .sidebar {
-        width: 220px;
-        padding: 14px;
-    }
-
-    .logo {
-        font-size: 24px;
-        margin-bottom: 18px;
-    }
-
-    #messages {
-        padding: 20px 14px;
-    }
-
-    .inputBar {
-        padding: 10px 12px;
-
-        gap: 7px;
-    }
-
-    #upload {
-        width: 44px;
-        height: 44px;
-    }
-
-    .inputBar input {
-        height: 44px;
-
-        font-size: 15px;
-
-        padding: 0 14px;
-    }
-
-    #talk,
-    #voice {
-        height: 44px;
-
-        padding: 0 12px;
-    }
-
-}
-
-@media (max-width: 500px) {
-
-    .sidebar {
-        width: 190px;
-    }
-
-    #messages {
-        padding: 16px 10px;
-    }
-
-    .message {
-        max-width: 85%;
-    }
-
-    #voice {
-        font-size: 0;
-        width: 44px;
-        padding: 0;
-    }
-
-    #voice::after {
-        content: "🎙";
-        font-size: 18px;
-    }
-
+  }
 }
