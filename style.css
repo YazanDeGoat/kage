@@ -1,145 +1,161 @@
 /* =========================================================
-   KAGE — Main UI Styles
-   Dark, responsive, iPad/mobile friendly
+   KAGE — DARK GLASS UI
+   UI-only stylesheet
    ========================================================= */
-
+:root {
+  color-scheme: dark;
+  --bg: #050505;
+  --bg-soft: #090909;
+  --panel: rgba(15, 15, 17, 0.72);
+  --panel-strong: rgba(20, 20, 22, 0.9);
+  --glass: rgba(255, 255, 255, 0.055);
+  --glass-hover: rgba(255, 255, 255, 0.085);
+  --glass-active: rgba(255, 255, 255, 0.11);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text: #f5f5f5;
+  --text-soft: #a7a7ad;
+  --text-dim: #707077;
+  --shadow:
+    0 18px 55px rgba(0, 0, 0, 0.48);
+  --radius: 18px;
+  --radius-small: 13px;
+  --transition: 160ms ease;
+}
+/* ---------- RESET ---------- */
 * {
   box-sizing: border-box;
 }
-
 html,
 body {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
-}
-
-html {
-  background: #09090b;
-}
-
-body {
-  background:
-    radial-gradient(circle at top left, rgba(70, 70, 90, 0.16), transparent 35%),
-    radial-gradient(circle at bottom right, rgba(40, 40, 55, 0.12), transparent 35%),
-    #09090b;
-  color: #f4f4f5;
+  background: var(--bg);
+  color: var(--text);
   font-family:
+    Inter,
     -apple-system,
     BlinkMacSystemFont,
     "SF Pro Display",
     "SF Pro Text",
-    Inter,
-    system-ui,
-    -system-ui,
+    "Segoe UI",
     sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
+}
+body {
+  min-height: 100vh;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
-
-button {
-  color: inherit;
-}
-
 button,
 input,
 textarea {
-  -webkit-tap-highlight-color: transparent;
+  font: inherit;
 }
-
-button:focus-visible,
-input:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid #8b8bff;
-  outline-offset: 2px;
+button {
+  color: inherit;
 }
-
-/* =========================================================
-   APP
-   ========================================================= */
-
-#app {
-  width: 100%;
-  height: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
+/* ---------- SCROLLBARS ---------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
   background: transparent;
 }
-
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+}
 /* =========================================================
-   MAIN LAYOUT
+   MAIN KAGE APP
    ========================================================= */
-
+#app {
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 50% -20%,
+      rgba(255, 255, 255, 0.045),
+      transparent 38%
+    ),
+    linear-gradient(
+      180deg,
+      #070707 0%,
+      #050505 50%,
+      #030303 100%
+    );
+}
+/* ---------- LAYOUT ---------- */
 .layout {
   display: flex;
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  min-height: 0;
+  height: 100%;
+  min-height: 100vh;
   background: transparent;
 }
-
 /* =========================================================
    SIDEBAR
    ========================================================= */
-
 .sidebar {
-  width: 280px;
-  min-width: 280px;
+  width: 265px;
+  min-width: 265px;
   height: 100%;
-  padding: 18px;
-  background: rgba(15, 15, 18, 0.96);
-  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 14px;
+  background: rgba(8, 8, 9, 0.78);
+  border-right: 1px solid var(--border);
+  backdrop-filter: blur(28px) saturate(125%);
+  -webkit-backdrop-filter: blur(28px) saturate(125%);
   overflow-y: auto;
-  overflow-x: hidden;
 }
-
-.sidebar::-webkit-scrollbar {
-  width: 6px;
+.sidebar button,
+.sidebar a {
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 13px;
+  transition:
+    background var(--transition),
+    border-color var(--transition),
+    transform var(--transition);
 }
-
-.sidebar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
+.sidebar button:hover,
+.sidebar a:hover {
+  background: var(--glass-hover);
+  border-color: var(--border);
 }
-
-.sidebar button {
-  border: 0;
+.sidebar button:active,
+.sidebar a:active {
+  transform: scale(0.98);
 }
-
 /* =========================================================
    CHAT AREA
    ========================================================= */
-
 .chat {
   position: relative;
   display: flex;
-  flex: 1;
   flex-direction: column;
+  width: 100%;
   min-width: 0;
-  min-height: 0;
   height: 100%;
   background:
-    radial-gradient(circle at 50% -10%, rgba(70, 70, 90, 0.10), transparent 45%),
-    #09090b;
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(255, 255, 255, 0.025),
+      transparent 42%
+    ),
+    #050505;
 }
-
 /* =========================================================
    HEADER
    ========================================================= */
-
-.header,
+header,
 .chatHeader,
 .topBar {
   position: relative;
@@ -147,571 +163,483 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
   min-height: 64px;
-  padding: 10px 18px;
-  background: rgba(9, 9, 11, 0.88);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  padding: 10px 16px;
+  background: rgba(7, 7, 8, 0.68);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.075);
+  backdrop-filter: blur(25px) saturate(130%);
+  -webkit-backdrop-filter: blur(25px) saturate(130%);
 }
-
-/* Generic right-side header container */
-.headerRight,
-.headerActions,
-.topBarActions,
-.profileArea,
-.profileActions {
+/* Header action group */
+.header-actions,
+.profile-actions,
+.top-actions {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
 /* =========================================================
-   PROFILE + DOWNLOAD BUTTONS
+   GLASS BUTTONS
    ========================================================= */
-
-.profileButton,
+button {
+  border: 0;
+  outline: none;
+}
+.header-actions button,
+.profile-actions button,
+.top-actions button,
+.profile-button,
+.download-button,
 #profileButton,
-.profile-btn,
-[data-profile-button] {
+#downloadButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 42px;
-  padding: 8px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.055);
-  color: #f4f4f5;
-  font-size: 15px;
-  font-weight: 600;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.025)
+    );
+  color: var(--text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 5px 18px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   cursor: pointer;
   transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    transform 0.18s ease;
+    background var(--transition),
+    border-color var(--transition),
+    transform var(--transition),
+    box-shadow var(--transition);
 }
-
-.profileButton:hover,
+.header-actions button:hover,
+.profile-actions button:hover,
+.top-actions button:hover,
+.profile-button:hover,
+.download-button:hover,
 #profileButton:hover,
-.profile-btn:hover,
-[data-profile-button]:hover {
-  background: rgba(255, 255, 255, 0.10);
-  border-color: rgba(255, 255, 255, 0.16);
+#downloadButton:hover {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.115),
+      rgba(255, 255, 255, 0.045)
+    );
+  border-color: var(--border-strong);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 8px 25px rgba(0, 0, 0, 0.28);
+  transform: translateY(-1px);
 }
-
-.profileButton:active,
+.header-actions button:active,
+.profile-actions button:active,
+.top-actions button:active,
+.profile-button:active,
+.download-button:active,
 #profileButton:active,
-.profile-btn:active,
-[data-profile-button]:active {
-  transform: scale(0.97);
+#downloadButton:active {
+  transform: scale(0.96);
 }
-
 /* Download icon button */
-.downloadButton,
 #downloadButton,
-.download-btn,
-#installButton,
-[data-install-button] {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.download-button {
   width: 42px;
-  height: 42px;
-  padding: 9px;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.055);
-  color: #f4f4f5;
-  cursor: pointer;
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    transform 0.18s ease;
+  min-width: 42px;
+  padding: 8px;
 }
-
-.downloadButton svg,
 #downloadButton svg,
-.download-btn svg,
-#installButton svg,
-[data-install-button] svg {
-  width: 21px;
-  height: 21px;
-  display: block;
+.download-button svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 1.9;
 }
-
-.downloadButton:hover,
-#downloadButton:hover,
-.download-btn:hover,
-#installButton:hover,
-[data-install-button]:hover {
-  background: rgba(255, 255, 255, 0.10);
-  border-color: rgba(255, 255, 255, 0.16);
-}
-
-.downloadButton:active,
-#downloadButton:active,
-.download-btn:active,
-#installButton:active,
-[data-install-button]:active {
-  transform: scale(0.94);
-}
-
 /* =========================================================
    MESSAGES
    ========================================================= */
-
 #messages,
 .messages {
   flex: 1;
-  min-height: 0;
   width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 28px 22px 150px;
+  max-width: 100%;
+  padding: 24px 20px 120px;
   overflow-y: auto;
   overflow-x: hidden;
   scroll-behavior: smooth;
 }
-
-#messages::-webkit-scrollbar,
-.messages::-webkit-scrollbar {
-  width: 7px;
-}
-
-#messages::-webkit-scrollbar-thumb,
-.messages::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.10);
-  border-radius: 999px;
-}
-
-/* Generic message styling */
 .message {
   width: 100%;
-  margin: 0 0 20px;
-  color: #f4f4f5;
-  font-size: 16px;
+  max-width: 850px;
+  margin: 0 auto 16px;
+  color: var(--text);
+  line-height: 1.55;
 }
-
-.user-message {
+.message.user {
   display: flex;
   justify-content: flex-end;
 }
-
-.assistant-message {
+.message.assistant {
   display: flex;
   justify-content: flex-start;
 }
-
-.user-message > *,
-.assistant-message > * {
-  max-width: min(760px, 88%);
+.message-content {
+  max-width: min(760px, 85%);
+  padding: 12px 15px;
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.045);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025),
+    0 8px 25px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
 }
-
 /* =========================================================
-   INPUT AREA
+   INPUT BAR
    ========================================================= */
-
 .inputBar {
   position: absolute;
-  z-index: 15;
+  z-index: 30;
   left: 50%;
   bottom: 18px;
-  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 9px;
-  width: min(900px, calc(100% - 28px));
-  min-height: 58px;
+  width: min(900px, calc(100% - 30px));
   padding: 8px;
-  background: rgba(24, 24, 27, 0.94);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 18px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  transform: translateX(-50%);
+  border: 1px solid var(--border-strong);
+  border-radius: 19px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(20, 20, 22, 0.88),
+      rgba(9, 9, 10, 0.82)
+    );
+  box-shadow:
+    0 18px 55px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  backdrop-filter: blur(28px) saturate(135%);
+  -webkit-backdrop-filter: blur(28px) saturate(135%);
 }
-
-#messageInput,
-.messageInput,
 .inputBar input,
 .inputBar textarea {
   flex: 1;
   min-width: 0;
-  min-height: 42px;
-  padding: 10px 13px;
   border: 0;
   outline: none;
-  border-radius: 12px;
+  padding: 11px 12px;
   background: transparent;
-  color: #f4f4f5;
-  font-size: 16px;
+  color: var(--text);
+  font-size: 15px;
 }
-
-#messageInput::placeholder,
-.messageInput::placeholder,
 .inputBar input::placeholder,
 .inputBar textarea::placeholder {
-  color: #71717a;
+  color: var(--text-dim);
 }
-
-#upload,
-#send,
-.sendButton,
-.uploadButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  width: 42px;
-  height: 42px;
-  border: 0;
+.inputBar button {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.07);
-  color: #f4f4f5;
+  background: var(--glass);
+  color: var(--text-soft);
   cursor: pointer;
   transition:
-    background 0.18s ease,
-    transform 0.18s ease;
+    background var(--transition),
+    color var(--transition),
+    transform var(--transition);
 }
-
-#upload:hover,
-#send:hover,
-.sendButton:hover,
-.uploadButton:hover {
-  background: rgba(255, 255, 255, 0.12);
+.inputBar button:hover {
+  background: var(--glass-hover);
+  color: var(--text);
 }
-
-#upload:active,
-#send:active,
-.sendButton:active,
-.uploadButton:active {
+.inputBar button:active {
   transform: scale(0.94);
 }
-
 /* =========================================================
    PROFILE MENU
    ========================================================= */
-
-.profileMenu,
-#profileMenu,
-.profile-menu {
-  position: absolute;
-  z-index: 100;
-  top: 58px;
+.profile-menu,
+#profileMenu {
+  position: fixed;
+  z-index: 1000;
+  top: 70px;
   right: 16px;
   width: min(340px, calc(100vw - 28px));
   padding: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 18px;
-  background: rgba(22, 22, 26, 0.97);
-  color: #f4f4f5;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(25, 25, 27, 0.94),
+      rgba(8, 8, 9, 0.91)
+    );
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(35px) saturate(140%);
+  -webkit-backdrop-filter: blur(35px) saturate(140%);
+  color: var(--text);
 }
-
-.profileMenu h2,
-.profileMenu h3,
-.profile-menu h2,
-.profile-menu h3 {
-  margin: 0 0 14px;
-  font-size: 18px;
-  font-weight: 700;
+.profile-menu[hidden],
+#profileMenu[hidden] {
+  display: none;
 }
-
-.profileMenu label,
-.profile-menu label {
+.profile-menu input,
+.profile-menu textarea,
+#profileMenu input,
+#profileMenu textarea {
+  width: 100%;
+  margin-top: 7px;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  outline: none;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text);
+  transition:
+    border-color var(--transition),
+    background var(--transition);
+}
+.profile-menu input:focus,
+.profile-menu textarea:focus,
+#profileMenu input:focus,
+#profileMenu textarea:focus {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.065);
+}
+.profile-menu label,
+#profileMenu label {
   display: block;
-  margin: 12px 0 7px;
-  color: #a1a1aa;
-  font-size: 13px;
+  margin-top: 12px;
+  color: var(--text-soft);
+  font-size: 12px;
   font-weight: 600;
 }
-
-.profileMenu input[type="text"],
-.profileMenu input:not([type]),
-.profile-menu input[type="text"],
-.profile-menu input:not([type]) {
-  width: 100%;
-  min-height: 42px;
-  padding: 9px 11px;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 11px;
-  outline: none;
-  background: rgba(255, 255, 255, 0.055);
-  color: #f4f4f5;
-  font-size: 15px;
-}
-
-.profileMenu input:focus,
-.profile-menu input:focus {
-  border-color: rgba(139, 139, 255, 0.65);
-}
-
-.profileMenu button,
-.profile-menu button {
-  min-height: 40px;
-  padding: 8px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #f4f4f5;
-  cursor: pointer;
-}
-
-.profileMenu button:hover,
-.profile-menu button:hover {
-  background: rgba(255, 255, 255, 0.11);
-}
-
-/* =========================================================
-   AVATAR
-   ========================================================= */
-
-.avatar,
-.profileAvatar,
-#profileAvatar,
-.profile-avatar {
-  width: 72px;
-  height: 72px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  object-fit: cover;
-  overflow: hidden;
-  background: #27272a;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-}
-
-.avatarPreview,
-.profileAvatarPreview,
-#avatarPreview {
+/* Avatar */
+.profile-avatar,
+#profileAvatar {
+  width: 76px;
+  height: 76px;
+  margin: 2px auto 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 88px;
-  height: 88px;
-  margin-bottom: 12px;
-  border-radius: 50%;
   overflow: hidden;
-  background: #27272a;
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 35% 25%,
+      rgba(255, 255, 255, 0.15),
+      rgba(255, 255, 255, 0.035)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 12px 30px rgba(0, 0, 0, 0.35);
 }
-
-.avatarPreview img,
-.profileAvatarPreview img,
-#avatarPreview img {
+.profile-avatar img,
+#profileAvatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-
+/* Profile action buttons */
+.profile-menu button,
+#profileMenu button {
+  margin-top: 10px;
+  padding: 10px 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--glass);
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background var(--transition),
+    border-color var(--transition),
+    transform var(--transition);
+}
+.profile-menu button:hover,
+#profileMenu button:hover {
+  background: var(--glass-hover);
+  border-color: var(--border-strong);
+}
+.profile-menu button:active,
+#profileMenu button:active {
+  transform: scale(0.97);
+}
 /* =========================================================
    INSTALL / DOWNLOAD MENU
    ========================================================= */
-
-.installMenu,
-#installMenu,
-.install-menu {
-  position: absolute;
-  z-index: 100;
-  top: 58px;
-  right: 16px;
+.install-menu,
+#installMenu {
+  position: fixed;
+  z-index: 1000;
+  top: 70px;
+  right: 70px;
   width: min(350px, calc(100vw - 28px));
   padding: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 18px;
-  background: rgba(22, 22, 26, 0.97);
-  color: #f4f4f5;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(25, 25, 27, 0.95),
+      rgba(8, 8, 9, 0.92)
+    );
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(35px);
+  -webkit-backdrop-filter: blur(35px);
 }
-
+.install-menu[hidden],
+#installMenu[hidden] {
+  display: none;
+}
 /* =========================================================
-   MODALS / OVERLAYS
+   MODALS / GLASS PANELS
    ========================================================= */
-
 .modal,
-.overlay,
-.profileOverlay,
-.installOverlay {
-  position: fixed;
-  z-index: 200;
-  inset: 0;
-  display: flex;
+.dialog {
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(24, 24, 26, 0.96),
+      rgba(7, 7, 8, 0.94)
+    );
+  color: var(--text);
+  box-shadow:
+    0 30px 100px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(35px);
+  -webkit-backdrop-filter: blur(35px);
+}
+/* =========================================================
+   AVATAR IN HEADER
+   ========================================================= */
+.header-avatar,
+.profile-avatar-small,
+#headerAvatar {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.62);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.055);
 }
-
-.modalContent,
-.modal-content {
-  width: min(500px, 100%);
-  max-height: min(720px, calc(100vh - 40px));
-  overflow-y: auto;
-  padding: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 20px;
-  background: #18181b;
-  color: #f4f4f5;
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6);
+.header-avatar img,
+.profile-avatar-small img,
+#headerAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
-
 /* =========================================================
-   LINKS
+   LINKS / TEXT
    ========================================================= */
-
 a {
-  color: #a5b4fc;
+  color: #e8e8e8;
 }
-
 a:hover {
-  color: #c7d2fe;
+  color: #ffffff;
 }
-
-/* =========================================================
-   HIDDEN HELPERS
-   ========================================================= */
-
-.hidden {
-  display: none !important;
+.muted,
+.secondary,
+.text-muted {
+  color: var(--text-soft);
 }
-
-[hidden] {
-  display: none !important;
-}
-
 /* =========================================================
    MOBILE / IPAD
    ========================================================= */
-
-@media (max-width: 900px) {
+@media (max-width: 800px) {
   .sidebar {
-    width: 230px;
-    min-width: 230px;
+    width: 78px;
+    min-width: 78px;
+    padding: 10px;
   }
-
-  #messages,
   .messages {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+  .inputBar {
+    bottom: 12px;
+    width: calc(100% - 18px);
+  }
+  header,
+  .chatHeader,
+  .topBar {
+    padding: 9px 11px;
+  }
+  .profile-menu,
+  #profileMenu {
+    top: 62px;
+    right: 10px;
+  }
+  .install-menu,
+  #installMenu {
+    top: 62px;
+    right: 10px;
   }
 }
-
-@media (max-width: 700px) {
-  body {
-    font-size: 15px;
-  }
-
-  .layout {
-    display: block;
-  }
-
+@media (max-width: 520px) {
   .sidebar {
     display: none;
   }
-
-  .chat {
-    width: 100%;
+  .header-actions button,
+  .profile-actions button,
+  .top-actions button,
+  .profile-button {
+    min-height: 38px;
   }
-
-  .header,
-  .chatHeader,
-  .topBar {
-    min-height: 58px;
-    padding: 8px 12px;
-  }
-
-  .profileButton,
-  #profileButton,
-  .profile-btn,
-  [data-profile-button] {
-    min-height: 40px;
-    padding: 7px 11px;
-    font-size: 14px;
-  }
-
-  .downloadButton,
   #downloadButton,
-  .download-btn,
-  #installButton,
-  [data-install-button] {
+  .download-button {
     width: 40px;
-    height: 40px;
+    min-width: 40px;
   }
-
-  #messages,
-  .messages {
-    padding: 20px 12px 130px;
-  }
-
-  .inputBar {
-    bottom: 10px;
-    width: calc(100% - 18px);
-    min-height: 54px;
-    border-radius: 16px;
-  }
-
-  .profileMenu,
-  #profileMenu,
   .profile-menu,
-  .installMenu,
-  #installMenu,
-  .install-menu {
-    top: 52px;
+  #profileMenu,
+  .install-menu,
+  #installMenu {
+    width: calc(100vw - 20px);
     right: 10px;
-    width: min(340px, calc(100vw - 20px));
+  }
+  .message-content {
+    max-width: 92%;
   }
 }
-
 /* =========================================================
-   SMALL PHONES
+   SAFE FOCUS STATES
    ========================================================= */
-
-@media (max-width: 430px) {
-  .header,
-  .chatHeader,
-  .topBar {
-    padding-left: 9px;
-    padding-right: 9px;
-  }
-
-  .profileButton,
-  #profileButton,
-  .profile-btn,
-  [data-profile-button] {
-    padding: 7px 10px;
-  }
-
-  .inputBar {
-    gap: 5px;
-  }
-
-  #upload,
-  #send,
-  .sendButton,
-  .uploadButton {
-    width: 39px;
-    height: 39px;
-  }
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.25);
+  outline-offset: 2px;
 }
-
 /* =========================================================
    REDUCED MOTION
    ========================================================= */
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     scroll-behavior: auto !important;
-    transition: none !important;
-    animation: none !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }
