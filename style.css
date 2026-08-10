@@ -1,24 +1,22 @@
 /* =========================================================
-   KAGE — DARK GLASS UI
+   KAGE — GLASS DARK UI
+   Keeps the classic sidebar + chat layout
    ========================================================= */
-
 :root {
   --kage-bg: #050505;
   --kage-panel: rgba(18, 18, 20, 0.72);
-  --kage-glass: rgba(255, 255, 255, 0.055);
-  --kage-glass-strong: rgba(255, 255, 255, 0.09);
-  --kage-border: rgba(255, 255, 255, 0.11);
-  --kage-border-strong: rgba(255, 255, 255, 0.17);
+  --kage-panel-strong: rgba(24, 24, 27, 0.86);
+  --kage-border: rgba(255, 255, 255, 0.10);
+  --kage-border-hover: rgba(255, 255, 255, 0.18);
   --kage-text: #f5f5f5;
-  --kage-muted: #9b9b9b;
+  --kage-muted: #9b9b9f;
+  --kage-glow: rgba(255, 255, 255, 0.06);
   --kage-radius: 18px;
-  --kage-blur: blur(22px);
+  --kage-blur: blur(24px);
 }
-
 * {
   box-sizing: border-box;
 }
-
 html,
 body {
   width: 100%;
@@ -28,715 +26,500 @@ body {
   background: var(--kage-bg);
   color: var(--kage-text);
   font-family:
+    Inter,
     -apple-system,
     BlinkMacSystemFont,
     "SF Pro Display",
-    "SF Pro Text",
-    Inter,
-    system-ui,
+    "Segoe UI",
     sans-serif;
 }
-
 body {
   overflow: hidden;
 }
-
 /* =========================================================
-   MAIN APP
+   APP
    ========================================================= */
-
 #app {
   width: 100%;
   height: 100dvh;
   min-height: 100vh;
   background:
     radial-gradient(
-      circle at 50% -20%,
-      rgba(255, 255, 255, 0.055),
-      transparent 38%
+      circle at 15% 15%,
+      rgba(255, 255, 255, 0.035),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 85% 85%,
+      rgba(255, 255, 255, 0.025),
+      transparent 30%
     ),
     #050505;
 }
-
-button,
-input,
-textarea {
-  font: inherit;
-}
-
-button {
-  color: inherit;
-}
-
 /* =========================================================
-   KAGE LAYOUT
+   MAIN LAYOUT
    ========================================================= */
-
 .layout {
+  display: flex;
   width: 100%;
   height: 100%;
-  display: flex;
-  background: #050505;
+  min-height: 0;
 }
-
 /* =========================================================
    SIDEBAR
    ========================================================= */
-
 .sidebar {
-  width: 280px;
-  min-width: 280px;
+  width: 270px;
+  min-width: 270px;
   height: 100%;
-  padding: 18px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-
+  gap: 12px;
   background: rgba(10, 10, 11, 0.78);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  border-right: 1px solid var(--kage-border);
+  backdrop-filter: var(--kage-blur);
+  -webkit-backdrop-filter: var(--kage-blur);
 }
-
-.sidebar h1,
-.sidebar h2,
-.sidebar h3 {
-  color: #fff;
-}
-
-/* =========================================================
-   NEW CHAT — REAL GLASS CARD
-   ========================================================= */
-
-.newChat,
-.new-chat,
-#newChat,
-button.newChat,
-button.new-chat {
-  width: 100%;
+/* KAGE logo/title area */
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   min-height: 52px;
-  padding: 0 18px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.105),
-      rgba(255, 255, 255, 0.035)
-    );
-
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 16px;
-
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 10px 30px rgba(0, 0, 0, 0.22);
-
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-
-  cursor: pointer;
-  transition:
-    transform 0.18s ease,
-    background 0.18s ease,
-    border-color 0.18s ease;
+  padding: 0 8px;
 }
-
-.newChat:hover,
-.new-chat:hover,
-#newChat:hover,
-button.newChat:hover,
-button.new-chat:hover {
-  background: rgba(255, 255, 255, 0.11);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
+.sidebarHeader h1,
+.sidebarHeader .logo {
+  margin: 0;
+  color: var(--kage-text);
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.04em;
 }
-
-.newChat:active,
-.new-chat:active,
-#newChat:active,
-button.newChat:active,
-button.new-chat:active {
-  transform: scale(0.98);
-}
-
 /* =========================================================
-   CHAT LIST
+   NEW CHAT
    ========================================================= */
-
-.chats,
-.chatList,
-.chat-list,
-#chats,
-#chatList,
-#chat-list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 3px;
-}
-
-/* Every chat becomes a proper glass rectangle */
-
-.chatItem,
-.chat-item,
-.chatCard,
-.chat-card,
-.thread,
-.threadItem,
-.thread-item,
-#chats > *,
-#chatList > *,
-#chat-list > * {
+.newChat,
+#newChat,
+.new-chat,
+button.newChat {
   width: 100%;
-  min-height: 54px;
-  margin-bottom: 9px;
-  padding: 14px 16px;
-
+  min-height: 48px;
   display: flex;
   align-items: center;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.075),
-      rgba(255, 255, 255, 0.025)
-    );
-
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 15px;
-
-  color: #eaeaea;
-  font-size: 14px;
-  line-height: 1.25;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.045),
-    0 8px 22px rgba(0, 0, 0, 0.16);
-
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-
-  cursor: pointer;
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    transform 0.18s ease;
-}
-
-.chatItem:hover,
-.chat-item:hover,
-.chatCard:hover,
-.chat-card:hover,
-.thread:hover,
-.threadItem:hover,
-.thread-item:hover,
-#chats > *:hover,
-#chatList > *:hover,
-#chat-list > *:hover {
-  background: rgba(255, 255, 255, 0.095);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-.chatItem.active,
-.chat-item.active,
-.chatCard.active,
-.chat-card.active,
-.thread.active,
-.threadItem.active,
-.thread-item.active {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.13),
-      rgba(255, 255, 255, 0.055)
-    );
-
-  border-color: rgba(255, 255, 255, 0.19);
-}
-
-/* =========================================================
-   CHAT AREA
-   ========================================================= */
-
-.chat {
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-
-  background:
-    radial-gradient(
-      circle at 50% 0%,
-      rgba(255, 255, 255, 0.035),
-      transparent 35%
-    ),
-    #050505;
-}
-
-/* =========================================================
-   HEADER
-   ========================================================= */
-
-header,
-.header,
-.topbar,
-.top-bar {
-  min-height: 64px;
-  padding: 12px 18px;
-
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 10px;
-
-  background: rgba(5, 5, 5, 0.66);
-
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-}
-
-/* =========================================================
-   PROFILE + DOWNLOAD BUTTONS
-   ========================================================= */
-
-.profileButton,
-.profile-button,
-#profileButton,
-#profile-button,
-.downloadButton,
-.download-button,
-#downloadButton,
-#download-button,
-#kageDownload,
-#kage-download {
-  height: 44px;
-  min-width: 44px;
   padding: 0 15px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.09),
-      rgba(255, 255, 255, 0.035)
-    );
-
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
-
-  color: #fff;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 8px 25px rgba(0, 0, 0, 0.2);
-
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-
-  cursor: pointer;
-
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    transform 0.18s ease;
-}
-
-.profileButton:hover,
-.profile-button:hover,
-#profileButton:hover,
-#profile-button:hover,
-.downloadButton:hover,
-.download-button:hover,
-#downloadButton:hover,
-#download-button:hover,
-#kageDownload:hover,
-#kage-download:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
-}
-
-.downloadButton svg,
-.download-button svg,
-#downloadButton svg,
-#download-button svg,
-#kageDownload svg,
-#kage-download svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* =========================================================
-   MESSAGES — BIG GLASS CARDS
-   ========================================================= */
-
-#messages {
-  flex: 1;
-  min-height: 0;
-
-  width: 100%;
-  max-width: 920px;
-
-  margin: 0 auto;
-  padding: 28px 24px 150px;
-
-  overflow-y: auto;
-
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* User + assistant messages */
-
-.message,
-.chatMessage,
-.chat-message,
-.messageBubble,
-.message-bubble {
-  width: fit-content;
-  max-width: min(78%, 720px);
-
-  padding: 15px 18px;
-
-  border-radius: 20px;
-
-  font-size: 16px;
-  line-height: 1.55;
-
-  word-wrap: break-word;
-  overflow-wrap: anywhere;
-
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.055),
-    0 12px 35px rgba(0, 0, 0, 0.18);
-}
-
-/* User */
-
-.message.user,
-.messageUser,
-.userMessage,
-.user-message {
-  align-self: flex-end;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.115),
-      rgba(255, 255, 255, 0.045)
-    );
-
-  border: 1px solid rgba(255, 255, 255, 0.13);
-}
-
-/* Assistant */
-
-.message.assistant,
-.messageAssistant,
-.assistantMessage,
-.assistant-message {
-  align-self: flex-start;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.07),
-      rgba(255, 255, 255, 0.025)
-    );
-
-  border: 1px solid rgba(255, 255, 255, 0.095);
-}
-
-/* =========================================================
-   INPUT BAR — GLASS
-   ========================================================= */
-
-.inputBar,
-.input-bar,
-.composer,
-.chatInput,
-.chat-input {
-  position: absolute;
-  left: 50%;
-  bottom: 18px;
-
-  transform: translateX(-50%);
-
-  width: min(900px, calc(100% - 32px));
-  min-height: 62px;
-
-  padding: 8px;
-
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
+  border: 1px solid var(--kage-border);
+  border-radius: 15px;
   background:
     linear-gradient(
       135deg,
       rgba(255, 255, 255, 0.085),
       rgba(255, 255, 255, 0.035)
     );
-
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 21px;
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 18px 50px rgba(0, 0, 0, 0.38);
-
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-
-  z-index: 50;
-}
-
-.inputBar input,
-.inputBar textarea,
-.input-bar input,
-.input-bar textarea,
-.composer input,
-.composer textarea,
-.chatInput input,
-.chatInput textarea,
-.chat-input input,
-.chat-input textarea {
-  flex: 1;
-  min-width: 0;
-
-  height: 44px;
-
-  padding: 0 12px;
-
-  background: transparent;
-  border: 0;
-  outline: 0;
-
-  color: #fff;
-  font-size: 15px;
-}
-
-.inputBar input::placeholder,
-.inputBar textarea::placeholder,
-.input-bar input::placeholder,
-.input-bar textarea::placeholder {
-  color: #858585;
-}
-
-/* =========================================================
-   PLUS / MIC / SEND — GLASS ICON BUTTONS
-   ========================================================= */
-
-#upload,
-#plus,
-#plusButton,
-.plusButton,
-.plus-button,
-#microphone,
-#mic,
-#micButton,
-.micButton,
-.mic-button,
-#send,
-#sendButton,
-.sendButton,
-.send-button {
-  width: 44px;
-  min-width: 44px;
-  height: 44px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.095),
-      rgba(255, 255, 255, 0.035)
-    );
-
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
-
-  color: #fff;
-
+  color: var(--kage-text);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 7px 20px rgba(0, 0, 0, 0.18);
-
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-
+    0 8px 30px rgba(0, 0, 0, 0.20);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
   cursor: pointer;
-
   transition:
     background 0.18s ease,
     border-color 0.18s ease,
     transform 0.18s ease;
 }
-
-#upload:hover,
-#plus:hover,
-#plusButton:hover,
-.plusButton:hover,
-.plus-button:hover,
-#microphone:hover,
-#mic:hover,
-#micButton:hover,
-.micButton:hover,
-.mic-button:hover,
-#send:hover,
-#sendButton:hover,
-.sendButton:hover,
-.send-button:hover {
-  background: rgba(255, 255, 255, 0.13);
-  border-color: rgba(255, 255, 255, 0.2);
+.newChat:hover,
+#newChat:hover,
+.new-chat:hover {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.13),
+      rgba(255, 255, 255, 0.055)
+    );
+  border-color: var(--kage-border-hover);
+  transform: translateY(-1px);
 }
-
-#upload:active,
-#plus:active,
-#plusButton:active,
-.plusButton:active,
-.plus-button:active,
-#microphone:active,
-#mic:active,
-#micButton:active,
-.micButton:active,
-.mic-button:active,
-#send:active,
-#sendButton:active,
-.sendButton:active,
-.send-button:active {
+.newChat:active,
+#newChat:active,
+.new-chat:active {
+  transform: scale(0.985);
+}
+/* =========================================================
+   CHAT LIST
+   ========================================================= */
+.chatList,
+#chatList,
+.chats,
+.sidebarChats {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  padding: 3px;
+  scrollbar-width: thin;
+}
+.chatList::-webkit-scrollbar,
+#chatList::-webkit-scrollbar {
+  width: 5px;
+}
+.chatList::-webkit-scrollbar-thumb,
+#chatList::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+}
+/* =========================================================
+   CHAT CARDS — BIG GLASS RECTANGLES
+   ========================================================= */
+.chat-item,
+.chatItem,
+.chat-card,
+.chatButton,
+.sidebar-chat,
+.chat-list-item {
+  width: 100% !important;
+  min-height: 54px !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 15px !important;
+  border: 1px solid rgba(255, 255, 255, 0.085) !important;
+  border-radius: 15px !important;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(255, 255, 255, 0.028)
+    ) !important;
+  color: #eeeeef !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 7px 25px rgba(0, 0, 0, 0.16) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+.chat-item:hover,
+.chatItem:hover,
+.chat-card:hover,
+.chatButton:hover,
+.sidebar-chat:hover,
+.chat-list-item:hover {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.115),
+      rgba(255, 255, 255, 0.045)
+    ) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  transform: translateY(-1px);
+}
+/* =========================================================
+   CHAT AREA
+   ========================================================= */
+.chat {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(255, 255, 255, 0.025),
+      transparent 38%
+    ),
+    #050505;
+}
+/* =========================================================
+   HEADER
+   ========================================================= */
+.chat-header,
+.header,
+.topbar {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(7, 7, 8, 0.66);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+/* =========================================================
+   MESSAGES
+   ========================================================= */
+#messages,
+.messages,
+.messageList {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  padding:
+    28px
+    28px
+    150px
+    28px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+/* =========================================================
+   MESSAGE GLASS CARDS
+   ========================================================= */
+.message,
+.messageBubble,
+.chat-message,
+.message-content,
+.user-message,
+.assistant-message {
+  max-width: min(760px, 88%);
+  padding: 15px 17px;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.065),
+      rgba(255, 255, 255, 0.025)
+    );
+  color: var(--kage-text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 10px 35px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  line-height: 1.55;
+  font-size: 15px;
+}
+/* User messages */
+.user-message {
+  align-self: flex-end;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.105),
+      rgba(255, 255, 255, 0.045)
+    );
+}
+/* Assistant messages */
+.assistant-message {
+  align-self: flex-start;
+}
+/* =========================================================
+   INPUT AREA
+   ========================================================= */
+.inputBar,
+.input-bar,
+.chatInput,
+.chat-input {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  width: min(900px, calc(100% - 30px));
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 21px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(22, 22, 24, 0.86),
+      rgba(12, 12, 14, 0.78)
+    );
+  box-shadow:
+    0 18px 60px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  z-index: 20;
+}
+/* =========================================================
+   TEXT INPUT
+   ========================================================= */
+#messageInput,
+.messageInput,
+.inputBar input,
+.chatInput input {
+  flex: 1;
+  min-width: 0;
+  height: 46px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: white;
+  font-size: 15px;
+  font-family: inherit;
+}
+#messageInput::placeholder,
+.messageInput::placeholder {
+  color: rgba(255, 255, 255, 0.42);
+}
+/* =========================================================
+   GLASS ACTION BUTTONS
+   ========================================================= */
+.inputBar button,
+.chatInput button,
+#upload,
+#send,
+#mic,
+#microphone,
+.upload-button,
+.send-button,
+.mic-button {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.10),
+      rgba(255, 255, 255, 0.035)
+    );
+  color: white;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 5px 20px rgba(0, 0, 0, 0.20);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+.inputBar button:hover,
+.chatInput button:hover,
+#upload:hover,
+#send:hover,
+#mic:hover,
+#microphone:hover {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.16),
+      rgba(255, 255, 255, 0.055)
+    );
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+.inputBar button:active,
+.chatInput button:active {
   transform: scale(0.94);
 }
-
+/* =========================================================
+   PROFILE + INSTALL CONTROLS
+   ========================================================= */
+#profileButton,
+.profile-button,
+#downloadButton,
+.download-button,
+.install-button {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.09),
+      rgba(255, 255, 255, 0.03)
+    );
+  color: white;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  cursor: pointer;
+}
 /* =========================================================
    PROFILE MENU
    ========================================================= */
-
-.profileMenu,
 .profile-menu,
-#profileMenu,
-#profile-menu {
+#profileMenu {
   position: absolute;
-  top: 70px;
-  right: 18px;
-
-  width: 300px;
+  top: 64px;
+  right: 16px;
+  width: min(330px, calc(100vw - 32px));
   padding: 18px;
-
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 20px;
   background:
     linear-gradient(
-      145deg,
-      rgba(28, 28, 30, 0.88),
-      rgba(10, 10, 11, 0.82)
+      135deg,
+      rgba(24, 24, 27, 0.94),
+      rgba(10, 10, 12, 0.91)
     );
-
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 20px;
-
   box-shadow:
-    0 25px 70px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-
+    0 25px 70px rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
-
-  z-index: 1000;
+  z-index: 100;
 }
-
 /* =========================================================
-   SCROLLBARS
+   RESPONSIVE
    ========================================================= */
-
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
-}
-
-*::-webkit-scrollbar {
-  width: 6px;
-}
-
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-*::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.16);
-  border-radius: 999px;
-}
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .sidebar {
-    width: 235px;
-    min-width: 235px;
-    padding: 12px;
+    width: 220px;
+    min-width: 220px;
   }
-
-  #messages {
-    padding: 20px 14px 140px;
+  #messages,
+  .messages,
+  .messageList {
+    padding-left: 16px;
+    padding-right: 16px;
   }
-
   .message,
-  .chatMessage,
-  .chat-message,
   .messageBubble,
-  .message-bubble {
-    max-width: 88%;
-    font-size: 15px;
+  .chat-message {
+    max-width: 94%;
   }
-
+}
+@media (max-width: 600px) {
+  .sidebar {
+    width: 210px;
+    min-width: 210px;
+    padding: 9px;
+  }
   .inputBar,
   .input-bar,
-  .composer,
-  .chatInput,
-  .chat-input {
+  .chatInput {
     width: calc(100% - 18px);
     bottom: 9px;
   }
-}
-
-@media (max-width: 520px) {
-  .sidebar {
-    width: 205px;
-    min-width: 205px;
-  }
-
-  #messages {
-    max-width: 100%;
-  }
-
-  .profileButton,
-  .profile-button,
-  #profileButton,
-  #profile-button {
-    padding: 0 11px;
+  #messages,
+  .messages,
+  .messageList {
+    padding-bottom: 125px;
   }
 }
