@@ -1,212 +1,260 @@
 ```css
-/* Add this CSS to your existing stylesheet or inside a <style> tag */
+/* style.css – KAGE: Pitch-black glassmorphism UI, ChatGPT-inspired layout */
 
-/* === GLOBAL GLASSMORPHISM RESET === */
-* {
+/* ---------- RESET & BASE ---------- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
-body {
-  background: #0a0a0a; /* deep pitch-black background */
-  color: #e0e0e0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  margin: 0;
-  padding: 0;
+:root {
+  --bg-deep: #0a0a0a;
+  --glass-bg: rgba(18, 18, 18, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --text-primary: #ececec;
+  --text-secondary: #9a9a9a;
+  --accent: #ffffff;
+  --blur-amount: 18px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --sidebar-width: 280px;
+  --header-height: 60px;
 }
 
-/* === SIDEBAR === */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ---------- LAYOUT ---------- */
+.app-container {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+}
+
+/* ---------- LEFT SIDEBAR ---------- */
 .sidebar {
-  background: rgba(15, 15, 15, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 4px 0 30px rgba(0, 0, 0, 0.5);
-  padding: 20px 16px;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--blur-amount));
+  -webkit-backdrop-filter: blur(var(--blur-amount));
+  border-right: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  height: 100vh;
-  width: 280px;
+  padding: 20px 14px;
+  gap: 18px;
+  flex-shrink: 0;
+  z-index: 10;
 }
 
-/* === SIDEBAR CHATS (list items) === */
-.sidebar .chat-item {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 12px 16px;
-  color: #ccc;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 4px;
-}
-
-.sidebar .chat-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.12);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.sidebar .chat-item:active {
-  transform: scale(0.98);
-  background: rgba(255, 255, 255, 0.06);
-}
-
-/* === NEW CHAT BUTTON === */
+/* New Chat button – large glass */
 .new-chat-btn {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 14px 16px;
+  cursor: pointer;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 12px 20px;
-  color: #fff;
-  font-weight: 500;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: 100%;
+  transition: background 0.2s ease, border-color 0.2s ease;
   text-align: left;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  width: 100%;
 }
 
 .new-chat-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-}
-
-.new-chat-btn:active {
-  transform: scale(0.97);
-}
-
-/* === DOWNLOAD ICON === */
-.download-icon {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.download-icon:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
-.download-icon:active {
-  transform: scale(0.93);
+/* Chat history list */
+.chat-history {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-/* === PROFILE BUTTON === */
-.profile-btn {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* Rectangular glass chat-history cards */
+.chat-history-item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-history-item:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--text-primary);
+}
+
+/* ---------- MAIN CHAT AREA ---------- */
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: transparent;
+  position: relative;
+}
+
+/* Top-right header: Profile + Download icon */
+.top-header {
+  height: var(--header-height);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.profile-btn,
+.download-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
   border-radius: 50%;
   width: 40px;
   height: 40px;
-  cursor: pointer;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ccc;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: background 0.2s ease;
+  color: var(--text-primary);
+  font-size: 1.2rem;
 }
 
-.profile-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+.profile-btn:hover,
+.download-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
 }
 
-.profile-btn:active {
-  transform: scale(0.93);
+/* Messages container – centered and scrollable */
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* === INPUT BOX (chat input area) === */
-.input-box {
-  background: rgba(20, 20, 20, 0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 14px 18px;
-  color: #fff;
-  font-size: 15px;
-  outline: none;
+.messages-wrapper {
   width: 100%;
-  transition: all 0.2s ease;
+  max-width: 768px;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
-.input-box:focus {
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
-  background: rgba(30, 30, 30, 0.6);
+/* Individual message bubbles – large, readable */
+.message {
+  display: flex;
+  gap: 16px;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-primary);
 }
 
-.input-box::placeholder {
-  color: rgba(255, 255, 255, 0.35);
+.message.user {
+  justify-content: flex-end;
 }
 
-/* === + BUTTON (attach / add) === */
-.plus-btn {
+.message.assistant {
+  justify-content: flex-start;
+}
+
+.message-content {
+  max-width: 85%;
+  padding: 14px 20px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  word-wrap: break-word;
+}
+
+.message.user .message-content {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ---------- BOTTOM INPUT BAR (glass) ---------- */
+.input-bar-container {
+  padding: 0 24px 24px 24px;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.input-bar {
+  width: 100%;
+  max-width: 768px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--blur-amount));
+  -webkit-backdrop-filter: blur(var(--blur-amount));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 10px;
+  box-shadow: var(--glass-shadow);
+}
+
+.input-bar textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  padding: 8px 4px;
+  max-height: 120px;
+}
+
+.input-bar textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+/* Glass action buttons: +, mic, send */
+.action-btn {
   background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border);
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ccc;
-  font-size: 20px;
-}
-
-.plus-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
-}
-
-.plus-btn:active {
-  transform: scale(0.9);
-}
-
-/* === MICROPHONE BUTTON === */
-.mic-btn {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ccc;
-}
-
-.mic-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background
