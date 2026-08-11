@@ -1,203 +1,73 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#0a0a0f" />
-  <link rel="manifest" href="manifest.json" />
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+  <meta
+    name="theme-color"
+    content="#050505"
+  >
+  <meta
+    name="color-scheme"
+    content="dark"
+  >
+  <meta
+    name="mobile-web-app-capable"
+    content="yes"
+  >
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
+  >
+  <meta
+    name="apple-mobile-web-app-title"
+    content="KAGE"
+  >
+  <meta
+    name="application-name"
+    content="KAGE"
+  >
+  <meta
+    name="description"
+    content="KAGE — your personal AI system."
+  >
   <title>KAGE</title>
-  <style>
-    /* ---------- KAGE dark glass UI ---------- */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: #0a0a0f;
-      color: #e0e0e0;
-      height: 100dvh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
-    .app-shell {
-      width: 100%;
-      height: 100%;
-      max-width: 900px;
-      display: flex;
-      flex-direction: column;
-      background: rgba(18, 18, 30, 0.65);
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
-    }
-    @media (min-width: 768px) {
-      .app-shell { border-radius: 32px; height: 92%; }
-    }
-
-    /* header */
-    .top-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-    .logo { font-weight: 600; font-size: 1.3rem; letter-spacing: 0.5px; color: #fff; }
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    /* glass icon buttons */
-    .icon-btn {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      transition: background 0.2s, border-color 0.2s;
-      color: #ccc;
-    }
-    .icon-btn:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.25); color: #fff; }
-    .icon-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-    /* profile button (text + avatar) */
-    .profile-btn {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 40px;
-      padding: 6px 14px 6px 6px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      transition: background 0.2s;
-      color: #ddd;
-      font-size: 0.9rem;
-    }
-    .profile-btn:hover { background: rgba(255,255,255,0.14); }
-    .avatar-circle {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #6b5ce7, #3b82f6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      font-size: 0.8rem;
-      color: white;
-    }
-
-    /* sidebar + chat layout */
-    .main-layout {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-    .sidebar {
-      width: 260px;
-      border-right: 1px solid rgba(255,255,255,0.06);
-      display: flex;
-      flex-direction: column;
-      padding: 16px;
-      background: rgba(0,0,0,0.2);
-      overflow-y: auto;
-    }
-    @media (max-width: 640px) {
-      .sidebar { display: none; }
-    }
-    .chat-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: transparent;
-    }
-    .messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .message {
-      max-width: 80%;
-      padding: 12px 16px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.06);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.05);
-      line-height: 1.5;
-    }
-    .message.user {
-      align-self: flex-end;
-      background: rgba(59,130,246,0.2);
-      border-color: rgba(59,130,246,0.3);
-    }
-
-    /* input bar */
-    .input-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 16px;
-      border-top: 1px solid rgba(255,255,255,0.06);
-      background: rgba(0,0,0,0.25);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
-    .input-bar input {
-      flex: 1;
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 28px;
-      padding: 12px 18px;
-      color: #fff;
-      font-size: 1rem;
-      outline: none;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-    }
-    .input-bar input::placeholder { color: #888; }
-    .action-btn {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 50%;
-      width: 44px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: #ccc;
-      transition: 0.2s;
-    }
-    .action-btn:hover { background: rgba(255,255,255,0.18); color: #fff; }
-    .action-btn svg { width: 20px; height: 20px; }
-    #send-btn { background: #3b82f6; border-color: #3b82f6; color: white; }
-    #send-btn:hover { background: #2563eb; }
-
-    /* hidden file input */
-    #file-upload { display: none; }
-  </style>
+  <!-- PWA -->
+  <link
+    rel="manifest"
+    href="./manifest.json"
+  >
+  <!-- iOS -->
+  <link
+    rel="apple-touch-icon"
+    href="./icons/icon-192.png"
+  >
+  <!-- KAGE UI -->
+  <link
+    rel="stylesheet"
+    href="./style.css"
+  >
 </head>
 <body>
-  <div class="app-shell">
-    <!-- Top bar with download/install icon and profile button -->
-    <header class="top-bar">
-      <span class="logo">KAGE</span>
-      <div class="header-actions">
-        <!-- Download / Install PWA button (connects to kage-inst
+  <!--
+    KAGE mounts its application UI here.
+    main.js remains the application entry point.
+  -->
+  <div id="app"></div>
+  <!--
+    Main KAGE application.
+    Keep this as a module so existing imports/exports work.
+  -->
+  <script
+    type="module"
+    src="./main.js"
+  ></script>
+</body>
+</html>
