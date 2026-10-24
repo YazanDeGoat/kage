@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101010">
+  <meta name="description" content="Kage AI assistant">
+  <title>Kage AI</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><span class="brand-icon">K</span><span>Kage</span></div>
+      <button id="newChat" class="new-chat">＋ New chat</button>
+      <div class="side-label">YOUR CHATS</div>
+      <div id="chatList" class="chat-list"></div>
+      <div class="sidebar-bottom">
+        <button id="deletedButton" class="side-button">Recently deleted</button>
+        <button id="settingsButton" class="side-button">⚙ Settings</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button id="menuButton" class="icon-button" aria-label="Toggle sidebar">☰</button>
+        <div class="top-title">Kage <span class="online-dot"></span></div>
+        <button id="exportButton" class="icon-button" title="Export chats">⇩</button>
+      </header>
+
+      <section id="messages" class="messages">
+        <div id="welcome" class="welcome">
+          <div class="welcome-mark">K</div>
+          <h1>what's on your mind?</h1>
+          <p>ask anything. let's get to work.</p>
+          <div class="suggestions">
+            <button data-prompt="Explain something difficult in simple words.">Explain something</button>
+            <button data-prompt="Help me brainstorm a creative project.">Brainstorm ideas</button>
+            <button data-prompt="Help me write a plan for my goals.">Make a plan</button>
+          </div>
+        </div>
+        <div id="messageList" class="message-list"></div>
+      </section>
+
+      <form id="composer" class="composer">
+        <textarea id="prompt" rows="1" placeholder="Message Kage..." aria-label="Message Kage"></textarea>
+        <div class="composer-bottom">
+          <div class="composer-tools">
+            <label class="tool-button" title="Attach a text file">＋
+              <input type="file" id="fileInput" accept=".txt,.md,.csv,.json,.js,.html,.css,.py" hidden>
+            </label>
+            <button type="button" id="voiceButton" class="tool-button" title="Voice input">🎙</button>
+            <span id="attachmentName" class="attachment-name"></span>
+          </div>
+          <button type="submit" id="sendButton" class="send-button" aria-label="Send message">↑</button>
+        </div>
+      </form>
+      <div class="disclaimer">Kage can make mistakes. Check important information.</div>
+    </main>
+  </div>
+
+  <dialog id="settingsDialog">
+    <form method="dialog" class="dialog-head">
+      <h2>Settings</h2>
+      <button class="icon-button" aria-label="Close settings">✕</button>
+    </form>
+    <div class="dialog-content">
+      <label for="apiUrl">Kage backend URL</label>
+      <input id="apiUrl" type="url" placeholder="https://your-worker.your-subdomain.workers.dev">
+      <p>Your Cloudflare Worker address goes here. It is saved in this browser.</p>
+      <button id="saveSettings" class="primary-button" type="button">Save settings</button>
+      <hr>
+      <p>Chats are stored in your configured Kage database. Export important chats regularly.</p>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
