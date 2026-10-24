@@ -60,7 +60,10 @@ function renderChatList(chats) {
       ${
         showingDeleted
           ? `<button class="chat-action" data-restore="${escapeHTML(chat.id)}" title="Restore">↶</button>`
-          : `<button class="chat-action" data-rename="${escapeHTML(chat.id)}" title="Rename">···</button>`
+        : `
+  <button class="chat-action" data-rename="${escapeHTML(chat.id)}" title="Rename">✎</button>
+  <button class="chat-action" data-delete="${escapeHTML(chat.id)}" title="Move to recently deleted">×</button>
+`
       }
     </div>
   `).join("");
