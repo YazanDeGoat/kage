@@ -1,0 +1,10 @@
+{
+  "name": "Kage AI",
+  "short_name": "Kage",
+  "description": "Your personal AI assistant",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#101010",
+  "theme_color": "#101010",
+  "icons": []
+}
