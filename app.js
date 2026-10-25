@@ -19,13 +19,9 @@ let imageMode = false;
 let busy = false;
 
 function escapeHTML(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[character]);
+  return String(value ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[c]);
 }
 
 function saveLocalCache() {
@@ -36,50 +32,45 @@ function saveLocalCache() {
       savedAt: new Date().toISOString()
     }));
   } catch (error) {
-    console.warn("Kage local cache could not be saved.", error);
+    console.warn("Kage couldn't save its local cache.", error);
   }
 }
 
 function loadLocalCache() {
   try {
-    const cache = JSON.parse(localStorage.getItem(STORAGE.cache) || "{}");
-    if (Array.isArray(cache.currentMessages)) {
-      currentMessages = cache.currentMessages;
-      currentChatId = cache.currentChatId || null;
-      renderMessages();
-    }
+    const data = JSON.parse(localStorage.getItem(STORAGE.cache) || "{}");
+    currentChatId = data.currentChatId || null;
+    currentMessages = Array.isArray(data.currentMessages) ? data.currentMessages : [];
+    renderMessages();
   } catch {
-    // An invalid browser cache must not prevent Kage from opening.
+    currentChatId = null;
+    currentMessages = [];
   }
 }
 
 async function api(path, options = {}) {
-  if (!apiBase) {
-    throw new Error("Open Settings and enter your Kage backend URL first.");
-  }
+  if (!apiBase) throw new Error("Enter your backend URL in Settings.");
 
   const headers = new Headers(options.headers || {});
   headers.set("Content-Type", "application/json");
 
-  if (accessKey) {
-    headers.set("Authorization", `Bearer ${accessKey}`);
-  }
+  if (accessKey) headers.set("Authorization", `Bearer ${accessKey}`);
 
   let response;
 
   try {
-    response = await fetch(
-      apiBase.replace(/\/+$/, "") + path,
-      { ...options, headers }
-    );
+    response = await fetch(apiBase.replace(/\/+$/, "") + path, {
+      ...options,
+      headers
+    });
   } catch {
-    throw new Error("Kage could not reach the backend. Check your connection and backend URL.");
+    throw new Error("Kage couldn't reach its backend. Check the URL and your internet connection.");
   }
 
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(data.error || `Backend request failed (${response.status}).`);
+    throw new Error(data.error || `Request failed (${response.status}).`);
   }
 
   return data;
@@ -90,8 +81,8 @@ function showError(error) {
 }
 
 function titleFrom(text) {
-  const clean = String(text || "").trim().replace(/\s+/g, " ");
-  return clean.length > 42 ? clean.slice(0, 42) + "…" : clean || "New chat";
+  const title = String(text || "").trim().replace(/\s+/g, " ");
+  return title.length > 42 ? title.slice(0, 42) + "…" : title || "New chat";
 }
 
 function setBusy(value) {
@@ -108,19 +99,17 @@ function updateModes() {
 }
 
 async function loadChats() {
-  if (!apiBase) {
+  if (!apiBase || !accessKey) {
     $("chatList").innerHTML =
       '<div class="empty-note">Connect Kage in Settings to load saved chats.</div>';
     return;
   }
 
   try {
-    const query = showingDeleted ? "?deleted=1" : "";
-    const data = await api("/api/chats" + query);
+    const data = await api("/api/chats" + (showingDeleted ? "?deleted=1" : ""));
     renderChatList(data.chats || []);
   } catch (error) {
-    $("chatList").innerHTML =
-      `<div class="empty-note">${escapeHTML(error.message)}</div>`;
+    $("chatList").innerHTML = `<div class="empty-note">${escapeHTML(error.message)}</div>`;
   }
 }
 
@@ -135,12 +124,11 @@ function renderChatList(chats) {
       <button class="chat-select" data-open="${escapeHTML(chat.id)}">
         ${escapeHTML(chat.title || "New chat")}
       </button>
-
       ${
         showingDeleted
-          ? `<button class="chat-action" data-restore="${escapeHTML(chat.id)}" title="Restore chat">↶</button>`
+          ? `<button class="chat-action" data-restore="${escapeHTML(chat.id)}" title="Restore">↶</button>`
           : `
-            <button class="chat-action" data-rename="${escapeHTML(chat.id)}" title="Rename chat">✎</button>
+            <button class="chat-action" data-rename="${escapeHTML(chat.id)}" title="Rename">✎</button>
             <button class="chat-action" data-delete="${escapeHTML(chat.id)}" title="Move to Recently deleted">×</button>
           `
       }
@@ -151,17 +139,13 @@ function renderChatList(chats) {
 async function openChat(id) {
   try {
     const data = await api(`/api/chats/${encodeURIComponent(id)}`);
-
     currentChatId = id;
     currentMessages = data.messages || [];
-
     renderMessages();
     saveLocalCache();
     await loadChats();
 
-    if (window.innerWidth <= 650) {
-      $("sidebar").classList.remove("open");
-    }
+    if (window.innerWidth <= 650) $("sidebar").classList.remove("open");
   } catch (error) {
     showError(error);
   }
@@ -187,12 +171,11 @@ function renderMessages() {
 
   $("messageList").innerHTML = currentMessages.map((message, index) => {
     const role = message.role === "user" ? "user" : "assistant";
-    const content = escapeHTML(message.content || "");
 
     return `
       <article class="message ${role}">
         <div class="message-role">${role === "user" ? "you" : "kage"}</div>
-        <div class="message-content">${content}</div>
+        <div class="message-content">${escapeHTML(message.content || "")}</div>
         <div class="message-actions">
           <button data-copy="${index}">Copy</button>
           ${
@@ -200,7 +183,7 @@ function renderMessages() {
               ? `<button data-edit="${index}">Edit & resend</button>`
               : `<button data-regenerate="${index}">Regenerate</button>`
           }
-          <button data-delete-message="${index}" title="Delete message">Delete</button>
+          <button data-delete-message="${index}">Delete</button>
         </div>
       </article>
     `;
@@ -226,43 +209,49 @@ async function performSearch(query) {
   return data.results || [];
 }
 
-async function generateImage(prompt) {
-  const data = await api("/api/image", {
-    method: "POST",
-    body: JSON.stringify({ prompt })
-  });
+async function generateImage(promptText) {
+  // Open the tab before the asynchronous request to reduce popup blocking.
+  const imageWindow = window.open("about:blank", "_blank");
 
-  if (!data.dataURI) {
-    throw new Error("The image model did not return an image.");
+  try {
+    const data = await api("/api/image", {
+      method: "POST",
+      body: JSON.stringify({ prompt: promptText })
+    });
+
+    if (!data.dataURI) throw new Error("The image model returned no image.");
+
+    if (!imageWindow) {
+      const link = document.createElement("a");
+      link.href = data.dataURI;
+      link.download = "kage-generated-image.jpg";
+      link.click();
+    } else {
+      imageWindow.document.open();
+      imageWindow.document.write(`
+        <!doctype html>
+        <html>
+          <head>
+            <title>Kage generated image</title>
+            <style>
+              body{margin:0;background:#111;color:#eee;font:16px system-ui;text-align:center}
+              img{display:block;max-width:96vw;max-height:85vh;margin:20px auto}
+              a{color:white}
+            </style>
+          </head>
+          <body>
+            <h2>Kage generated image</h2>
+            <img src="${data.dataURI}" alt="Image generated by Kage">
+            <a download="kage-generated-image.jpg" href="${data.dataURI}">Save image</a>
+          </body>
+        </html>
+      `);
+      imageWindow.document.close();
+    }
+  } catch (error) {
+    if (imageWindow && !imageWindow.closed) imageWindow.close();
+    throw error;
   }
-
-  const imageWindow = window.open("", "_blank");
-
-  if (!imageWindow) {
-    const link = document.createElement("a");
-    link.href = data.dataURI;
-    link.download = "kage-generated-image.jpg";
-    link.click();
-    return;
-  }
-
-  imageWindow.document.write(`
-    <!doctype html>
-    <html>
-      <head><title>Kage generated image</title>
-      <style>
-        body{margin:0;background:#111;color:#eee;font:16px system-ui;text-align:center}
-        img{display:block;max-width:96vw;max-height:88vh;margin:20px auto}
-        a{color:white}
-      </style></head>
-      <body>
-        <h2>Kage generated image</h2>
-        <img src="${data.dataURI}" alt="Image generated by Kage">
-        <a download="kage-generated-image.jpg" href="${data.dataURI}">Save image</a>
-      </body>
-    </html>
-  `);
-  imageWindow.document.close();
 }
 
 async function sendMessage(rawText, options = {}) {
@@ -270,16 +259,19 @@ async function sendMessage(rawText, options = {}) {
 
   let text = String(rawText || "").trim();
 
-  if (!text) return;
+  // Regeneration uses the existing conversation and doesn't need new text.
+  if (!text && !options.regenerate && !attachedText) return;
 
   if (!apiBase || !accessKey) {
+    $("apiUrl").value = apiBase;
+    $("accessKey").value = accessKey;
     $("settingsDialog").showModal();
-    alert("Connect your backend and enter your private access key in Settings.");
+    alert("Enter your backend URL and private access key in Settings.");
     return;
   }
 
   if (text.length > 12000) {
-    alert("That message is too long. Keep it under 12,000 characters.");
+    alert("Keep messages under 12,000 characters.");
     return;
   }
 
@@ -288,14 +280,14 @@ async function sendMessage(rawText, options = {}) {
   try {
     if (imageMode && !options.regenerate) {
       await generateImage(text);
-      searchMode = false;
       imageMode = false;
+      searchMode = false;
       updateModes();
       return;
     }
 
-    const firstUserMessage = currentMessages.find((message) => message.role === "user");
-    await ensureChat(firstUserMessage?.content || text);
+    const firstUserMessage = currentMessages.find((item) => item.role === "user");
+    await ensureChat(firstUserMessage?.content || text || "New chat");
 
     if (!options.regenerate) {
       let userText = text;
@@ -304,26 +296,21 @@ async function sendMessage(rawText, options = {}) {
         userText += `\n\nAttached file contents:\n${attachedText}`;
       }
 
-      if (searchMode) {
+      if (searchMode && text) {
         const results = await performSearch(text);
 
         if (results.length) {
-          const searchContext = results.map((result, index) =>
-            `${index + 1}. ${result.title}\n${result.snippet}\n${result.url}`
+          const context = results.map((item, index) =>
+            `${index + 1}. ${item.title}\n${item.snippet}\n${item.url}`
           ).join("\n\n");
 
-          userText += "\n\nSearch results for reference:\n" + searchContext;
+          userText += "\n\nReference search results:\n" + context;
         } else {
-          userText += "\n\nNo search results were returned. Be transparent about that.";
+          userText += "\n\nNo search results were returned. Be transparent about uncertainty.";
         }
       }
 
-      const userMessage = {
-        role: "user",
-        content: userText
-      };
-
-      currentMessages.push(userMessage);
+      currentMessages.push({ role: "user", content: userText });
       renderMessages();
       saveLocalCache();
 
@@ -332,12 +319,16 @@ async function sendMessage(rawText, options = {}) {
       attachedText = "";
     }
 
+    const latestUserMessage = [...currentMessages]
+      .reverse()
+      .find((item) => item.role === "user");
+
     const data = await api("/api/chat", {
       method: "POST",
       body: JSON.stringify({
         chatId: currentChatId,
         regenerate: Boolean(options.regenerate),
-        message: options.regenerate ? "" : currentMessages[currentMessages.length - 1]?.content
+        message: options.regenerate ? "" : latestUserMessage?.content
       })
     });
 
@@ -352,8 +343,6 @@ async function sendMessage(rawText, options = {}) {
   } catch (error) {
     showError(error);
 
-    // Reload from the server so a failed AI request doesn't leave
-    // an unsaved message pretending to have been sent.
     if (currentChatId) {
       try {
         const data = await api(`/api/chats/${encodeURIComponent(currentChatId)}`);
@@ -361,7 +350,7 @@ async function sendMessage(rawText, options = {}) {
         renderMessages();
         saveLocalCache();
       } catch {
-        // Keep the local cache available if the backend is temporarily down.
+        // Keep the local cache if the server is temporarily unreachable.
       }
     }
   } finally {
@@ -372,9 +361,6 @@ async function sendMessage(rawText, options = {}) {
 
 $("composer").addEventListener("submit", (event) => {
   event.preventDefault();
-
-  if (busy) return;
-
   sendMessage($("prompt").value);
 });
 
@@ -410,18 +396,17 @@ $("saveSettings").addEventListener("click", async () => {
   localStorage.setItem(STORAGE.key, accessKey);
 
   $("settingsDialog").close();
-
   await loadChats();
 });
 
 $("clearLocalCache").addEventListener("click", () => {
-  if (confirm("Clear the saved Kage cache in this browser? Server chats will not be deleted.")) {
-    localStorage.removeItem(STORAGE.cache);
-    currentChatId = null;
-    currentMessages = [];
-    renderMessages();
-    $("welcome").hidden = false;
-  }
+  if (!confirm("Clear this browser's Kage cache? Server chats will remain saved.")) return;
+
+  localStorage.removeItem(STORAGE.cache);
+  currentChatId = null;
+  currentMessages = [];
+  renderMessages();
+  $("welcome").hidden = false;
 });
 
 $("deletedButton").addEventListener("click", async () => {
@@ -449,10 +434,7 @@ $("chatList").addEventListener("click", async (event) => {
   const restore = event.target.closest("[data-restore]");
 
   try {
-    if (open) {
-      await openChat(open.dataset.open);
-      return;
-    }
+    if (open) return await openChat(open.dataset.open);
 
     if (rename) {
       const id = rename.dataset.rename;
@@ -460,10 +442,7 @@ $("chatList").addEventListener("click", async (event) => {
       const title = prompt("New chat name:", existing);
 
       if (title === null) return;
-      if (!title.trim()) {
-        alert("Chat name cannot be empty.");
-        return;
-      }
+      if (!title.trim()) return alert("Chat name cannot be empty.");
 
       await api(`/api/chats/${encodeURIComponent(id)}`, {
         method: "PATCH",
@@ -477,11 +456,9 @@ $("chatList").addEventListener("click", async (event) => {
     if (remove) {
       const id = remove.dataset.delete;
 
-      if (!confirm("Move this chat to Recently deleted? You can restore it later.")) return;
+      if (!confirm("Move this chat to Recently deleted?")) return;
 
-      await api(`/api/chats/${encodeURIComponent(id)}`, {
-        method: "DELETE"
-      });
+      await api(`/api/chats/${encodeURIComponent(id)}`, { method: "DELETE" });
 
       if (currentChatId === id) newChat();
       await loadChats();
@@ -509,8 +486,8 @@ $("messageList").addEventListener("click", async (event) => {
 
   try {
     if (copy) {
-      const message = currentMessages[Number(copy.dataset.copy)];
-      await navigator.clipboard.writeText(message.content || "");
+      const item = currentMessages[Number(copy.dataset.copy)];
+      await navigator.clipboard.writeText(item.content || "");
       copy.textContent = "Copied!";
       setTimeout(() => copy.textContent = "Copy", 1000);
       return;
@@ -536,7 +513,6 @@ $("messageList").addEventListener("click", async (event) => {
       renderMessages();
       saveLocalCache();
 
-      // Rebuild the assistant answer from the edited conversation.
       await sendMessage("", { regenerate: true });
       return;
     }
@@ -550,7 +526,7 @@ $("messageList").addEventListener("click", async (event) => {
       const index = Number(remove.dataset.deleteMessage);
       const message = currentMessages[index];
 
-      if (!confirm("Delete this message and all messages after it?")) return;
+      if (!confirm("Delete this message and everything after it?")) return;
 
       await api(
         `/api/chats/${encodeURIComponent(currentChatId)}/messages/${encodeURIComponent(message.id)}`,
@@ -572,7 +548,7 @@ $("fileInput").addEventListener("change", async (event) => {
   if (!file) return;
 
   if (file.size > 100_000) {
-    alert("For this version, text attachments must be under 100 KB.");
+    alert("Text attachments must be under 100 KB in this version.");
     event.target.value = "";
     return;
   }
@@ -581,7 +557,7 @@ $("fileInput").addEventListener("change", async (event) => {
     attachedText = await file.text();
     $("attachmentName").textContent = file.name;
   } catch {
-    alert("Kage couldn't read that file.");
+    alert("Couldn't read that file.");
   }
 
   event.target.value = "";
@@ -591,7 +567,7 @@ $("voiceButton").addEventListener("click", () => {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   if (!SpeechRecognition) {
-    alert("Voice input isn't supported by this browser. Try a supported browser and allow microphone access.");
+    alert("Voice input isn't supported by this browser.");
     return;
   }
 
@@ -600,15 +576,11 @@ $("voiceButton").addEventListener("click", () => {
   recognition.interimResults = false;
 
   recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
-    $("prompt").value += ($("prompt").value ? " " : "") + transcript;
+    $("prompt").value += ($("prompt").value ? " " : "") + event.results[0][0].transcript;
     $("prompt").dispatchEvent(new Event("input"));
   };
 
-  recognition.onerror = () => {
-    alert("Voice input failed. Check microphone permissions.");
-  };
-
+  recognition.onerror = () => alert("Voice input failed. Check microphone permissions.");
   recognition.start();
 });
 
@@ -619,13 +591,13 @@ $("exportButton").addEventListener("click", async () => {
       type: "application/json"
     });
 
-    const url = URL.createObjectURL(blob);
+    const objectUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.href = url;
+    link.href = objectUrl;
     link.download = "kage-chats-backup.json";
     link.click();
 
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
   } catch (error) {
     showError(error);
   }
@@ -640,7 +612,7 @@ document.querySelectorAll("[data-prompt]").forEach((button) => {
 
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   navigator.serviceWorker.register("./sw.js").catch((error) => {
-    console.warn("Kage offline shell was not registered.", error);
+    console.warn("Kage offline shell wasn't registered.", error);
   });
 }
 
