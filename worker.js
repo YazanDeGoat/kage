@@ -1,224 +1,451 @@
-const corsHeaders = {
+"use strict";
+
+const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization"
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Content-Type": "application/json; charset=utf-8"
 };
 
-function json(data, status = 200) {
+function reply(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" }
+    headers: CORS
   });
 }
 
-function newId() {
+function id() {
   return crypto.randomUUID();
+}
+
+function cleanText(value, maxLength = 12000) {
+  return String(value ?? "").trim().slice(0, maxLength);
+}
+
+function isValidId(value) {
+  return /^[a-f0-9-]{36}$/i.test(value);
+}
+
+function authorized(request, env) {
+  const expected = env.KAGE_ACCESS_KEY;
+  const provided = request.headers.get("Authorization") || "";
+
+  if (!expected || expected.length < 16) return false;
+  return provided === `Bearer ${expected}`;
+}
+
+async function getChat(env, chatId, includeDeleted = false) {
+  const sql = includeDeleted
+    ? "SELECT * FROM chats WHERE id = ?"
+    : "SELECT * FROM chats WHERE id = ? AND deleted_at IS NULL";
+
+  return env.DB.prepare(sql).bind(chatId).first();
+}
+
+async function getMessages(env, chatId) {
+  const result = await env.DB.prepare(`
+    SELECT id, role, content, created_at
+    FROM messages
+    WHERE chat_id = ?
+    ORDER BY rowid ASC
+  `).bind(chatId).all();
+
+  return result.results || [];
+}
+
+async function runChatModel(env, messages) {
+  // Try the configured primary model, then a second model if the first
+  // is unavailable on this account. Availability and usage limits vary.
+  try {
+    return await env.AI.run("@cf/zai-org/glm-4.7-flash", {
+      messages,
+      max_tokens: 1400
+    });
+  } catch (firstError) {
+    try {
+      return await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
+        messages,
+        max_tokens: 1200
+      });
+    } catch {
+      throw new Error("No configured chat model completed the request.");
+    }
+  }
 }
 
 export default {
   async fetch(request, env) {
-    if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: corsHeaders });
-    }
-
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, "") || "/";
 
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: CORS });
+    }
+
+    // A public health check reveals no credentials.
+    if (path === "/" && request.method === "GET") {
+      return reply({
+        name: "Kage API",
+        status: "online",
+        authenticatedApi: true
+      });
+    }
+
+    if (!env.DB || !env.AI) {
+      return reply({
+        error: "The Worker is missing its DB or AI binding."
+      }, 503);
+    }
+
+    if (!env.KAGE_ACCESS_KEY || env.KAGE_ACCESS_KEY.length < 16) {
+      return reply({
+        error: "Kage is not configured. Add a KAGE_ACCESS_KEY secret in Cloudflare Worker settings."
+      }, 503);
+    }
+
+    if (!authorized(request, env)) {
+      return reply({
+        error: "Unauthorized. Check the private access key in Kage Settings."
+      }, 401);
+    }
+
     try {
-      if (!env.DB || !env.AI) {
-        return json({ error: "Backend is missing its database or AI binding." }, 500);
-      }
-
-      // Health check
-      if (path === "/" && request.method === "GET") {
-        return json({ name: "Kage API", status: "online" });
-      }
-
-      // List chats, recoverable deleted chats, or export
+      // List chats, recently deleted chats, or export all conversations.
       if (path === "/api/chats" && request.method === "GET") {
-        const includeDeleted = url.searchParams.get("deleted") === "1";
+        const deleted = url.searchParams.get("deleted") === "1";
         const exportAll = url.searchParams.get("export") === "1";
 
-        let sql = "SELECT * FROM chats";
+        let sql = "SELECT id, title, created_at, updated_at, deleted_at FROM chats";
+
         if (!exportAll) {
-          sql += includeDeleted
+          sql += deleted
             ? " WHERE deleted_at IS NOT NULL"
             : " WHERE deleted_at IS NULL";
         }
+
         sql += " ORDER BY updated_at DESC";
 
-        const { results: chats } = await env.DB.prepare(sql).all();
+        const result = await env.DB.prepare(sql).all();
+        const chats = result.results || [];
 
         if (exportAll) {
           for (const chat of chats) {
-            const result = await env.DB.prepare(
-              "SELECT role, content, created_at FROM messages WHERE chat_id = ? ORDER BY created_at ASC"
-            ).bind(chat.id).all();
-            chat.messages = result.results;
+            chat.messages = await getMessages(env, chat.id);
           }
         }
 
-        return json({ chats });
+        return reply({ chats });
       }
 
-      // Create a chat
+      // Create a new conversation.
       if (path === "/api/chats" && request.method === "POST") {
         const body = await request.json();
-        const id = newId();
-        const title = String(body.title || "New chat").slice(0, 100);
+        const chatId = id();
+        const title = cleanText(body.title || "New chat", 100) || "New chat";
 
         await env.DB.prepare(
           "INSERT INTO chats (id, title) VALUES (?, ?)"
-        ).bind(id, title).run();
+        ).bind(chatId, title).run();
 
-        const chat = await env.DB.prepare(
-          "SELECT * FROM chats WHERE id = ?"
-        ).bind(id).first();
-
-        return json({ chat }, 201);
+        return reply({
+          chat: await getChat(env, chatId)
+        }, 201);
       }
 
-      // Routes for one chat
-      const chatMatch = path.match(/^\/api\/chats\/([a-f0-9-]+)$/i);
+      // Create or update a chat title, read a chat, or soft-delete it.
+      const chatMatch = path.match(/^\/api\/chats\/([a-f0-9-]{36})$/i);
 
       if (chatMatch) {
-        const id = chatMatch[1];
+        const chatId = chatMatch[1];
 
         if (request.method === "GET") {
-          const chat = await env.DB.prepare(
-            "SELECT * FROM chats WHERE id = ? AND deleted_at IS NULL"
-          ).bind(id).first();
+          const chat = await getChat(env, chatId);
 
-          if (!chat) return json({ error: "Chat not found." }, 404);
+          if (!chat) return reply({ error: "Chat not found." }, 404);
 
-          const { results: messages } = await env.DB.prepare(
-            "SELECT id, role, content, created_at FROM messages WHERE chat_id = ? ORDER BY created_at ASC"
-          ).bind(id).all();
-
-          return json({ chat, messages });
+          return reply({
+            chat,
+            messages: await getMessages(env, chatId)
+          });
         }
 
         if (request.method === "PATCH") {
           const body = await request.json();
-          const title = String(body.title || "").trim().slice(0, 100);
-          if (!title) return json({ error: "A chat name is required." }, 400);
+          const title = cleanText(body.title, 100);
+
+          if (!title) return reply({ error: "Enter a chat name." }, 400);
+
+          const chat = await getChat(env, chatId);
+          if (!chat) return reply({ error: "Chat not found." }, 404);
+
+          await env.DB.prepare(`
+            UPDATE chats
+            SET title = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ? AND deleted_at IS NULL
+          `).bind(title, chatId).run();
+
+          return reply({ ok: true });
+        }
+
+        if (request.method === "DELETE") {
+          const chat = await getChat(env, chatId);
+          if (!chat) return reply({ error: "Chat not found." }, 404);
+
+          await env.DB.prepare(`
+            UPDATE chats
+            SET deleted_at = CURRENT_TIMESTAMP,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+          `).bind(chatId).run();
+
+          return reply({ ok: true, recoverable: true });
+        }
+      }
+
+      // Restore a soft-deleted conversation.
+      const restoreMatch = path.match(
+        /^\/api\/chats\/([a-f0-9-]{36})\/restore$/i
+      );
+
+      if (restoreMatch && request.method === "POST") {
+        const chatId = restoreMatch[1];
+
+        await env.DB.prepare(`
+          UPDATE chats
+          SET deleted_at = NULL, updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+        `).bind(chatId).run();
+
+        return reply({ ok: true });
+      }
+
+      // Edit a message and remove later messages, so the conversation
+      // can continue from the edited point.
+      const messageMatch = path.match(
+        /^\/api\/chats\/([a-f0-9-]{36})\/messages\/([a-f0-9-]{36})$/i
+      );
+
+      if (messageMatch) {
+        const chatId = messageMatch[1];
+        const messageId = messageMatch[2];
+        const chat = await getChat(env, chatId);
+
+        if (!chat) return reply({ error: "Chat not found." }, 404);
+
+        const message = await env.DB.prepare(`
+          SELECT id, role, content, rowid AS row_number
+          FROM messages
+          WHERE id = ? AND chat_id = ?
+        `).bind(messageId, chatId).first();
+
+        if (!message) return reply({ error: "Message not found." }, 404);
+
+        if (request.method === "PATCH") {
+          const body = await request.json();
+          const content = cleanText(body.content, 12000);
+
+          if (!content) return reply({ error: "Message cannot be empty." }, 400);
+          if (message.role !== "user") {
+            return reply({ error: "Only user messages can be edited." }, 400);
+          }
 
           await env.DB.prepare(
-            "UPDATE chats SET title = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND deleted_at IS NULL"
-          ).bind(title, id).run();
+            "UPDATE messages SET content = ? WHERE id = ? AND chat_id = ?"
+          ).bind(content, messageId, chatId).run();
 
-          return json({ ok: true });
+          await env.DB.prepare(
+            "DELETE FROM messages WHERE chat_id = ? AND rowid > ?"
+          ).bind(chatId, message.row_number).run();
+
+          await env.DB.prepare(
+            "UPDATE chats SET updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+          ).bind(chatId).run();
+
+          return reply({
+            ok: true,
+            messages: await getMessages(env, chatId)
+          });
         }
 
         if (request.method === "DELETE") {
           await env.DB.prepare(
-            "UPDATE chats SET deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND deleted_at IS NULL"
-          ).bind(id).run();
+            "DELETE FROM messages WHERE chat_id = ? AND rowid >= ?"
+          ).bind(chatId, message.row_number).run();
 
-          return json({ ok: true, recoverable: true });
-        }
-      }
-
-      // Restore a soft-deleted chat
-      const restoreMatch = path.match(/^\/api\/chats\/([a-f0-9-]+)\/restore$/i);
-      if (restoreMatch && request.method === "POST") {
-        await env.DB.prepare(
-          "UPDATE chats SET deleted_at = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
-        ).bind(restoreMatch[1]).run();
-
-        return json({ ok: true });
-      }
-
-      // Send a message and get a real AI response
-      if (path === "/api/chat" && request.method === "POST") {
-        const body = await request.json();
-        const chatId = String(body.chatId || "");
-        const message = String(body.message || "").trim();
-
-        if (!chatId || !message) {
-          return json({ error: "A chat ID and message are required." }, 400);
-        }
-        if (message.length > 12000) {
-          return json({ error: "Message is too long. Limit: 12,000 characters." }, 400);
-        }
-
-        const chat = await env.DB.prepare(
-          "SELECT * FROM chats WHERE id = ? AND deleted_at IS NULL"
-        ).bind(chatId).first();
-
-        if (!chat) return json({ error: "Chat not found." }, 404);
-
-        const messageId = newId();
-        await env.DB.prepare(
-          "INSERT INTO messages (id, chat_id, role, content) VALUES (?, ?, 'user', ?)"
-        ).bind(messageId, chatId, message).run();
-
-        // Automatically name the chat from the first message.
-        if (!chat.title || chat.title === "New chat") {
-          await env.DB.prepare(
-            "UPDATE chats SET title = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
-          ).bind(message.slice(0, 36), chatId).run();
-        } else {
           await env.DB.prepare(
             "UPDATE chats SET updated_at = CURRENT_TIMESTAMP WHERE id = ?"
           ).bind(chatId).run();
+
+          return reply({
+            ok: true,
+            messages: await getMessages(env, chatId)
+          });
+        }
+      }
+
+      // Chat completion. For regeneration, use the existing last user
+      // message instead of inserting a duplicate.
+      if (path === "/api/chat" && request.method === "POST") {
+        const body = await request.json();
+        const chatId = cleanText(body.chatId, 36);
+        const regenerate = body.regenerate === true;
+        const messageText = cleanText(body.message, 12000);
+
+        if (!isValidId(chatId)) {
+          return reply({ error: "Invalid chat ID." }, 400);
         }
 
-        // Use recent conversation history as context.
-        const { results: history } = await env.DB.prepare(
-          "SELECT role, content FROM messages WHERE chat_id = ? ORDER BY created_at DESC LIMIT 24"
-        ).bind(chatId).all();
+        if (!regenerate && !messageText) {
+          return reply({ error: "Enter a message." }, 400);
+        }
 
-        const messages = [
+        const chat = await getChat(env, chatId);
+        if (!chat) return reply({ error: "Chat not found." }, 404);
+
+        if (!regenerate) {
+          await env.DB.prepare(`
+            INSERT INTO messages (id, chat_id, role, content)
+            VALUES (?, ?, 'user', ?)
+          `).bind(id(), chatId, messageText).run();
+
+          if (!chat.title || chat.title === "New chat") {
+            await env.DB.prepare(`
+              UPDATE chats
+              SET title = ?, updated_at = CURRENT_TIMESTAMP
+              WHERE id = ?
+            `).bind(messageText.slice(0, 42), chatId).run();
+          }
+        } else {
+          const lastUser = await env.DB.prepare(`
+            SELECT rowid AS row_number
+            FROM messages
+            WHERE chat_id = ? AND role = 'user'
+            ORDER BY rowid DESC
+            LIMIT 1
+          `).bind(chatId).first();
+
+          if (!lastUser) {
+            return reply({ error: "There is no user message to regenerate." }, 400);
+          }
+
+          await env.DB.prepare(`
+            DELETE FROM messages
+            WHERE chat_id = ? AND rowid > ?
+          `).bind(chatId, lastUser.row_number).run();
+        }
+
+        const messagesInDb = await getMessages(env, chatId);
+
+        const history = [
           {
             role: "system",
-            content: "You are Kage, a helpful AI assistant. Be clear, honest, and direct. Never claim to have performed actions you have not performed."
+            content:
+              "You are Kage, a helpful AI assistant. Be direct, thoughtful, and honest. " +
+              "Do not claim to browse, generate files, or perform actions unless the tools actually did so. " +
+              "If search context is provided by the user, use it carefully and state uncertainty when needed."
           },
-          ...history.reverse().map((item) => ({
+          ...messagesInDb.slice(-24).map((item) => ({
             role: item.role,
             content: item.content
           }))
         ];
 
-        let result;
+        let modelResult;
+
         try {
-          result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
-            messages,
-            max_tokens: 1200
-          });
-        } catch (error) {
-          // Do not leave a failed request pretending it succeeded.
-          await env.DB.prepare(
-            "DELETE FROM messages WHERE id = ?"
-          ).bind(messageId).run();
-          return json({
-            error: "The AI request failed. Check your Cloudflare Workers AI access and usage limits."
+          modelResult = await runChatModel(env, history);
+        } catch {
+          return reply({
+            error: "The AI model request failed. Check Workers AI availability and account usage."
           }, 502);
         }
 
-        const reply = String(result?.response || "").trim();
-        if (!reply) {
-          return json({ error: "The AI returned an empty response. Try again." }, 502);
+        const answer = cleanText(modelResult?.response, 20000);
+
+        if (!answer) {
+          return reply({ error: "The AI model returned an empty response." }, 502);
         }
 
-        await env.DB.prepare(
-          "INSERT INTO messages (id, chat_id, role, content) VALUES (?, ?, 'assistant', ?)"
-        ).bind(newId(), chatId, reply).run();
+        await env.DB.prepare(`
+          INSERT INTO messages (id, chat_id, role, content)
+          VALUES (?, ?, 'assistant', ?)
+        `).bind(id(), chatId, answer).run();
 
         await env.DB.prepare(
           "UPDATE chats SET updated_at = CURRENT_TIMESTAMP WHERE id = ?"
         ).bind(chatId).run();
 
-        const { results: savedMessages } = await env.DB.prepare(
-          "SELECT id, role, content, created_at FROM messages WHERE chat_id = ? ORDER BY created_at ASC"
-        ).bind(chatId).all();
-
-        return json({ reply, messages: savedMessages });
+        return reply({
+          reply: answer,
+          messages: await getMessages(env, chatId)
+        });
       }
 
-      return json({ error: "Route not found." }, 404);
+      // Encyclopedia search via Wikipedia's public API.
+      // This is useful reference search, not a general-purpose web index.
+      if (path === "/api/search" && request.method === "GET") {
+        const query = cleanText(url.searchParams.get("q"), 180);
+
+        if (!query) return reply({ error: "Enter a search query." }, 400);
+
+        const searchUrl = new URL("https://en.wikipedia.org/w/api.php");
+        searchUrl.searchParams.set("action", "query");
+        searchUrl.searchParams.set("list", "search");
+        searchUrl.searchParams.set("srsearch", query);
+        searchUrl.searchParams.set("format", "json");
+        searchUrl.searchParams.set("utf8", "1");
+        searchUrl.searchParams.set("srlimit", "5");
+
+        const response = await fetch(searchUrl.toString(), {
+          headers: { "User-Agent": "KageAI/1.0 (personal assistant)" }
+        });
+
+        if (!response.ok) {
+          return reply({ error: "Search service is temporarily unavailable." }, 502);
+        }
+
+        const data = await response.json();
+        const results = (data.query?.search || []).map((item) => ({
+          title: item.title,
+          snippet: String(item.snippet || "").replace(/<[^>]*>/g, ""),
+          url: "https://en.wikipedia.org/wiki/" +
+            encodeURIComponent(item.title.replace(/ /g, "_"))
+        }));
+
+        return reply({ results });
+      }
+
+      // Image generation using Cloudflare Workers AI.
+      if (path === "/api/image" && request.method === "POST") {
+        const body = await request.json();
+        const prompt = cleanText(body.prompt, 2048);
+
+        if (!prompt) return reply({ error: "Describe the image you want." }, 400);
+
+        try {
+          const result = await env.AI.run(
+            "@cf/black-forest-labs/flux-1-schnell",
+            { prompt, steps: 4 }
+          );
+
+          if (!result?.image) {
+            return reply({ error: "The image model returned no image." }, 502);
+          }
+
+          return reply({
+            dataURI: `data:image/jpeg;base64,${result.image}`
+          });
+        } catch {
+          return reply({
+            error: "Image generation failed. Check model availability and your account's AI usage."
+          }, 502);
+        }
+      }
+
+      return reply({ error: "Route not found." }, 404);
     } catch (error) {
-      return json({ error: "Server error. Check the Worker logs for details." }, 500);
+      console.error("Kage API error:", error);
+      return reply({ error: "The backend encountered an error. Check Cloudflare Worker logs." }, 500);
     }
   }
 };
