@@ -1,11 +1,11 @@
 name = "kage-api"
 main = "worker.js"
-compatibility_date = "2026-10-24"
+compatibility_date = "2026-10-25"
+
+[ai]
+binding = "AI"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "kage-db"
-database_id = "YOUR_DATABASE_ID"
-
-[ai]
-binding = "AI"
+database_id = "REPLACE_WITH_YOUR_ACTUAL_D1_DATABASE_ID"
