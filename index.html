@@ -12,10 +12,16 @@
 <body>
   <div class="app">
     <aside class="sidebar" id="sidebar">
-      <div class="brand"><span class="brand-icon">K</span><span>Kage</span></div>
+      <div class="brand">
+        <span class="brand-icon">K</span>
+        <span>Kage</span>
+      </div>
+
       <button id="newChat" class="new-chat">＋ New chat</button>
+
       <div class="side-label">YOUR CHATS</div>
       <div id="chatList" class="chat-list"></div>
+
       <div class="sidebar-bottom">
         <button id="deletedButton" class="side-button">Recently deleted</button>
         <button id="settingsButton" class="side-button">⚙ Settings</button>
@@ -35,28 +41,39 @@
           <h1>what's on your mind?</h1>
           <p>ask anything. let's get to work.</p>
           <div class="suggestions">
-            <button data-prompt="Explain something difficult in simple words.">Explain something</button>
+            <button data-prompt="Explain a difficult topic in simple words.">Explain something</button>
             <button data-prompt="Help me brainstorm a creative project.">Brainstorm ideas</button>
-            <button data-prompt="Help me write a plan for my goals.">Make a plan</button>
+            <button data-prompt="Help me organize my goals into a practical plan.">Make a plan</button>
           </div>
         </div>
+
         <div id="messageList" class="message-list"></div>
       </section>
 
       <form id="composer" class="composer">
         <textarea id="prompt" rows="1" placeholder="Message Kage..." aria-label="Message Kage"></textarea>
+
         <div class="composer-bottom">
           <div class="composer-tools">
             <label class="tool-button" title="Attach a text file">＋
-              <input type="file" id="fileInput" accept=".txt,.md,.csv,.json,.js,.html,.css,.py" hidden>
+              <input type="file" id="fileInput"
+                accept=".txt,.md,.csv,.json,.js,.html,.css,.py,.xml,.yaml,.yml"
+                hidden>
             </label>
+
             <button type="button" id="voiceButton" class="tool-button" title="Voice input">🎙</button>
+            <button type="button" id="searchButton" class="tool-button" aria-pressed="false">⌕ Search</button>
+            <button type="button" id="imageButton" class="tool-button" aria-pressed="false">▧ Image</button>
             <span id="attachmentName" class="attachment-name"></span>
           </div>
+
           <button type="submit" id="sendButton" class="send-button" aria-label="Send message">↑</button>
         </div>
       </form>
-      <div class="disclaimer">Kage can make mistakes. Check important information.</div>
+
+      <div class="disclaimer">
+        Kage can make mistakes. Check important information.
+      </div>
     </main>
   </div>
 
@@ -65,13 +82,26 @@
       <h2>Settings</h2>
       <button class="icon-button" aria-label="Close settings">✕</button>
     </form>
+
     <div class="dialog-content">
-      <label for="apiUrl">Kage backend URL</label>
-      <input id="apiUrl" type="url" placeholder="https://your-worker.your-subdomain.workers.dev">
-      <p>Your Cloudflare Worker address goes here. It is saved in this browser.</p>
+      <label for="apiUrl">Backend URL</label>
+      <input id="apiUrl" type="url" placeholder="https://your-worker.workers.dev">
+
+      <label for="accessKey" class="settings-label">Private access key</label>
+      <input id="accessKey" type="password" autocomplete="off"
+        placeholder="Your Cloudflare Worker access key">
+
+      <p>The backend URL and access key are saved in this browser only. Never put your access key in GitHub code.</p>
+
       <button id="saveSettings" class="primary-button" type="button">Save settings</button>
+
       <hr>
-      <p>Chats are stored in your configured Kage database. Export important chats regularly.</p>
+
+      <button id="clearLocalCache" class="side-button" type="button">
+        Clear this browser's Kage cache
+      </button>
+
+      <p>Clearing the local cache does not delete the server database. Export important chats regularly.</p>
     </div>
   </dialog>
 
