@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101010">
+<title>Kage AI</title>
+
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #101010;
+  --panel: #171717;
+  --panel2: #202020;
+  --border: #2b2b2b;
+  --text: #f3f3f3;
+  --muted: #929292;
+  --accent: #d9d9d9;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.6 system-ui, -apple-system, sans-serif;
+}
+
+button, textarea, input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  color: var(--text);
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 12px;
+}
+
+button:hover { background: #303030; }
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+#app {
+  display: flex;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+#sidebar {
+  width: 270px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background: #141414;
+  border-right: 1px solid var(--border);
+}
+
+.brand {
+  font-size: 23px;
+  font-weight: 750;
+  letter-spacing: -1px;
+  padding: 8px 4px 20px;
+}
+
+#newChat { width: 100%; }
+
+.sidebarLabel {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 24px 4px 10px;
+}
+
+#chatList {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.chatItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.chatSelect {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chatSelect.active { background: #292929; }
+
+.chatMore {
+  padding: 5px 9px;
+  background: transparent;
+  border: 0;
+}
+
+.sidebarBottom {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.sidebarBottom button { text-align: left; }
+
+#main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#topbar {
+  min-height: 60px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#topTitle {
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#status {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 18px;
+  scroll-behavior: smooth;
+}
+
+.message {
+  max-width: 790px;
+  margin: 0 auto 28px;
+}
+
+.role {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.content {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.8;
+}
+
+.content a {
+  color: #b9d6ff;
+  text-decoration: underline;
+}
+
+.messageActions {
+  display: flex;
+  gap: 7px;
+  margin-top: 9px;
+  flex-wrap: wrap;
+}
+
+.messageActions button {
+  font-size: 12px;
+  padding: 5px 9px;
+  color: var(--muted);
+}
+
+#empty {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--muted);
+}
+
+#empty h1 {
+  font-size: clamp(32px, 6vw, 48px);
+  letter-spacing: -2px;
+  color: var(--text);
+  margin: 0;
+}
+
+#empty p { margin-top: 6px; }
+
+#composerArea {
+  padding: 10px 18px 16px;
+}
+
+#composerBox {
+  max-width: 820px;
+  margin: auto;
+  border: 1px solid #383838;
+  background: var(--panel);
+  border-radius: 20px;
+  padding: 12px;
+}
+
+#attachmentInfo {
+  color: var(--muted);
+  font-size: 12px;
+  padding: 0 6px 8px;
+  overflow-wrap: anywhere;
+}
+
+#composer {
+  width: 100%;
+  resize: none;
+  max-height: 200px;
+  min-height: 48px;
+  background: transparent;
+  color: var(--text);
+  border: 0;
+  outline: 0;
+  padding: 10px 7px;
+}
+
+#composer::placeholder { color: #858585; }
+
+#composerControls {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+#send {
+  margin-left: auto;
+  background: #f0f0f0;
+  color: #111;
+  font-weight: 700;
+  min-width: 68px;
+}
+
+#searchToggle {
+  font-size: 12px;
+}
+
+#searchToggle[aria-pressed="true"] {
+  border-color: #aaa;
+  background: #343434;
+}
+
+#fileInput { display: none; }
+
+#notice {
+  max-width: 820px;
+  margin: 8px auto 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+#mobileMenu { display: none; }
+
+@media (max-width: 650px) {
+  #sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 5;
+    transform: translateX(-100%);
+    transition: transform .2s;
+    box-shadow: 10px 0 35px #0008;
+  }
+
+  #sidebar.open { transform: translateX(0); }
+  #mobileMenu { display: inline-block; }
+  #topbar { padding: 10px 12px; }
+  #messages { padding: 22px 14px; }
+  #composerArea { padding: 8px 10px 12px; }
+}
+</style>
+</head>
+
+<body>
+<div id="app">
+
+  <aside id="sidebar">
+    <div class="brand">kage<span style="color:#888">.</span></div>
+
+    <button id="newChat">＋ New chat</button>
+
+    <div class="sidebarLabel">YOUR CONVERSATIONS</div>
+    <div id="chatList"></div>
+
+    <div class="sidebarBottom">
+      <button id="exportChats">Export chat backup</button>
+      <button id="importButton">Import chat backup</button>
+      <input id="importInput" type="file" accept=".json,application/json">
+      <button id="clearChats">Delete all chats</button>
+      <button id="aboutButton">About Kage</button>
+    </div>
+  </aside>
+
+  <main id="main">
+    <header id="topbar">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <button id="mobileMenu" aria-label="Open menu">☰</button>
+        <div id="topTitle">New chat</div>
+      </div>
+      <div id="status">Connecting…</div>
+    </header>
+
+    <section id="messages">
+      <div id="empty">
+        <h1>kage.</h1>
+        <p>what's on your mind?</p>
+      </div>
+    </section>
+
+    <section id="composerArea">
+      <div id="composerBox">
+        <div id="attachmentInfo"></div>
+
+        <textarea
+          id="composer"
+          rows="1"
+          maxlength="12000"
+          placeholder="Message Kage…"
+          aria-label="Message Kage"
+        ></textarea>
+
+        <div id="composerControls">
+          <button id="attachButton" aria-label="Attach a text file">＋ File</button>
+          <input
+            id="fileInput"
+            type="file"
+            accept=".txt,.md,.csv,.json,.html,.css,.js,.py,.log"
+          >
+
+          <button id="voiceButton" aria-label="Voice input">🎙</button>
+          <button id="searchToggle" aria-pressed="false">⌕ Web search</button>
+          <button id="speakButton">Read aloud</button>
+          <button id="send">Send ↑</button>
+        </div>
+      </div>
+
+      <div id="notice">
+        Chats save in this browser. Export backups regularly to preserve them.
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const $ = id => document.getElementById(id);
+  const STORAGE_KEY = "kage.chats.v1";
+  const ACTIVE_KEY = "kage.active.v1";
+
+  let chats = loadChats();
+  let activeId = localStorage.getItem(ACTIVE_KEY);
+  let busy = false;
+  let attachedText = "";
+  let attachedName = "";
+  let searchEnabled = false;
+  let latestAssistantText = "";
+
+  function makeId() {
+    return crypto.randomUUID
+      ? crypto.randomUUID()
+      : Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+
+  function loadChats() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveChats() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+      localStorage.setItem(ACTIVE_KEY, activeId || "");
+      $("status").textContent = "Saved in this browser";
+      return true;
+    } catch {
+      $("status").textContent = "Storage full: export a backup";
+      return false;
+    }
+  }
+
+  function currentChat() {
+    return chats.find(chat => chat.id === activeId);
+  }
+
+  function createChat() {
+    const chat = {
+      id: makeId(),
+      title: "New chat",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      messages: []
+    };
+
+    chats.unshift(chat);
+    activeId = chat.id;
+    saveChats();
+    renderAll();
+    $("composer").focus();
+    $("sidebar").classList.remove("open");
+  }
+
+  function safeText(value) {
+    return String(value ?? "");
+  }
+
+  function addTextWithLinks(element, text) {
+    const parts = safeText(text).split(/(https?:\/\/[^\s<>"']+)/g);
+
+    for (const part of parts) {
+      if (/^https?:\/\//i.test(part)) {
+        try {
+          const url = new URL(part);
+          if (url.protocol === "http:" || url.protocol === "https:") {
+            const a = document.createElement("a");
+            a.href = url.href;
+            a.textContent = part;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            element.appendChild(a);
+            continue;
+          }
+        } catch {}
+      }
+
+      element.appendChild(document.createTextNode(part));
+    }
+  }
+
+  function renderMessages() {
+    const box = $("messages");
+    box.replaceChildren();
+
+    const chat = currentChat();
+
+    if (!chat || !chat.messages.length) {
+      const empty = document.createElement("div");
+      empty.id = "empty";
+
+      const heading = document.createElement("h1");
+      heading.textContent = "kage.";
+
+      const p = document.createElement("p");
+      p.textContent = "what's on your mind?";
+
+      empty.append(heading, p);
+      box.appendChild(empty);
+      return;
+    }
+
+    chat.messages.forEach((message, index) => {
+      const article = document.createElement("article");
+      article.className = "message";
+
+      const role = document.createElement("div");
+      role.className = "role";
+      role.textContent =
+        message.role === "user" ? "YOU" : "KAGE";
+
+      const content = document.createElement("div");
+      content.className = "content";
+      addTextWithLinks(content, message.content);
+
+      article.append(role, content);
+
+      const actions = document.createElement("div");
+      actions.className = "messageActions";
+
+      const copy = document.createElement("button");
+      copy.textContent = "Copy";
+      copy.onclick = () => {
+        navigator.clipboard.writeText(message.content)
+          .then(() => $("status").textContent = "Copied")
+          .catch(() => $("status").textContent = "Copy unavailable");
+      };
+      actions.appendChild(copy);
+
+      if (message.role === "user") {
+        const edit = document.createElement("button");
+        edit.textContent = "Edit & resend";
+        edit.onclick = () => editMessage(index);
+        actions.appendChild(edit);
+      }
+
+      if (
+        message.role === "assistant" &&
+        index === chat.messages.length - 1
+      ) {
+        const regenerate = document.createElement("button");
+        regenerate.textContent = "Regenerate";
+        regenerate.onclick = () => regenerateLast();
+        actions.appendChild(regenerate);
+      }
+
+      article.appendChild(actions);
+      box.appendChild(article);
+    });
+
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function renderChats() {
+    const list = $("chatList");
+    list.replaceChildren();
+
+    for (const chat of chats) {
+      const row = document.createElement("div");
+      row.className = "chatItem";
+
+      const select = document.createElement("button");
+      select.className =
+        "chatSelect" + (chat.id === activeId ? " active" : "");
+      select.textContent = chat.title || "New chat";
+      select.title = chat.title || "New chat";
+
+      select.onclick = () => {
+        activeId = chat.id;
+        saveChats();
+        renderAll();
+        $("sidebar").classList.remove("open");
+      };
+
+      const more = document.createElement("button");
+      more.className = "chatMore";
+      more.textContent = "⋯";
+      more.title = "Chat options";
+
+      more.onclick = () => {
+        const choice = prompt(
+          "Type R to rename, D to delete, or cancel.",
+          "R"
+        );
+
+        if (!choice) return;
+
+        if (choice.toUpperCase() === "R") {
+          const title = prompt("New chat name:", chat.title);
+
+          if (title && title.trim()) {
+            chat.title = title.trim().slice(0, 100);
+            saveChats();
+            renderAll();
+          }
+        } else if (choice.toUpperCase() === "D") {
+          if (confirm("Delete this conversation?")) {
+            chats = chats.filter(item => item.id !== chat.id);
+
+            if (activeId === chat.id) {
+              activeId = chats[0]?.id || null;
+            }
+
+            saveChats();
+            renderAll();
+          }
+        }
+      };
+
+      row.append(select, more);
+      list.appendChild(row);
+    }
+  }
+
+  function renderAll() {
+    const chat = currentChat();
+    $("topTitle").textContent = chat?.title || "New chat";
+    renderChats();
+    renderMessages();
+  }
+
+  function setBusy(value) {
+    busy = value;
+    $("send").disabled = value;
+    $("send").textContent = value ? "Thinking…" : "Send ↑";
+  }
+
+  async function sendMessage(text, regenerate = false) {
+    if (busy) return;
+
+    text = text.trim();
+    if (!text && !regenerate) return;
+
+    if (!currentChat()) createChat();
+
+    const chat = currentChat();
+
+    if (regenerate) {
+      if (chat.messages.at(-1)?.role === "assistant") {
+        chat.messages.pop();
+      }
+    } else {
+      let userText = text;
+
+      if (attachedText) {
+        userText +=
+          "\n\nAttached file (" + attachedName + "):\n" +
+          attachedText;
+      }
+
+      chat.messages.push({
+        role: "user",
+        content: userText,
+        createdAt: Date.now()
+      });
+
+      if (chat.title === "New chat") {
+        chat.title = text.slice(0, 45) || "File question";
+      }
+
+      attachedText = "";
+      attachedName = "";
+      $("attachmentInfo").textContent = "";
+      $("composer").value = "";
+      $("composer").style.height = "48px";
+    }
+
+    chat.updatedAt = Date.now();
+
+    const userMessages = chat.messages
+      .filter(m => ["user", "assistant"].includes(m.role))
+      .map(m => ({ role: m.role, content: m.content }))
+      .slice(-24);
+
+    const assistant = {
+      role: "assistant",
+      content: "",
+      createdAt: Date.now()
+    };
+
+    chat.messages.push(assistant);
+
+    saveChats();
+    renderAll();
+    setBusy(true);
+
+    $("status").textContent = searchEnabled
+      ? "Searching and thinking…"
+      : "Thinking…";
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: userMessages,
+          search: searchEnabled
+        })
+      });
+
+      if (!response.ok) {
+        let message = "The AI request failed.";
+
+        try {
+          const data = await response.json();
+          message = data.error || message;
+        } catch {}
+
+        throw new Error(message);
+      }
+
+      if (!response.body) {
+        throw new Error("The AI service returned no response stream.");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        const events = buffer.split("\n\n");
+        buffer = events.pop() || "";
+
+        for (const event of events) {
+          for (const line of event.split("\n")) {
+            if (!line.startsWith("data:")) continue;
+
+            const raw = line.slice(5).trim();
+            if (!raw || raw === "[DONE]") continue;
+
+            try {
+              const data = JSON.parse(raw);
+              if (typeof data.response === "string") {
+                assistant.content += data.response;
+              } else if (typeof data.text === "string") {
+                assistant.content += data.text;
+              }
+
+              saveChats();
+              renderMessages();
+            } catch {
+              // Ignore non-JSON SSE control lines.
+            }
+          }
+        }
+      }
+
+      if (!assistant.content.trim()) {
+        assistant.content = "Kage received an empty response. Try again.";
+      }
+
+      latestAssistantText = assistant.content;
+      chat.updatedAt = Date.now();
+      saveChats();
+    } catch (error) {
+      assistant.content =
+        "Kage hit an error: " + (error.message || "Request failed") +
+        "\n\nYour message is still saved. You can try again.";
+
+      saveChats();
+    } finally {
+      setBusy(false);
+      $("status").textContent = "Ready";
+      renderAll();
+    }
+  }
+
+  function editMessage(index) {
+    const chat = currentChat();
+    if (!chat || busy) return;
+
+    const message = chat.messages[index];
+    if (!message || message.role !== "user") return;
+
+    const edited = prompt("Edit your message:", message.content);
+    if (edited === null || !edited.trim()) return;
+
+    chat.messages = chat.messages.slice(0, index);
+    saveChats();
+    renderAll();
+    sendMessage(edited);
+  }
+
+  function regenerateLast() {
+    const chat = currentChat();
+    if (!chat || busy) return;
+
+    if (chat.messages.at(-1)?.role !== "assistant") return;
+    if (chat.messages.length < 2) return;
+
+    sendMessage("", true);
+  }
+
+  $("newChat").onclick = createChat;
+
+  $("send").onclick = () => sendMessage($("composer").value);
+
+  $("composer").addEventListener("keydown", event => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage($("composer").value);
+    }
+  });
+
+  $("composer").addEventListener("input", () => {
+    const field = $("composer");
+    field.style.height = "48px";
+    field.style.height = Math.min(field.scrollHeight, 200) + "px";
+  });
+
+  $("searchToggle").onclick = () => {
+    searchEnabled = !searchEnabled;
+    $("searchToggle").setAttribute(
+      "aria-pressed",
+      String(searchEnabled)
+    );
+  };
+
+  $("attachButton").onclick = () => $("fileInput").click();
+
+  $("fileInput").onchange = async event => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 200000) {
+      alert("This starter version supports text files up to 200 KB.");
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      attachedText = await file.text();
+      attachedName = file.name;
+      $("attachmentInfo").textContent =
+        "Attached: " + file.name + " · " +
+        file.size.toLocaleString() + " bytes";
+    } catch {
+      alert("Couldn't read that file.");
+    }
+
+    event.target.value = "";
+  };
+
+  $("voiceButton").onclick = () => {
+    const Recognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+    if (!Recognition) {
+      alert("Voice input isn't supported in this browser.");
+      return;
+    }
+
+    const recognition = new Recognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.onresult = event => {
+      $("composer").value +=
+        event.results[0][0].transcript;
+      $("composer").dispatchEvent(new Event("input"));
+    };
+
+    recognition.onerror = () => {
+      $("status").textContent = "Voice input failed";
+    };
+
+    recognition.start();
+  };
+
+  $("speakButton").onclick = () => {
+    const chat = currentChat();
+
+    const last = chat?.messages
+      .slice()
+      .reverse()
+      .find(m => m.role === "assistant");
+
+    if (!last?.content) return;
+
+    if (!("speechSynthesis" in window)) {
+      alert("Speech output isn't supported in this browser.");
+      return;
+    }
+
+    speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(last.content);
+    speechSynthesis.speak(utterance);
+  };
+
+  $("exportChats").onclick = () => {
+    const blob = new Blob(
+      [JSON.stringify({
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        chats
+      }, null, 2)],
+      { type: "application/json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    a.href = url;
+    a.download =
+      "kage-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  $("importButton").onclick = () => $("importInput").click();
+
+  $("importInput").onchange = async event => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const data = JSON.parse(await file.text());
+      const imported = Array.isArray(data) ? data : data.chats;
+
+      if (!Array.isArray(imported)) {
+        throw new Error("This file doesn't contain Kage chats.");
+      }
+
+      const valid = imported.filter(chat =>
+        chat &&
+        typeof chat.id === "string" &&
+        Array.isArray(chat.messages)
+      );
+
+      if (!valid.length) {
+        throw new Error("No valid conversations were found.");
+      }
+
+      const existingIds = new Set(chats.map(chat => chat.id));
+
+      for (const chat of valid) {
+        if (existingIds.has(chat.id)) {
+          chat.id = makeId();
+        }
+
+        chats.push(chat);
+      }
+
+      activeId = valid[0].id;
+      saveChats();
+      renderAll();
+      alert("Chat backup imported.");
+    } catch (error) {
+      alert(error.message || "Couldn't import that backup.");
+    }
+
+    event.target.value = "";
+  };
+
+  $("clearChats").onclick = () => {
+    if (!confirm(
+      "Delete every conversation saved in this browser? " +
+      "Export a backup first if you need these chats."
+    )) return;
+
+    chats = [];
+    activeId = null;
+    saveChats();
+    renderAll();
+  };
+
+  $("aboutButton").onclick = () => {
+    alert(
+      "Kage AI\n\n" +
+      "AI: Cloudflare Workers AI\n" +
+      "Chat history: this browser's local storage\n\n" +
+      "Export backups regularly. Clearing browser storage can erase chats."
+    );
+  };
+
+  $("mobileMenu").onclick = () => {
+    $("sidebar").classList.toggle("open");
+  };
+
+  async function checkHealth() {
+    try {
+      const response = await fetch("/api/health");
+      const data = await response.json();
+
+      $("status").textContent =
+        data.status === "online" && data.aiConfigured
+          ? "Kage online"
+          : "AI needs configuration";
+    } catch {
+      $("status").textContent = "Connection unavailable";
+    }
+  }
+
+  if (!chats.length) {
+    createChat();
+  } else {
+    if (!chats.some(chat => chat.id === activeId)) {
+      activeId = chats[0].id;
+    }
+
+    saveChats();
+    renderAll();
+  }
+
+  checkHealth();
+})();
+</script>
+</body>
+</html>
