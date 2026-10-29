@@ -1,340 +1,230 @@
-const TEXT_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8";
-const VISION_MODEL = "@cf/meta/llama-3.2-11b-vision-instruct";
-const IMAGE_MODEL = "@cf/bytedance/stable-diffusion-xl-lightning";
-const VOICE_MODEL = "@cf/deepgram/aura-1";
+const MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8";
 
-const SYSTEM_PROMPT = `
-You are Kage, a capable, direct, friendly AI assistant.
+const KAGE_RULES = `
+you are kage, a capable conversational ai assistant.
 
-Your priorities:
-- Answer the user's actual question clearly and accurately.
-- Help with learning, reasoning, writing, coding, planning, and creative work.
-- Explain uncertainty honestly. Never invent sources or claim to have done work you did not do.
-- When the user shares code, inspect it carefully and provide usable corrections.
-- When the user shares image content, describe only what you can reasonably infer.
-- When web search results are provided, distinguish information from search results
-  from your own background knowledge.
-- Never claim you can access files, devices, accounts, or websites that you cannot access.
-- If a task requires a tool that is unavailable, explain the limitation and offer a
-  practical alternative.
-- Keep ordinary answers concise unless the user needs a detailed explanation.
+PERSONALITY:
+- write in lowercase by default.
+- sound calm, casual, nonchalant, and natural, like a smart teenager texting.
+- be direct and useful. avoid corporate language, excessive enthusiasm, and unnecessary explanations.
+- match the user's language and requested format.
+- do not force slang into every sentence.
+
+UNDERSTANDING CONTEXT:
+- use the entire available conversation to understand what the user means.
+- interpret short messages, slang, typos, misspellings, pronouns, and incomplete sentences using the surrounding context.
+- understand follow-up messages as follow-ups to the previous topic unless the user clearly changes topics.
+- remember relevant details from earlier messages in the current conversation.
+- when the user's intent is reasonably clear, act on that interpretation instead of asking them to repeat themselves.
+- when a request has several reasonable interpretations, choose the most likely useful interpretation and proceed.
+- if an essential detail is genuinely missing, ask one short, specific question about that detail.
+- never respond with generic statements such as "that's not in my programming", "i don't know what you want", or "i don't understand what you're asking".
+- if you are uncertain, explain what you can infer and give the best useful answer you can.
+- never pretend to understand information that is genuinely unavailable.
+
+FOLLOWING INSTRUCTIONS:
+- follow the user's instructions about the task, format, tone, and output as closely as possible.
+- handle the actual request instead of replacing it with generic advice.
+- when asked to modify code, preserve unrelated functionality and provide complete usable code for the requested changes.
+- do not claim to have performed actions you did not perform.
+- do not claim a feature works unless the available tools and backend actually support it.
+- if a requested capability is unavailable, explain the specific limitation briefly and offer the closest working alternative.
+- be honest when information is unknown. do not invent facts.
+- follow applicable safety requirements.
+
+ANSWER QUALITY:
+- answer the specific question first.
+- use the conversation history to avoid making the user repeat information.
+- keep simple answers short and complex answers detailed enough to be useful.
+- do not repeatedly apologize or give generic refusal-like responses when a helpful answer is possible.
 `;
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-store"
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store"
     }
   });
 }
 
-function cleanText(value, maxLength = 30000) {
-  return String(value ?? "").slice(0, maxLength);
+function cleanMessages(input) {
+  if (!Array.isArray(input)) return [];
+
+  return input
+    .filter(
+      message =>
+        message &&
+        ["user", "assistant"].includes(message.role) &&
+        typeof message.content === "string"
+    )
+    .slice(-30)
+    .map(message => ({
+      role: message.role,
+      content: message.content.slice(0, 30000)
+    }));
 }
 
-function decodeHtml(value) {
-  return value
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;|&apos;/g, "'")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&#(\d+);/g, (_, number) =>
-      String.fromCharCode(Number(number))
-    );
+function lastUserMessage(messages) {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === "user") return messages[i].content;
+  }
+  return "";
 }
 
-function extractSearchResults(html) {
-  const results = [];
-  const pattern =
-    /<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
+function fallbackTitle(messages) {
+  const stopWords = new Set([
+    "the", "and", "for", "that", "this", "with", "from", "what",
+    "when", "where", "which", "who", "why", "how", "can", "could",
+    "would", "should", "please", "help", "want", "need", "make",
+    "tell", "give", "show", "have", "has", "about", "into", "your",
+    "you", "are", "was", "were", "just", "like", "its", "it's",
+    "but", "not", "now", "then", "also", "get", "got", "does",
+    "did", "use", "using", "me", "my", "i", "we", "they", "it",
+    "a", "an", "to", "of", "in", "on", "at", "is", "be", "as",
+    "or", "if", "do", "im", "i'm", "we're", "dont", "don't"
+  ]);
 
-  let match;
+  const recentUserText = messages
+    .filter(message => message.role === "user")
+    .slice(-5)
+    .map(message => message.content)
+    .join(" ");
 
-  while ((match = pattern.exec(html)) && results.length < 8) {
-    let url = decodeHtml(match[1]);
-    let title = decodeHtml(match[2].replace(/<[^>]+>/g, "")).trim();
+  const words = (recentUserText.toLowerCase().match(/[a-z0-9+#.-]+/g) || [])
+    .filter(word => word.length > 1 && !stopWords.has(word));
 
-    if (url.startsWith("//")) {
-      url = `https:${url}`;
-    }
-
-    try {
-      const parsed = new URL(url);
-
-      if (parsed.hostname.includes("duckduckgo.com") &&
-          parsed.searchParams.has("uddg")) {
-        url = parsed.searchParams.get("uddg");
-      }
-
-      const finalUrl = new URL(url);
-
-      if (
-        !["http:", "https:"].includes(finalUrl.protocol) ||
-        !title
-      ) {
-        continue;
-      }
-
-      results.push({
-        title,
-        url: finalUrl.href
-      });
-    } catch {
-      // Ignore malformed search results.
-    }
+  const unique = [];
+  for (const word of words.reverse()) {
+    if (!unique.includes(word)) unique.push(word);
+    if (unique.length === 3) break;
   }
 
-  return results;
+  const selected = unique.reverse();
+
+  while (selected.length < 2) {
+    selected.unshift(selected.length === 0 ? "new" : "chat");
+  }
+
+  return selected.slice(-3).join(" ");
 }
 
-async function handleSearch(request) {
-  const body = await request.json();
-  const query = cleanText(body.query, 400).trim();
+function normalizeTitle(raw, messages) {
+  const cleaned = String(raw || "")
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/^title\s*:\s*/i, "")
+    .replace(/^["'`]+|["'`]+$/g, "")
+    .replace(/[.!?,:;]+$/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9+# -]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
-  if (!query) {
-    return json({ error: "Enter a search query." }, 400);
+  const words = cleaned.split(" ").filter(Boolean);
+
+  if (words.length >= 2 && words.length <= 3) {
+    return words.join(" ");
   }
+
+  if (words.length > 3) {
+    return words.slice(0, 3).join(" ");
+  }
+
+  return fallbackTitle(messages);
+}
+
+async function createTitle(env, messages) {
+  const recent = messages.slice(-12);
+
+  try {
+    const result = await env.AI.run(MODEL, {
+      messages: [
+        {
+          role: "system",
+          content:
+            "create a concise title for this conversation. " +
+            "return exactly 2 or 3 meaningful words in lowercase. " +
+            "describe the conversation's main topic, using the entire " +
+            "conversation rather than only the first message. " +
+            "no quotation marks, punctuation, explanation, or prefix."
+        },
+        {
+          role: "user",
+          content: recent
+            .map(message => `${message.role}: ${message.content}`)
+            .join("\n")
+            .slice(-18000)
+        }
+      ],
+      max_tokens: 20,
+      temperature: 0.2
+    });
+
+    const raw =
+      typeof result === "string"
+        ? result
+        : result?.response || result?.result?.response || "";
+
+    return normalizeTitle(raw, messages);
+  } catch {
+    return fallbackTitle(messages);
+  }
+}
+
+async function searchWeb(query) {
+  if (!query) return "";
 
   try {
     const url =
       "https://html.duckduckgo.com/html/?q=" +
-      encodeURIComponent(query);
+      encodeURIComponent(query.slice(0, 400));
 
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; KageAI/1.0)",
-        "Accept": "text/html"
+        "user-agent": "Mozilla/5.0 (compatible; KageAI/1.0)"
       }
     });
 
-    if (!response.ok) {
-      return json({
-        query,
-        results: [],
-        message: "The search provider did not return results."
-      });
-    }
+    if (!response.ok) return "";
 
     const html = await response.text();
-    const results = extractSearchResults(html);
 
-    return json({
-      query,
-      results,
-      message: results.length
-        ? "Search completed."
-        : "No results were extracted. The search provider may have changed its page."
-    });
+    const results = [];
+    const pattern =
+      /class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?class="result__snippet"[^>]*>([\s\S]*?)<\/(?:a|div)>/gi;
+
+    let match;
+
+    while ((match = pattern.exec(html)) && results.length < 5) {
+      const clean = value =>
+        value
+          .replace(/<[^>]*>/g, " ")
+          .replace(/&amp;/g, "&")
+          .replace(/&quot;/g, '"')
+          .replace(/&#x27;|&#39;/g, "'")
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
+          .replace(/\s+/g, " ")
+          .trim();
+
+      results.push({
+        title: clean(match[2]),
+        url: match[1],
+        snippet: clean(match[3])
+      });
+    }
+
+    if (!results.length) return "";
+
+    return "\n\nweb search results:\n" + results
+      .map(
+        (result, index) =>
+          `${index + 1}. ${result.title}\n${result.url}\n${result.snippet}`
+      )
+      .join("\n\n");
   } catch {
-    return json({
-      query,
-      results: [],
-      message: "Search failed. Check your internet connection and try again."
-    });
-  }
-}
-
-async function handleChat(request, env) {
-  const body = await request.json();
-
-  const incoming = Array.isArray(body.messages)
-    ? body.messages.slice(-20)
-    : [];
-
-  if (!incoming.length) {
-    return json({ error: "Send a message first." }, 400);
-  }
-
-  const messages = incoming.map(message => ({
-    role: ["user", "assistant"].includes(message.role)
-      ? message.role
-      : "user",
-    content: cleanText(message.content, 24000)
-  }));
-
-  const lastUserMessage = [...messages]
-    .reverse()
-    .find(message => message.role === "user");
-
-  if (!lastUserMessage?.content.trim() && !body.image) {
-    return json({ error: "Your message is empty." }, 400);
-  }
-
-  const searchResults = Array.isArray(body.searchResults)
-    ? body.searchResults.slice(0, 8)
-    : [];
-
-  if (searchResults.length) {
-    const sourceText = searchResults.map((item, index) =>
-      `${index + 1}. ${cleanText(item.title, 300)}\n` +
-      `${cleanText(item.url, 1000)}`
-    ).join("\n\n");
-
-    lastUserMessage.content +=
-      "\n\nWEB SEARCH RESULTS:\n" +
-      sourceText +
-      "\n\nUse these results when relevant. Do not claim you opened or verified " +
-      "a page unless you actually did. Include the provided URLs in your answer.";
-  }
-
-  const history = [
-    { role: "system", content: SYSTEM_PROMPT },
-    ...messages
-  ];
-
-  try {
-    let result;
-
-    if (body.image) {
-      // Image understanding uses a vision model.
-      const image = cleanText(body.image, 5_500_000);
-
-      if (!image.startsWith("data:image/")) {
-        return json({ error: "The image format was not recognized." }, 400);
-      }
-
-      const response = await env.AI.run(VISION_MODEL, {
-        prompt:
-          SYSTEM_PROMPT +
-          "\n\nConversation:\n" +
-          history
-            .slice(-8)
-            .map(m => `${m.role}: ${m.content}`)
-            .join("\n\n") +
-          "\n\nAnalyze the supplied image and answer the user's latest question.",
-        image,
-        max_tokens: 1800
-      });
-
-      result =
-        response?.response ??
-        response?.result?.response ??
-        response?.description ??
-        response?.output_text ??
-        "";
-
-      if (typeof result !== "string") {
-        result = JSON.stringify(result);
-      }
-    } else {
-      const response = await env.AI.run(TEXT_MODEL, {
-        messages: history,
-        max_tokens: 2048,
-        temperature: 0.65
-      });
-
-      result =
-        response?.response ??
-        response?.result?.response ??
-        response?.output_text ??
-        "";
-
-      if (typeof result !== "string") {
-        result = JSON.stringify(result);
-      }
-    }
-
-    if (!result.trim()) {
-      return json({
-        error: "The AI returned an empty response. Try again."
-      }, 502);
-    }
-
-    return json({ reply: result });
-  } catch (error) {
-    return json({
-      error:
-        "Kage could not complete that request. The AI service may be unavailable, " +
-        "the model may require activation, or your account may have reached a usage limit.",
-      detail: cleanText(error?.message, 500)
-    }, 502);
-  }
-}
-
-async function handleImage(request, env) {
-  const body = await request.json();
-  const prompt = cleanText(body.prompt, 2000).trim();
-
-  if (!prompt) {
-    return json({ error: "Describe the image you want." }, 400);
-  }
-
-  try {
-    const generated = await env.AI.run(IMAGE_MODEL, {
-      prompt,
-      width: 1024,
-      height: 1024,
-      num_steps: 4
-    });
-
-    const imageResponse = generated instanceof Response
-      ? generated
-      : new Response(generated, {
-          headers: { "Content-Type": "image/png" }
-        });
-
-    const bytes = await imageResponse.arrayBuffer();
-
-    return new Response(bytes, {
-      headers: {
-        "Content-Type": "image/png",
-        "Cache-Control": "no-store",
-        "Content-Disposition": 'inline; filename="kage-generated.png"'
-      }
-    });
-  } catch (error) {
-    return json({
-      error: "Image generation failed.",
-      detail: cleanText(error?.message, 500)
-    }, 502);
-  }
-}
-
-async function handleSpeech(request, env) {
-  const body = await request.json();
-  const text = cleanText(body.text, 4500).trim();
-
-  if (!text) {
-    return json({ error: "There is no text to speak." }, 400);
-  }
-
-  try {
-    const result = await env.AI.run(
-      VOICE_MODEL,
-      {
-        text,
-        speaker: "asteria",
-        encoding: "mp3"
-      },
-      {
-        returnRawResponse: true
-      }
-    );
-
-    if (result instanceof Response) {
-      return new Response(result.body, {
-        status: result.status,
-        headers: {
-          "Content-Type": result.headers.get("Content-Type") || "audio/mpeg",
-          "Cache-Control": "no-store"
-        }
-      });
-    }
-
-    return new Response(result, {
-      headers: {
-        "Content-Type": "audio/mpeg",
-        "Cache-Control": "no-store"
-      }
-    });
-  } catch (error) {
-    return json({
-      error: "Voice generation failed.",
-      detail: cleanText(error?.message, 500)
-    }, 502);
+    return "";
   }
 }
 
@@ -343,47 +233,89 @@ export default {
     const url = new URL(request.url);
 
     if (request.method === "GET" && url.pathname === "/api/health") {
-      return json({
-        ok: true,
-        app: "Kage",
-        aiBindingAvailable: Boolean(env.AI)
-      });
+      return json({ ok: true, service: "kage" });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/title") {
+      try {
+        const body = await request.json();
+        const messages = cleanMessages(body.messages);
+
+        if (!messages.length) {
+          return json({ title: "new chat" });
+        }
+
+        const title = await createTitle(env, messages);
+        return json({ title });
+      } catch {
+        return json({ title: "new chat" });
+      }
     }
 
     if (request.method === "POST" && url.pathname === "/api/chat") {
-      if (!env.AI) {
-        return json({ error: "The Workers AI binding named AI is missing." }, 503);
+      try {
+        const body = await request.json();
+        const messages = cleanMessages(body.messages);
+
+        if (!messages.length) {
+          return json({ error: "send a message first" }, 400);
+        }
+
+        let conversation = [...messages];
+
+        if (body.search === true || body.searching === true) {
+          const query = lastUserMessage(conversation);
+          const searchResults = await searchWeb(query);
+
+          if (searchResults) {
+            const lastIndex = conversation.length - 1;
+
+            conversation[lastIndex] = {
+              ...conversation[lastIndex],
+              content:
+                conversation[lastIndex].content +
+                "\n\nuse these search results when relevant. " +
+                "separate verified information from uncertainty." +
+                searchResults
+            };
+          }
+        }
+
+        const modelMessages = [
+          { role: "system", content: KAGE_RULES },
+          ...conversation
+        ];
+
+        const stream = await env.AI.run(MODEL, {
+          messages: modelMessages,
+          stream: true,
+          max_tokens: 2048,
+          temperature: 0.65
+        });
+
+        return new Response(stream, {
+          headers: {
+            "content-type": "text/event-stream; charset=utf-8",
+            "cache-control": "no-cache, no-transform",
+            "x-content-type-options": "nosniff"
+          }
+        });
+      } catch (error) {
+        return json(
+          {
+            error:
+              "kage couldn't complete that request. check the worker logs and try again.",
+            detail: String(error?.message || error).slice(0, 300)
+          },
+          500
+        );
       }
-
-      return handleChat(request, env);
-    }
-
-    if (request.method === "POST" && url.pathname === "/api/search") {
-      return handleSearch(request);
-    }
-
-    if (request.method === "POST" && url.pathname === "/api/image") {
-      if (!env.AI) {
-        return json({ error: "The Workers AI binding named AI is missing." }, 503);
-      }
-
-      return handleImage(request, env);
-    }
-
-    if (request.method === "POST" && url.pathname === "/api/tts") {
-      if (!env.AI) {
-        return json({ error: "The Workers AI binding named AI is missing." }, 503);
-      }
-
-      return handleSpeech(request, env);
     }
 
     if (env.ASSETS) {
       return env.ASSETS.fetch(request);
     }
 
-    return new Response("Kage is running, but the frontend assets are missing.", {
-      status: 404
-    });
+    return new Response("not found", { status: 404 });
   }
 };
