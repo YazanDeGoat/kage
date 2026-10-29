@@ -1,0 +1,13 @@
+{
+  "id": "/",
+  "name": "Kage AI",
+  "short_name": "Kage",
+  "description": "Your AI workspace",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#090b14",
+  "theme_color": "#090b14",
+  "categories": ["productivity", "utilities"]
+}
