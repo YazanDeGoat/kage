@@ -1,15 +1,14 @@
 const CACHE_NAME = "kage-shell-v1";
-
-const APP_FILES = [
+const APP_SHELL = [
   "/",
-  "/index.html",
-  "/manifest.json"
+  "/manifest.json",
+  "/icon.svg"
 ];
 
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_FILES))
+      .then(cache => cache.addAll(APP_SHELL))
       .then(() => self.skipWaiting())
   );
 });
@@ -30,15 +29,17 @@ self.addEventListener("fetch", event => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // Never cache API responses, AI results, or search results.
-  if (
-    request.method !== "GET" ||
-    url.origin !== self.location.origin ||
-    url.pathname.startsWith("/api/")
-  ) {
+  if (request.method !== "GET" || url.origin !== self.location.origin) {
     return;
   }
 
+  // AI requests must always reach the live backend.
+  if (url.pathname.startsWith("/api/")) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  // Use fresh files when available, with a cached shell as a fallback.
   event.respondWith(
     fetch(request)
       .then(response => {
@@ -53,12 +54,14 @@ self.addEventListener("fetch", event => {
         if (cached) return cached;
 
         if (request.mode === "navigate") {
-          return caches.match("/index.html");
+          return (await caches.match("/")) ||
+            new Response("kage is offline. reconnect to use the app.", {
+              status: 503,
+              headers: { "Content-Type": "text/plain; charset=utf-8" }
+            });
         }
 
-        return new Response("This resource is unavailable offline.", {
-          status: 503
-        });
+        return new Response("", { status: 503 });
       })
   );
 });
