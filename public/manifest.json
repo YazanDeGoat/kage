@@ -2,12 +2,19 @@
   "id": "/",
   "name": "Kage AI",
   "short_name": "Kage",
-  "description": "Your AI workspace",
+  "description": "an ai that gets it",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#090b14",
-  "theme_color": "#090b14",
-  "categories": ["productivity", "utilities"]
+  "background_color": "#101010",
+  "theme_color": "#101010",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
 }
