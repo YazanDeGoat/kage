@@ -1,41 +1,43 @@
-const MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8-fast";
+const MODEL = "@cf/meta/llama-3.1-8b-instruct-fast";
+const FALLBACK_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8";
 
 const PERSONALITY = `
-you are kage. talk like a real, chill teenager texting, not a customer support bot.
+you are kage, a capable ai that talks like a chill teenager texting.
 
-YOUR VIBE:
-- write in lowercase. this includes sentence beginnings, headings, and casual replies.
-- sound relaxed, nonchalant, direct, and natural.
-- use casual wording like "yo", "bro", "ngl", "tbh", "bet", "lowkey", and "fr" when it fits naturally.
-- do not force slang into every sentence. natural beats cringe.
-- keep simple answers short. don't turn a simple question into an essay.
-- when someone tells you something, react naturally instead of giving a generic assistant response.
-- don't constantly say "how can i help you today", "certainly", "of course", "i'd be happy to", or "as an ai".
-- don't repeat the user's question back to them.
-- don't sound overly polite, robotic, formal, corporate, or scripted.
-- explain complicated things clearly without losing your casual voice.
-- match the user's energy without copying every single word they use.
+PERSONALITY:
+- use lowercase naturally, including headings when possible.
+- sound relaxed, casual, confident, direct, and human.
+- use bro, ngl, tbh, fr, lowkey, and similar slang only when natural.
+- never force slang into every sentence or sound like a parody of a teenager.
+- keep simple answers short and useful.
+- explain complicated questions clearly without sounding formal or robotic.
+- respond naturally to jokes, casual messages, and the conversation's mood.
+- don't repeat the user's question before answering.
+- don't use scripted customer-service phrases.
+- avoid unnecessary disclaimers and long introductions.
 
 UNDERSTANDING:
-- use the full conversation to understand what the user means.
-- understand slang, typos, abbreviations, incomplete sentences, and speech-to-text mistakes.
-- understand references to earlier messages, including "it", "that", "the other one", "same thing", and "make it better".
-- do not act like every message is a brand-new conversation.
-- when the meaning is clear enough, figure it out and answer directly.
-- do not say "that's not in my programming", "i don't know what you want", "i don't understand what you're talking about", or similar generic dismissals.
-- if a request is genuinely unclear, ask one short question about the specific missing detail.
-- if you lack a tool or capability, explain the actual limitation briefly and offer the closest useful alternative.
-- never pretend to have performed an action that you did not perform.
+- read the full conversation and use its context.
+- understand typos, slang, abbreviations, and incomplete sentences.
+- resolve references to earlier messages when the meaning is reasonably clear.
+- answer the actual question, not a different question.
+- don't say "that's not in my programming" or "i don't know what you want."
+- if something is genuinely ambiguous, ask one short, specific clarification.
+- never invent facts, sources, search results, or capabilities.
 
-INSTRUCTIONS:
-- follow the user's requested format and constraints as closely as possible.
-- give the actual answer or working code when requested, not just a plan.
-- be useful, accurate, and honest.
-- never make up facts or claim you searched when you didn't.
+ACCURACY:
+- prioritize correctness over speed.
+- use supplied live search results when available for current information.
+- distinguish verified facts from estimates or uncertainty.
+- if sources disagree, explain the disagreement briefly.
+- do not pretend search succeeded when it failed.
+- for current facts, prefer recent and authoritative sources.
+- if you cannot verify a claim, say so plainly rather than guessing.
+- follow the user's requested format and constraints.
 - follow applicable safety requirements.
 `.trim();
 
-const MAX_MESSAGES = 24;
+const MAX_MESSAGES = 30;
 const MAX_MESSAGE_LENGTH = 12000;
 
 function json(data, status = 200) {
@@ -64,31 +66,34 @@ function normalizeMessages(messages) {
     }));
 }
 
-/*
- * Search automatically when the request likely needs current information.
- * Ordinary questions can go directly to the model to avoid unnecessary delay.
- */
-function needsLiveSearch(text) {
-  const query = String(text || "").toLowerCase();
-
-  const currentInfoPatterns = [
-    /\b(latest|newest|recent|breaking|current|currently|right now)\b/,
-    /\b(today|tonight|this week|this month|this year|yesterday|tomorrow)\b/,
-    /\b(news|headlines|updates|live score|live results|standings|schedule)\b/,
-    /\b(weather|forecast|temperature outside)\b/,
-    /\b(price right now|current price|stock price|exchange rate)\b/,
-    /\b(who won|who is winning|what happened|what's happening)\b/,
-    /\b(as of \d{4}|in \d{4}|released yet|release date)\b/,
-    /\b(search the web|look it up|look online|google it|find online)\b/,
-    /\b(latest version|new update|recent update|is .* still available)\b/,
-    /\b(near me|open now|opening hours|available today)\b/
-  ];
-
-  return currentInfoPatterns.some(pattern => pattern.test(query));
+function lastUserMessage(messages) {
+  return [...messages].reverse().find(m => m.role === "user");
 }
 
-function normalizeTitle(title) {
-  const words = String(title || "")
+function needsLiveSearch(text) {
+  const q = String(text || "").toLowerCase().trim();
+
+  if (!q) return false;
+
+  const patterns = [
+    /\b(search|google|look up|look it up|find online|check online|browse|verify online)\b/,
+    /\b(latest|newest|recent|breaking|current|currently|right now|as of today)\b/,
+    /\b(today|tonight|this week|this month|this year|yesterday|tomorrow)\b/,
+    /\b(news|headlines|live updates|live score|live results|standings|schedule)\b/,
+    /\b(weather|forecast|temperature outside)\b/,
+    /\b(current price|price today|prices|stock price|exchange rate)\b/,
+    /\b(who won|who is winning|what happened|what's happening)\b/,
+    /\b(release date|released yet|new update|latest version|new version)\b/,
+    /\b(available now|still available|in stock|open now|near me)\b/,
+    /\b(best .* (right now|in 2026|this year))\b/,
+    /\b(2026|2027)\b/
+  ];
+
+  return patterns.some(pattern => pattern.test(q));
+}
+
+function normalizeTitle(value) {
+  const words = String(value || "")
     .replace(/^["'`#\s]+|["'`#\s]+$/g, "")
     .replace(/^(title|chat title)\s*:\s*/i, "")
     .replace(/[.!?]+$/g, "")
@@ -100,13 +105,10 @@ function normalizeTitle(title) {
 }
 
 function fallbackTitle(messages) {
-  const lastUser = [...messages]
-    .reverse()
-    .find(message => message.role === "user");
+  const last = lastUserMessage(messages);
+  if (!last) return "New Chat";
 
-  if (!lastUser) return "New Chat";
-
-  const words = lastUser.content
+  const words = last.content
     .replace(/https?:\/\/\S+/g, "")
     .replace(/[^\p{L}\p{N}' -]/gu, " ")
     .trim()
@@ -114,155 +116,161 @@ function fallbackTitle(messages) {
     .filter(Boolean);
 
   const ignored = new Set([
-    "the", "and", "for", "that", "this", "with", "what",
-    "how", "can", "you", "please", "make", "help", "me",
-    "it", "just", "want", "need", "about", "a", "an", "to"
+    "the", "and", "for", "that", "this", "with", "what", "how",
+    "can", "you", "please", "make", "help", "me", "it", "just",
+    "want", "need", "about", "a", "an", "to", "is", "are"
   ]);
 
   const useful = words.filter(word => !ignored.has(word.toLowerCase()));
-  const selected = (useful.length >= 2 ? useful : words).slice(0, 3);
+  const chosen = (useful.length >= 2 ? useful : words).slice(0, 3);
 
-  if (!selected.length) return "New Chat";
+  return chosen.length
+    ? chosen.map(w => w[0].toUpperCase() + w.slice(1)).join(" ")
+    : "New Chat";
+}
 
-  return selected
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+async function runModel(env, messages, options = {}) {
+  let firstError;
+
+  try {
+    return await env.AI.run(MODEL, {
+      messages,
+      ...options
+    });
+  } catch (error) {
+    firstError = error;
+  }
+
+  try {
+    return await env.AI.run(FALLBACK_MODEL, {
+      messages,
+      ...options
+    });
+  } catch (fallbackError) {
+    throw new Error(
+      `Primary model failed: ${firstError?.message || firstError}. ` +
+      `Fallback model failed: ${fallbackError?.message || fallbackError}.`
+    );
+  }
 }
 
 async function generateTitle(env, messages) {
   const conversation = messages
-    .filter(message => ["user", "assistant"].includes(message.role))
+    .filter(m => m.role === "user" || m.role === "assistant")
     .slice(-12)
-    .map(message => ({
-      role: message.role,
-      content: message.content.slice(0, 900)
+    .map(m => ({
+      role: m.role,
+      content: m.content.slice(0, 800)
     }));
 
-  const result = await env.AI.run(MODEL, {
-    messages: [
+  try {
+    const result = await runModel(env, [
       {
         role: "system",
         content:
-          "create a title for this entire conversation. use exactly 2 or 3 meaningful words. " +
-          "summarize the current main topic, taking recent messages into account. " +
-          "update the topic when the conversation changes. " +
+          "give this conversation a clear title in exactly 2 or 3 words. " +
+          "summarize the current main topic, considering recent messages. " +
           "use title case. return only the title."
       },
       ...conversation,
       {
         role: "user",
-        content: "give me the current 2-3 word conversation title."
+        content: "what is the current 2-3 word title for this conversation?"
       }
-    ],
-    max_tokens: 16,
-    temperature: 0.2
-  });
-
-  const title = normalizeTitle(result?.response || "");
-  const count = title.split(/\s+/).filter(Boolean).length;
-
-  return count >= 2 && count <= 3
-    ? title
-    : fallbackTitle(messages);
-}
-
-/*
- * Fetch recent web results.
- * Search is only called automatically when the question appears time-sensitive
- * or the user explicitly asks to look something up.
- */
-async function searchWeb(query) {
-  const cleaned = String(query || "").trim().slice(0, 400);
-  if (!cleaned) return [];
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 1800);
-
-  try {
-    const url =
-      "https://html.duckduckgo.com/html/?q=" +
-      encodeURIComponent(cleaned);
-
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; KageAI/1.0)",
-        "Accept": "text/html"
-      }
+    ], {
+      max_tokens: 20,
+      temperature: 0.2
     });
 
-    if (!response.ok) return [];
+    const title = normalizeTitle(result?.response);
+    const count = title.split(/\s+/).filter(Boolean).length;
 
-    const html = await response.text();
-    const results = [];
-    const pattern =
-      /<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-
-    let match;
-
-    while ((match = pattern.exec(html)) && results.length < 5) {
-      let href = match[1];
-
-      try {
-        if (href.startsWith("//")) href = "https:" + href;
-
-        const parsed = new URL(href, "https://duckduckgo.com");
-
-        if (parsed.hostname.includes("duckduckgo.com")) {
-          const redirected = parsed.searchParams.get("uddg");
-          if (redirected) href = decodeURIComponent(redirected);
-        }
-      } catch {
-        continue;
-      }
-
-      const title = match[2]
-        .replace(/<[^>]*>/g, "")
-        .replace(/&amp;/g, "&")
-        .replace(/&quot;/g, '"')
-        .replace(/&#x27;|&#39;/g, "'")
-        .trim();
-
-      if (!title || !/^https?:\/\//i.test(href)) continue;
-
-      results.push({
-        title,
-        url: href
-      });
-    }
-
-    return results;
+    return count >= 2 && count <= 3
+      ? title
+      : fallbackTitle(messages);
   } catch {
-    return [];
-  } finally {
-    clearTimeout(timeout);
+    return fallbackTitle(messages);
   }
 }
 
-function searchContext(results) {
-  if (!results.length) {
+/*
+ * Uses Cloudflare's actual Web Search binding instead of scraping HTML.
+ * Requires Web Search API access through the account's default AI Gateway.
+ */
+async function searchWeb(env, query) {
+  const cleaned = String(query || "").trim().slice(0, 1024);
+
+  if (!cleaned) {
+    return { results: [], error: "empty_query" };
+  }
+
+  if (!env.AI || typeof env.AI.websearch !== "function") {
+    return {
+      results: [],
+      error: "web_search_binding_unavailable"
+    };
+  }
+
+  try {
+    const response = await env.AI.websearch({
+      gatewayId: "default",
+      query: cleaned,
+      provider: "ceramic",
+      limit: 5
+    });
+
+    if (!response.ok) {
+      return {
+        results: [],
+        error: `web_search_http_${response.status}`
+      };
+    }
+
+    const data = await response.json();
+
+    const results = (Array.isArray(data?.items) ? data.items : [])
+      .filter(item => item && typeof item.url === "string")
+      .slice(0, 5)
+      .map(item => ({
+        title: String(item.title || item.url).slice(0, 300),
+        url: item.url,
+        description: String(item.description || "").slice(0, 1200)
+      }));
+
+    return {
+      results,
+      error: results.length ? null : "no_search_results",
+      metadata: data?.metadata || null
+    };
+  } catch (error) {
+    return {
+      results: [],
+      error: String(error?.message || error).slice(0, 500)
+    };
+  }
+}
+
+function makeSearchContext(search) {
+  if (search.error || !search.results.length) {
     return [
-      "live search was attempted, but no usable results were retrieved.",
-      "do not pretend the search succeeded or invent current facts.",
-      "answer using what you know and briefly explain that the latest details could not be verified."
+      "automatic web search was attempted but did not return usable results.",
+      "do not claim that you verified current information.",
+      "answer what you can accurately answer from your existing knowledge.",
+      "if the question depends on live information, briefly explain that the live result could not be verified."
     ].join(" ");
   }
 
   return [
-    "live web search results:",
-    ...results.map((item, index) =>
-      `${index + 1}. ${item.title}\n${item.url}`
-    ),
-    "use these results to answer the current question.",
-    "do not claim a source says something unless the available information supports it.",
-    "include useful source URLs in your response when relevant."
+    "the following results were retrieved from a live web search.",
+    "use their titles, descriptions, and URLs as evidence for the user's question.",
+    "prefer relevant and recent sources; do not invent details missing from the results.",
+    "include the actual source URLs when they help the user verify the answer.",
+    ...search.results.map((item, index) =>
+      `${index + 1}. ${item.title}\n` +
+      `url: ${item.url}\n` +
+      `description: ${item.description || "no description returned"}`
+    )
   ].join("\n\n");
-}
-
-function extractLastUserMessage(messages) {
-  return [...messages]
-    .reverse()
-    .find(message => message.role === "user");
 }
 
 export default {
@@ -285,6 +293,7 @@ export default {
         ok: true,
         service: "kage",
         model: MODEL,
+        fallbackModel: FALLBACK_MODEL,
         automaticSearch: true
       });
     }
@@ -294,111 +303,101 @@ export default {
         const body = await request.json();
         const messages = normalizeMessages(body.messages);
 
-        if (!messages.length) {
-          return json({ title: "New Chat" });
-        }
-
         return json({
-          title: await generateTitle(env, messages)
+          title: messages.length
+            ? await generateTitle(env, messages)
+            : "New Chat"
         });
       } catch {
-        return json({
-          title: "New Chat"
-        });
+        return json({ title: "New Chat" });
       }
     }
 
     if (url.pathname === "/api/search" && request.method === "POST") {
       try {
         const body = await request.json();
-        const results = await searchWeb(body.query || "");
+        const search = await searchWeb(env, body.query || "");
 
         return json({
-          results,
+          results: search.results,
           searched: true,
-          resultCount: results.length
+          resultCount: search.results.length,
+          error: search.error
         });
-      } catch {
+      } catch (error) {
         return json({
           results: [],
           searched: true,
-          resultCount: 0
-        });
+          resultCount: 0,
+          error: String(error?.message || error)
+        }, 500);
       }
     }
 
     if (url.pathname === "/api/chat" && request.method === "POST") {
+      let body;
+
       try {
-        const body = await request.json();
-        const incoming = normalizeMessages(body.messages);
+        body = await request.json();
+      } catch {
+        return json({ error: "invalid request body" }, 400);
+      }
 
-        if (!incoming.length) {
-          return json({ error: "send a message first" }, 400);
-        }
+      const incoming = normalizeMessages(body.messages);
+      const conversation = incoming.filter(m => m.role !== "system");
+      const latest = lastUserMessage(conversation);
 
-        const conversation = incoming.filter(
-          message => message.role !== "system"
-        );
+      if (!latest) {
+        return json({ error: "send a message first" }, 400);
+      }
 
-        const lastUser = extractLastUserMessage(conversation);
+      /*
+       * Search automatically when the message needs up-to-date information.
+       * Ordinary questions go straight to the model to avoid needless delays.
+       */
+      const shouldSearch = needsLiveSearch(latest.content);
+      let search = { results: [], error: null };
 
-        if (!lastUser) {
-          return json({ error: "send a message first" }, 400);
-        }
+      if (shouldSearch) {
+        search = await searchWeb(env, latest.content);
+      }
 
-        /*
-         * Automatic search. The frontend toggle is not required.
-         * Search runs only for requests likely to benefit from fresh information.
-         */
-        const shouldSearch = needsLiveSearch(lastUser.content);
+      const messages = [
+        { role: "system", content: PERSONALITY }
+      ];
 
-        let results = [];
+      if (shouldSearch) {
+        messages.push({
+          role: "system",
+          content: makeSearchContext(search)
+        });
+      }
 
-        if (shouldSearch) {
-          results = await searchWeb(lastUser.content);
-        }
+      messages.push(...conversation);
 
-        const messages = [
-          {
-            role: "system",
-            content: PERSONALITY
-          }
-        ];
-
-        if (shouldSearch) {
-          messages.push({
-            role: "system",
-            content: searchContext(results)
-          });
-        }
-
-        messages.push(...conversation);
-
-        const stream = await env.AI.run(MODEL, {
-          messages,
+      try {
+        const stream = await runModel(env, messages, {
           stream: true,
-          max_tokens: 700,
-          temperature: 0.7,
+          max_tokens: 1200,
+          temperature: 0.45,
           top_p: 0.9
         });
 
-        return new Response(stream, {
-          headers: {
-            "Content-Type": "text/event-stream; charset=utf-8",
-            "Cache-Control": "no-cache, no-transform",
-            "X-Content-Type-Options": "nosniff",
-            "X-Kage-Search": shouldSearch
-              ? (results.length ? "completed" : "no-results")
-              : "not-needed"
-          }
-        });
+        const headers = {
+          "Content-Type": "text/event-stream; charset=utf-8",
+          "Cache-Control": "no-cache, no-transform",
+          "X-Content-Type-Options": "nosniff",
+          "X-Kage-Search": shouldSearch
+            ? (search.results.length ? "completed" : "failed")
+            : "not-needed"
+        };
+
+        return new Response(stream, { headers });
       } catch (error) {
         return json({
-          error: "kage hit a problem handling that request",
-          details: error instanceof Error
-            ? error.message
-            : "unknown error"
-        }, 500);
+          error: "kage couldn't generate a response",
+          details: String(error?.message || error)
+        }, 502);
       }
     }
 
