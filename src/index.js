@@ -1,44 +1,46 @@
 const MODEL = "@cf/meta/llama-3.1-8b-instruct-fast";
 const FALLBACK_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8";
 
-const PERSONALITY = `
-you are kage, a capable ai that talks like a chill teenager texting.
+function currentDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function systemPrompt() {
+  return `
+you are kage, a capable, casual, nonchalant teen-style ai.
 
 PERSONALITY:
-- use lowercase naturally, including headings when possible.
-- sound relaxed, casual, confident, direct, and human.
-- use bro, ngl, tbh, fr, lowkey, and similar slang only when natural.
-- never force slang into every sentence or sound like a parody of a teenager.
-- keep simple answers short and useful.
-- explain complicated questions clearly without sounding formal or robotic.
-- respond naturally to jokes, casual messages, and the conversation's mood.
-- don't repeat the user's question before answering.
-- don't use scripted customer-service phrases.
-- avoid unnecessary disclaimers and long introductions.
-
-UNDERSTANDING:
-- read the full conversation and use its context.
-- understand typos, slang, abbreviations, and incomplete sentences.
-- resolve references to earlier messages when the meaning is reasonably clear.
-- answer the actual question, not a different question.
+- talk naturally, in lowercase, with a relaxed bro-mode vibe.
+- sound like a real person texting, not a customer-service bot.
+- use slang naturally, not in every sentence.
+- be direct, useful, confident, and concise when the question is simple.
+- understand typos, slang, incomplete messages, and conversation context.
+- don't repeat the user's question unnecessarily.
 - don't say "that's not in my programming" or "i don't know what you want."
-- if something is genuinely ambiguous, ask one short, specific clarification.
-- never invent facts, sources, search results, or capabilities.
+- never invent facts, capabilities, or search results.
 
-ACCURACY:
-- prioritize correctness over speed.
-- use supplied live search results when available for current information.
-- distinguish verified facts from estimates or uncertainty.
-- if sources disagree, explain the disagreement briefly.
-- do not pretend search succeeded when it failed.
-- for current facts, prefer recent and authoritative sources.
-- if you cannot verify a claim, say so plainly rather than guessing.
-- follow the user's requested format and constraints.
-- follow applicable safety requirements.
+CURRENT INFORMATION:
+- today's date is ${currentDate()}.
+- you can receive live web search results with the conversation.
+- your training cutoff is NOT a reason to refuse a question or avoid answering.
+- use relevant live search results to answer questions about current events, recent information, people, products, technology, and changing facts.
+- distinguish verified current facts from information that cannot be verified.
+- never pretend you searched if no usable results were provided.
+- do not claim information is current merely because it sounds plausible.
+- if live results are available, use them when relevant and include source URLs when useful.
+- if a search fails, still answer what you can accurately answer. Briefly explain the limitation only when it matters to the question.
+- don't make up citations, dates, statistics, or source contents.
+
+ANSWERING:
+- answer the actual question.
+- use the entire conversation when interpreting the user's meaning.
+- explain things clearly without unnecessary filler.
+- for schoolwork, teach accurately at the appropriate level.
+- for calculations, reason carefully and check the result.
+- if you genuinely cannot determine what the user means, ask one specific clarification.
+- prioritize correctness over pretending to know everything.
 `.trim();
-
-const MAX_MESSAGES = 30;
-const MAX_MESSAGE_LENGTH = 12000;
+}
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -54,59 +56,40 @@ function normalizeMessages(messages) {
   if (!Array.isArray(messages)) return [];
 
   return messages
-    .filter(message =>
-      message &&
-      ["system", "user", "assistant"].includes(message.role) &&
-      typeof message.content === "string"
+    .filter(m =>
+      m &&
+      ["system", "user", "assistant"].includes(m.role) &&
+      typeof m.content === "string"
     )
-    .slice(-MAX_MESSAGES)
-    .map(message => ({
-      role: message.role,
-      content: message.content.slice(0, MAX_MESSAGE_LENGTH)
+    .slice(-30)
+    .map(m => ({
+      role: m.role,
+      content: m.content.slice(0, 12000)
     }));
 }
 
-function lastUserMessage(messages) {
+function getLatestUserMessage(messages) {
   return [...messages].reverse().find(m => m.role === "user");
 }
 
-function needsLiveSearch(text) {
-  const q = String(text || "").toLowerCase().trim();
+function makeSearchQuery(messages) {
+  const recent = messages
+    .filter(m => m.role === "user" || m.role === "assistant")
+    .slice(-6)
+    .map(m => `${m.role}: ${m.content}`);
 
-  if (!q) return false;
-
-  const patterns = [
-    /\b(search|google|look up|look it up|find online|check online|browse|verify online)\b/,
-    /\b(latest|newest|recent|breaking|current|currently|right now|as of today)\b/,
-    /\b(today|tonight|this week|this month|this year|yesterday|tomorrow)\b/,
-    /\b(news|headlines|live updates|live score|live results|standings|schedule)\b/,
-    /\b(weather|forecast|temperature outside)\b/,
-    /\b(current price|price today|prices|stock price|exchange rate)\b/,
-    /\b(who won|who is winning|what happened|what's happening)\b/,
-    /\b(release date|released yet|new update|latest version|new version)\b/,
-    /\b(available now|still available|in stock|open now|near me)\b/,
-    /\b(best .* (right now|in 2026|this year))\b/,
-    /\b(2026|2027)\b/
-  ];
-
-  return patterns.some(pattern => pattern.test(q));
-}
-
-function normalizeTitle(value) {
-  const words = String(value || "")
-    .replace(/^["'`#\s]+|["'`#\s]+$/g, "")
-    .replace(/^(title|chat title)\s*:\s*/i, "")
-    .replace(/[.!?]+$/g, "")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-
-  return words.slice(0, 3).join(" ").slice(0, 60);
+  return recent.join("\n").slice(-1000);
 }
 
 function fallbackTitle(messages) {
-  const last = lastUserMessage(messages);
+  const last = getLatestUserMessage(messages);
   if (!last) return "New Chat";
+
+  const ignored = new Set([
+    "the", "and", "for", "that", "this", "with", "what", "how",
+    "can", "you", "please", "make", "help", "me", "it", "just",
+    "want", "need", "about", "a", "an", "to", "is", "are"
+  ]);
 
   const words = last.content
     .replace(/https?:\/\/\S+/g, "")
@@ -115,132 +98,87 @@ function fallbackTitle(messages) {
     .split(/\s+/)
     .filter(Boolean);
 
-  const ignored = new Set([
-    "the", "and", "for", "that", "this", "with", "what", "how",
-    "can", "you", "please", "make", "help", "me", "it", "just",
-    "want", "need", "about", "a", "an", "to", "is", "are"
-  ]);
+  const useful = words.filter(w => !ignored.has(w.toLowerCase()));
+  const selected = (useful.length >= 2 ? useful : words).slice(0, 3);
 
-  const useful = words.filter(word => !ignored.has(word.toLowerCase()));
-  const chosen = (useful.length >= 2 ? useful : words).slice(0, 3);
-
-  return chosen.length
-    ? chosen.map(w => w[0].toUpperCase() + w.slice(1)).join(" ")
+  return selected.length
+    ? selected.map(w => w[0].toUpperCase() + w.slice(1)).join(" ")
     : "New Chat";
 }
 
-async function runModel(env, messages, options = {}) {
-  let firstError;
+function cleanTitle(value) {
+  return String(value || "")
+    .replace(/^["'`#\s]+|["'`#\s]+$/g, "")
+    .replace(/^(title|chat title)\s*:\s*/i, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 3)
+    .join(" ")
+    .slice(0, 60);
+}
 
+async function runModel(env, messages, options = {}) {
   try {
     return await env.AI.run(MODEL, {
       messages,
       ...options
     });
-  } catch (error) {
-    firstError = error;
-  }
-
-  try {
-    return await env.AI.run(FALLBACK_MODEL, {
-      messages,
-      ...options
-    });
-  } catch (fallbackError) {
-    throw new Error(
-      `Primary model failed: ${firstError?.message || firstError}. ` +
-      `Fallback model failed: ${fallbackError?.message || fallbackError}.`
-    );
-  }
-}
-
-async function generateTitle(env, messages) {
-  const conversation = messages
-    .filter(m => m.role === "user" || m.role === "assistant")
-    .slice(-12)
-    .map(m => ({
-      role: m.role,
-      content: m.content.slice(0, 800)
-    }));
-
-  try {
-    const result = await runModel(env, [
-      {
-        role: "system",
-        content:
-          "give this conversation a clear title in exactly 2 or 3 words. " +
-          "summarize the current main topic, considering recent messages. " +
-          "use title case. return only the title."
-      },
-      ...conversation,
-      {
-        role: "user",
-        content: "what is the current 2-3 word title for this conversation?"
-      }
-    ], {
-      max_tokens: 20,
-      temperature: 0.2
-    });
-
-    const title = normalizeTitle(result?.response);
-    const count = title.split(/\s+/).filter(Boolean).length;
-
-    return count >= 2 && count <= 3
-      ? title
-      : fallbackTitle(messages);
-  } catch {
-    return fallbackTitle(messages);
+  } catch (firstError) {
+    try {
+      return await env.AI.run(FALLBACK_MODEL, {
+        messages,
+        ...options
+      });
+    } catch (secondError) {
+      throw new Error(
+        `AI model failed: ${secondError?.message || firstError?.message || "unknown error"}`
+      );
+    }
   }
 }
 
 /*
- * Uses Cloudflare's actual Web Search binding instead of scraping HTML.
- * Requires Web Search API access through the account's default AI Gateway.
+ * Live search through Cloudflare Web Search API.
+ * Requires the AI binding and an available AI Gateway search provider.
  */
 async function searchWeb(env, query) {
-  const cleaned = String(query || "").trim().slice(0, 1024);
-
-  if (!cleaned) {
-    return { results: [], error: "empty_query" };
-  }
-
   if (!env.AI || typeof env.AI.websearch !== "function") {
     return {
       results: [],
-      error: "web_search_binding_unavailable"
+      error: "Cloudflare Web Search is not available on this binding."
     };
   }
 
   try {
     const response = await env.AI.websearch({
       gatewayId: "default",
-      query: cleaned,
+      query: String(query || "").slice(0, 1024),
       provider: "ceramic",
       limit: 5
     });
 
     if (!response.ok) {
+      const detail = await response.text().catch(() => "");
       return {
         results: [],
-        error: `web_search_http_${response.status}`
+        error: `Search returned HTTP ${response.status}. ${detail.slice(0, 300)}`
       };
     }
 
     const data = await response.json();
 
-    const results = (Array.isArray(data?.items) ? data.items : [])
+    const results = (Array.isArray(data.items) ? data.items : [])
       .filter(item => item && typeof item.url === "string")
       .slice(0, 5)
       .map(item => ({
         title: String(item.title || item.url).slice(0, 300),
         url: item.url,
-        description: String(item.description || "").slice(0, 1200)
+        description: String(item.description || "").slice(0, 4000)
       }));
 
     return {
       results,
-      error: results.length ? null : "no_search_results",
-      metadata: data?.metadata || null
+      error: results.length ? null : "The search provider returned no usable results."
     };
   } catch (error) {
     return {
@@ -250,27 +188,72 @@ async function searchWeb(env, query) {
   }
 }
 
-function makeSearchContext(search) {
-  if (search.error || !search.results.length) {
-    return [
-      "automatic web search was attempted but did not return usable results.",
-      "do not claim that you verified current information.",
-      "answer what you can accurately answer from your existing knowledge.",
-      "if the question depends on live information, briefly explain that the live result could not be verified."
-    ].join(" ");
+function searchInstructions(search) {
+  if (!search.results.length) {
+    return `
+LIVE SEARCH STATUS: no usable web results were returned.
+Do not claim that you verified the answer online.
+Still answer the user's question accurately using your knowledge.
+For questions requiring current facts, do not guess at dates, prices,
+scores, breaking news, or other changing details.
+If the missing live information prevents an accurate answer, state that
+briefly and give the user the most useful accurate information you can.
+Search error: ${search.error || "no results"}
+`.trim();
   }
 
-  return [
-    "the following results were retrieved from a live web search.",
-    "use their titles, descriptions, and URLs as evidence for the user's question.",
-    "prefer relevant and recent sources; do not invent details missing from the results.",
-    "include the actual source URLs when they help the user verify the answer.",
-    ...search.results.map((item, index) =>
-      `${index + 1}. ${item.title}\n` +
-      `url: ${item.url}\n` +
-      `description: ${item.description || "no description returned"}`
-    )
-  ].join("\n\n");
+  const sourceText = search.results.map((item, index) => {
+    return [
+      `SOURCE ${index + 1}: ${item.title}`,
+      `URL: ${item.url}`,
+      `INFORMATION: ${item.description || "No description supplied."}`
+    ].join("\n");
+  }).join("\n\n");
+
+  return `
+LIVE WEB SEARCH RESULTS:
+${sourceText}
+
+HOW TO USE THESE RESULTS:
+- Answer the user's actual question, not just summarize search results.
+- Use relevant results as evidence for current information.
+- Do not invent details that the results do not support.
+- Prefer specific, relevant information over vague statements.
+- Include clickable source URLs when they help verify factual claims.
+- If the results don't answer the question, say what remains unverified.
+- Do not tell the user that your training cutoff prevents you from answering.
+`.trim();
+}
+
+async function generateTitle(env, messages) {
+  try {
+    const recent = messages
+      .filter(m => m.role === "user" || m.role === "assistant")
+      .slice(-10);
+
+    const result = await runModel(env, [
+      {
+        role: "system",
+        content:
+          "create a natural title for this chat in exactly 2 or 3 words. " +
+          "use the main topic from the recent conversation. " +
+          "return only the title."
+      },
+      ...recent
+    ], {
+      max_tokens: 20,
+      temperature: 0.2
+    });
+
+    const title = cleanTitle(result?.response);
+    const count = title.split(/\s+/).filter(Boolean).length;
+
+    return count >= 2 && count <= 3
+      ? title
+      : fallbackTitle(messages);
+  } catch {
+    return fallbackTitle(messages);
+  }
 }
 
 export default {
@@ -294,7 +277,8 @@ export default {
         service: "kage",
         model: MODEL,
         fallbackModel: FALLBACK_MODEL,
-        automaticSearch: true
+        automaticSearch: true,
+        date: currentDate()
       });
     }
 
@@ -343,56 +327,47 @@ export default {
         return json({ error: "invalid request body" }, 400);
       }
 
-      const incoming = normalizeMessages(body.messages);
-      const conversation = incoming.filter(m => m.role !== "system");
-      const latest = lastUserMessage(conversation);
+      const messages = normalizeMessages(body.messages)
+        .filter(m => m.role !== "system");
 
-      if (!latest) {
+      if (!getLatestUserMessage(messages)) {
         return json({ error: "send a message first" }, 400);
       }
 
       /*
-       * Search automatically when the message needs up-to-date information.
-       * Ordinary questions go straight to the model to avoid needless delays.
+       * Search automatically for every message.
+       * The frontend does not need a search button or search toggle.
        */
-      const shouldSearch = needsLiveSearch(latest.content);
-      let search = { results: [], error: null };
+      const query = makeSearchQuery(messages);
+      const search = await searchWeb(env, query);
 
-      if (shouldSearch) {
-        search = await searchWeb(env, latest.content);
-      }
-
-      const messages = [
-        { role: "system", content: PERSONALITY }
+      const modelMessages = [
+        { role: "system", content: systemPrompt() },
+        {
+          role: "system",
+          content: searchInstructions(search)
+        },
+        ...messages
       ];
 
-      if (shouldSearch) {
-        messages.push({
-          role: "system",
-          content: makeSearchContext(search)
-        });
-      }
-
-      messages.push(...conversation);
-
       try {
-        const stream = await runModel(env, messages, {
+        const stream = await runModel(env, modelMessages, {
           stream: true,
           max_tokens: 1200,
-          temperature: 0.45,
+          temperature: 0.35,
           top_p: 0.9
         });
 
-        const headers = {
-          "Content-Type": "text/event-stream; charset=utf-8",
-          "Cache-Control": "no-cache, no-transform",
-          "X-Content-Type-Options": "nosniff",
-          "X-Kage-Search": shouldSearch
-            ? (search.results.length ? "completed" : "failed")
-            : "not-needed"
-        };
-
-        return new Response(stream, { headers });
+        return new Response(stream, {
+          headers: {
+            "Content-Type": "text/event-stream; charset=utf-8",
+            "Cache-Control": "no-cache, no-transform",
+            "X-Content-Type-Options": "nosniff",
+            "X-Kage-Search": search.results.length
+              ? "completed"
+              : "failed"
+          }
+        });
       } catch (error) {
         return json({
           error: "kage couldn't generate a response",
