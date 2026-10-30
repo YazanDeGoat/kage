@@ -4,40 +4,39 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#000000">
-  <meta name="description" content="Kage AI">
-  <title>Kage AI</title>
+  <title>Kage</title>
 
   <style>
     :root {
       color-scheme: dark;
       --bg: #000;
-      --panel: #0b0b0b;
-      --panel-hover: #171717;
-      --border: #242424;
+      --panel: #101010;
+      --panel-hover: #1c1c1c;
+      --border: #292929;
       --text: #f5f5f5;
-      --muted: #999;
-      --accent: #fff;
-      --sidebar-width: 260px;
+      --muted: #929292;
+      --radius: 16px;
     }
 
     * {
       box-sizing: border-box;
     }
 
-    html,
-    body {
+    html, body {
       width: 100%;
       height: 100%;
       margin: 0;
       background: var(--bg);
       color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
-        BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Arial, sans-serif;
     }
 
-    button,
-    textarea,
-    input {
+    body {
+      overflow: hidden;
+    }
+
+    button, input, textarea {
       font: inherit;
     }
 
@@ -53,555 +52,511 @@
       outline-offset: 2px;
     }
 
-    button:disabled {
-      cursor: not-allowed;
-      opacity: 0.45;
-    }
-
     .app {
       display: flex;
-      width: 100%;
       height: 100dvh;
+      width: 100%;
       overflow: hidden;
-      background: #000;
     }
 
     .sidebar {
-      width: var(--sidebar-width);
-      min-width: var(--sidebar-width);
-      height: 100%;
+      width: 260px;
+      flex: 0 0 260px;
+      background: #080808;
+      border-right: 1px solid #202020;
       display: flex;
       flex-direction: column;
-      background: #080808;
-      border-right: 1px solid var(--border);
-      transition: transform 0.2s ease;
-      z-index: 20;
+      padding: 14px 10px;
+      transition: margin-left .2s ease;
+      z-index: 5;
+    }
+
+    .sidebar.hidden {
+      display: none;
     }
 
     .sidebar-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 17px 14px;
+      padding: 2px 5px 16px;
     }
 
     .brand {
       font-size: 21px;
       font-weight: 750;
-      letter-spacing: -1px;
+      letter-spacing: -.7px;
     }
 
-    .sidebar-actions {
-      display: flex;
-      gap: 6px;
-    }
-
-    .icon-btn {
-      width: 36px;
-      height: 36px;
+    .icon-button {
+      width: 38px;
+      height: 38px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       border: 1px solid transparent;
-      border-radius: 10px;
+      border-radius: 11px;
       background: transparent;
-      color: #ccc;
-      font-size: 17px;
+      color: #c7c7c7;
+      font-size: 19px;
+      flex-shrink: 0;
     }
 
-    .icon-btn:hover {
-      background: #191919;
-      border-color: #292929;
+    .icon-button:hover {
+      background: var(--panel-hover);
       color: white;
     }
 
     .new-chat {
+      width: 100%;
+      padding: 11px 12px;
       display: flex;
       align-items: center;
       gap: 10px;
-      margin: 0 10px 15px;
-      padding: 11px 12px;
+      background: #151515;
       border: 1px solid #292929;
-      border-radius: 11px;
-      background: #101010;
+      border-radius: 12px;
       text-align: left;
-      font-size: 13px;
+      margin-bottom: 20px;
     }
 
     .new-chat:hover {
-      background: #191919;
+      background: #202020;
     }
 
     .section-label {
-      padding: 8px 16px;
       color: #777;
       font-size: 11px;
-      font-weight: 650;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: 1px;
+      padding: 0 10px 9px;
     }
 
     .chat-list {
-      flex: 1;
       overflow-y: auto;
-      padding: 0 8px 12px;
+      flex: 1;
+      min-height: 0;
     }
 
     .chat-item {
       display: flex;
       align-items: center;
-      gap: 5px;
-      margin: 2px 0;
-      padding: 3px;
-      border-radius: 9px;
+      gap: 4px;
+      padding: 2px;
+      border-radius: 10px;
+      margin-bottom: 3px;
     }
 
     .chat-item.active {
-      background: #1b1b1b;
-    }
-
-    .chat-item:hover {
-      background: #141414;
+      background: #202020;
     }
 
     .chat-select {
       flex: 1;
       min-width: 0;
-      padding: 9px 8px;
-      overflow: hidden;
+      padding: 10px 9px;
       border: 0;
       background: transparent;
-      color: #ccc;
       text-align: left;
+      overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      font-size: 12.5px;
+      font-size: 13px;
+      color: #d6d6d6;
     }
 
-    .chat-item.active .chat-select {
-      color: #fff;
-    }
-
-    .chat-menu-btn {
-      flex-shrink: 0;
-      width: 30px;
-      height: 30px;
+    .chat-menu-button {
+      opacity: 0;
       border: 0;
-      border-radius: 7px;
       background: transparent;
-      color: #888;
+      color: #aaa;
+      border-radius: 7px;
+      padding: 6px;
     }
 
-    .chat-menu-btn:hover {
-      background: #292929;
-      color: white;
+    .chat-item:hover .chat-menu-button,
+    .chat-item.active .chat-menu-button {
+      opacity: 1;
+    }
+
+    .chat-menu-button:hover {
+      background: #333;
     }
 
     .sidebar-bottom {
-      padding: 12px;
-      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      border-top: 1px solid #222;
+      margin-top: 10px;
     }
 
-    .download-button {
+    .sidebar-action {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
-      width: 100%;
-      padding: 11px;
-      border: 1px solid #303030;
-      border-radius: 10px;
-      background: #151515;
-      font-size: 13px;
-    }
-
-    .download-button:hover {
-      background: #222;
-    }
-
-    .download-menu {
-      display: none;
-      margin-top: 8px;
-      padding: 6px;
-      border: 1px solid #292929;
-      border-radius: 11px;
-      background: #101010;
-    }
-
-    .download-menu.open {
-      display: block;
-    }
-
-    .download-option {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      border: 0;
-      border-radius: 7px;
-      background: transparent;
-      text-align: left;
-      font-size: 12px;
-    }
-
-    .download-option:hover {
-      background: #222;
-    }
-
-    .download-note {
-      padding: 8px 10px 5px;
-      color: #888;
-      font-size: 10px;
-      line-height: 1.5;
-    }
-
-    .main {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-      min-width: 0;
-      height: 100%;
-      position: relative;
-    }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      min-height: 58px;
-      padding: 10px 18px;
-      border-bottom: 1px solid #171717;
-    }
-
-    .topbar-left,
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .topbar-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: #ddd;
-    }
-
-    .conversation {
-      flex: 1;
-      width: 100%;
-      overflow-y: auto;
-      scroll-behavior: smooth;
-    }
-
-    .messages {
-      width: 100%;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 28px 24px 40px;
-    }
-
-    .welcome {
-      display: flex;
-      min-height: 100%;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      padding: 45px 20px 20px;
-    }
-
-    .welcome-logo {
-      margin-bottom: 14px;
-      font-size: 38px;
-      font-weight: 800;
-      letter-spacing: -2px;
-    }
-
-    .welcome-subtitle {
-      margin-bottom: 28px;
-      color: #999;
-      font-size: 14px;
-      text-align: center;
-    }
-
-    .suggestions {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
-      width: min(100%, 530px);
-    }
-
-    .suggestion {
-      min-height: 70px;
-      padding: 13px;
-      border: 1px solid #252525;
-      border-radius: 12px;
-      background: #080808;
-      color: #ddd;
-      text-align: left;
-      font-size: 12px;
-      line-height: 1.5;
-    }
-
-    .suggestion:hover {
-      background: #141414;
-      border-color: #3a3a3a;
-    }
-
-    .message {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 27px;
-      min-width: 0;
-    }
-
-    .message.user {
-      align-items: flex-end;
-    }
-
-    .message.assistant {
-      align-items: flex-start;
-    }
-
-    .message-content {
-      max-width: 100%;
-      min-width: 0;
-      overflow-wrap: anywhere;
-      font-size: 14px;
-      line-height: 1.75;
-    }
-
-    .message.user .message-content {
-      max-width: min(85%, 590px);
-      padding: 11px 15px;
-      border: 1px solid #262626;
-      border-radius: 17px 17px 5px 17px;
-      background: #171717;
-      white-space: pre-wrap;
-    }
-
-    .message.assistant .message-content {
       width: 100%;
-    }
-
-    .message-content p {
-      margin: 0 0 13px;
-    }
-
-    .message-content p:last-child {
-      margin-bottom: 0;
-    }
-
-    .message-content h1,
-    .message-content h2,
-    .message-content h3 {
-      margin: 20px 0 9px;
-      line-height: 1.35;
-    }
-
-    .message-content h1 {
-      font-size: 23px;
-    }
-
-    .message-content h2 {
-      font-size: 19px;
-    }
-
-    .message-content h3 {
-      font-size: 16px;
-    }
-
-    .message-content ul,
-    .message-content ol {
-      padding-left: 24px;
-    }
-
-    .message-content li {
-      margin: 5px 0;
-    }
-
-    .message-content a {
-      color: #c8dcff;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-
-    .message-content blockquote {
-      margin: 12px 0;
-      padding: 4px 0 4px 14px;
-      border-left: 3px solid #555;
-      color: #bbb;
-    }
-
-    .message-content code {
-      padding: 2px 5px;
-      border-radius: 5px;
-      background: #202020;
-      font-family: Consolas, Monaco, monospace;
-      font-size: 0.9em;
-    }
-
-    .code-wrap {
-      width: 100%;
-      margin: 12px 0;
-      overflow: hidden;
-      border: 1px solid #303030;
-      border-radius: 10px;
-      background: #090909;
-    }
-
-    .code-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 12px;
-      border-bottom: 1px solid #242424;
-      color: #aaa;
-      font-size: 11px;
-    }
-
-    .code-header button {
-      padding: 4px 8px;
-      border: 1px solid #333;
-      border-radius: 6px;
-      background: #171717;
-      font-size: 11px;
-    }
-
-    .code-wrap pre {
-      max-width: 100%;
-      margin: 0;
-      padding: 14px;
-      overflow-x: auto;
-      white-space: pre;
-      line-height: 1.55;
-    }
-
-    .code-wrap pre code {
-      padding: 0;
-      background: transparent;
-      font-size: 12px;
-    }
-
-    .message-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 3px;
-      margin-top: 8px;
-      opacity: 0.7;
-    }
-
-    .message-actions button {
-      padding: 5px 7px;
+      padding: 11px 10px;
       border: 0;
-      border-radius: 6px;
+      border-radius: 10px;
       background: transparent;
-      color: #999;
-      font-size: 11px;
+      color: #bbb;
+      text-align: left;
+      font-size: 13px;
     }
 
-    .message-actions button:hover {
+    .sidebar-action:hover {
       background: #191919;
       color: white;
     }
 
-    .message-error {
-      color: #ff9292;
+    .main {
+      min-width: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      height: 100%;
     }
 
-    .typing {
-      display: inline-flex;
+    .topbar {
+      height: 58px;
+      flex: 0 0 58px;
+      display: flex;
       align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      border-bottom: 1px solid #151515;
+    }
+
+    .top-left, .top-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .model-label {
+      color: #d4d4d4;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .menu-wrap {
+      position: relative;
+    }
+
+    .dropdown {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      min-width: 220px;
+      background: #151515;
+      border: 1px solid #303030;
+      border-radius: 13px;
+      padding: 6px;
+      z-index: 20;
+      box-shadow: 0 14px 40px #000b;
+    }
+
+    .dropdown.hidden {
+      display: none;
+    }
+
+    .dropdown button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 13px;
+      color: #e4e4e4;
+    }
+
+    .dropdown button:hover {
+      background: #292929;
+    }
+
+    .download-info {
+      border-top: 1px solid #303030;
+      padding: 10px;
+      color: #999;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .conversation {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+      scroll-behavior: smooth;
+    }
+
+    .welcome {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 35px 20px;
+      text-align: center;
+    }
+
+    .welcome h1 {
+      margin: 0 0 9px;
+      font-size: clamp(27px, 4vw, 36px);
+      letter-spacing: -1.2px;
+      font-weight: 650;
+    }
+
+    .welcome p {
+      margin: 0;
+      color: #8d8d8d;
+      font-size: 14px;
+    }
+
+    .suggestions {
+      width: min(680px, 100%);
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+      margin-top: 28px;
+    }
+
+    .suggestion {
+      text-align: left;
+      padding: 13px;
+      border: 1px solid #282828;
+      background: #090909;
+      border-radius: 12px;
+      color: #cfcfcf;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .suggestion:hover {
+      background: #151515;
+      border-color: #424242;
+    }
+
+    .messages {
+      width: min(800px, 100%);
+      margin: 0 auto;
+      padding: 28px 22px 40px;
+    }
+
+    .message {
+      margin-bottom: 28px;
+      min-width: 0;
+    }
+
+    .message.user {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .user-bubble {
+      max-width: 84%;
+      padding: 11px 15px;
+      border-radius: 19px;
+      background: #202020;
+      color: #f5f5f5;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: 14px;
+    }
+
+    .assistant-message {
+      line-height: 1.75;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .assistant-message p {
+      margin: 0 0 13px;
+    }
+
+    .assistant-message p:last-child {
+      margin-bottom: 0;
+    }
+
+    .assistant-message h1,
+    .assistant-message h2,
+    .assistant-message h3 {
+      line-height: 1.35;
+      margin: 20px 0 9px;
+    }
+
+    .assistant-message h1 { font-size: 23px; }
+    .assistant-message h2 { font-size: 19px; }
+    .assistant-message h3 { font-size: 16px; }
+
+    .assistant-message ul,
+    .assistant-message ol {
+      padding-left: 24px;
+      margin: 8px 0 15px;
+    }
+
+    .assistant-message li {
+      margin: 4px 0;
+    }
+
+    .assistant-message blockquote {
+      margin: 12px 0;
+      padding-left: 14px;
+      border-left: 3px solid #555;
+      color: #bbb;
+    }
+
+    .assistant-message a {
+      color: #a5c9ff;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .assistant-message pre {
+      overflow-x: auto;
+      padding: 15px;
+      background: #101010;
+      border: 1px solid #292929;
+      border-radius: 12px;
+      line-height: 1.55;
+      white-space: pre;
+    }
+
+    .assistant-message code {
+      font-family: Consolas, "SFMono-Regular", monospace;
+      font-size: .92em;
+    }
+
+    .assistant-message :not(pre) > code {
+      background: #252525;
+      border-radius: 5px;
+      padding: 2px 5px;
+    }
+
+    .assistant-message table {
+      display: block;
+      overflow-x: auto;
+      border-collapse: collapse;
+      max-width: 100%;
+    }
+
+    .assistant-message th,
+    .assistant-message td {
+      border: 1px solid #383838;
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    .message-actions {
+      display: flex;
       gap: 5px;
-      padding: 7px 0;
+      margin-top: 9px;
+      opacity: .75;
     }
 
-    .typing span {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: #888;
-      animation: pulse 1s infinite ease-in-out;
+    .message-actions button {
+      border: 0;
+      background: transparent;
+      color: #888;
+      padding: 5px 7px;
+      border-radius: 7px;
+      font-size: 12px;
     }
 
-    .typing span:nth-child(2) {
-      animation-delay: 0.15s;
+    .message-actions button:hover {
+      background: #202020;
+      color: white;
     }
 
-    .typing span:nth-child(3) {
-      animation-delay: 0.3s;
+    .file-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 9px;
     }
 
-    @keyframes pulse {
-      0%, 60%, 100% {
-        opacity: 0.35;
-        transform: translateY(0);
-      }
-      30% {
-        opacity: 1;
-        transform: translateY(-3px);
-      }
+    .file-chip {
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 9px;
+      padding: 7px 10px;
+      font-size: 12px;
+      color: #bbb;
+      max-width: 100%;
+      overflow-wrap: anywhere;
     }
 
     .composer-area {
-      width: 100%;
-      padding: 10px 20px 15px;
-      background: linear-gradient(to bottom, transparent, #000 18%);
+      padding: 10px 20px 14px;
+      background: linear-gradient(transparent, #000 20%);
     }
 
-    .composer {
-      width: 100%;
-      max-width: 800px;
+    .composer-wrap {
+      width: min(800px, 100%);
       margin: 0 auto;
-      border: 1px solid #303030;
-      border-radius: 18px;
-      background: #101010;
-      box-shadow: 0 8px 35px #0008;
     }
 
     .attachment-preview {
       display: flex;
       flex-wrap: wrap;
-      gap: 7px;
-      padding: 10px 12px 0;
+      gap: 8px;
+      margin-bottom: 8px;
     }
 
-    .attachment-chip {
+    .attachment-item {
       display: flex;
       align-items: center;
-      gap: 7px;
-      max-width: 220px;
-      padding: 6px 9px;
-      border: 1px solid #303030;
-      border-radius: 8px;
-      background: #191919;
-      color: #ccc;
-      font-size: 11px;
+      gap: 8px;
+      max-width: 100%;
+      padding: 7px 9px;
+      background: #171717;
+      border: 1px solid #333;
+      border-radius: 10px;
+      color: #ddd;
+      font-size: 12px;
     }
 
-    .attachment-chip span {
+    .attachment-item span {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      max-width: 190px;
     }
 
-    .attachment-chip button {
+    .attachment-item button {
       border: 0;
       background: transparent;
       color: #aaa;
+      padding: 0 3px;
+    }
+
+    .composer {
+      background: #151515;
+      border: 1px solid #303030;
+      border-radius: 23px;
+      padding: 10px 10px 8px;
+      box-shadow: 0 0 0 1px #080808;
+    }
+
+    .composer:focus-within {
+      border-color: #454545;
     }
 
     .composer textarea {
       display: block;
       width: 100%;
-      min-height: 52px;
-      max-height: 200px;
-      padding: 15px 15px 8px;
       resize: none;
+      max-height: 190px;
+      min-height: 28px;
       border: 0;
-      outline: 0;
+      outline: none;
       background: transparent;
       color: #f5f5f5;
-      font-size: 14px;
+      padding: 5px 8px 8px;
       line-height: 1.5;
+      font-size: 14px;
     }
 
     .composer textarea::placeholder {
@@ -613,1520 +568,1128 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      padding: 5px 9px 9px;
     }
 
     .composer-tools,
-    .composer-send-tools {
+    .composer-send {
       display: flex;
       align-items: center;
       gap: 5px;
     }
 
-    .tool-btn {
+    .tool-button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       min-width: 35px;
       height: 35px;
-      padding: 0 10px;
-      border: 1px solid transparent;
-      border-radius: 10px;
+      padding: 0 9px;
+      border: 0;
+      border-radius: 50%;
       background: transparent;
-      color: #aaa;
-      font-size: 17px;
+      color: #bcbcbc;
+      font-size: 19px;
     }
 
-    .tool-btn:hover {
-      background: #242424;
+    .tool-button:hover {
+      background: #292929;
       color: white;
     }
 
-    .send-btn {
+    .send-button {
       width: 36px;
       height: 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
       border: 0;
       border-radius: 50%;
       background: #f5f5f5;
-      color: #000;
-      font-size: 17px;
-      font-weight: 800;
+      color: #050505;
+      font-size: 19px;
+      font-weight: 700;
     }
 
-    .send-btn:hover {
-      background: #ddd;
+    .send-button:hover {
+      background: #d7d7d7;
     }
 
-    .send-btn.stop {
-      background: #333;
-      color: white;
+    .send-button:disabled {
+      opacity: .35;
+      cursor: default;
     }
 
-    .disclaimer {
-      margin: 9px auto 0;
-      color: #666;
-      font-size: 10px;
+    .footnote {
+      color: #686868;
       text-align: center;
+      font-size: 10px;
+      padding-top: 9px;
+    }
+
+    .status {
+      color: #8e8e8e;
+      font-size: 12px;
+      margin: 0 0 8px;
+      min-height: 17px;
     }
 
     .toast {
       position: fixed;
-      z-index: 100;
-      bottom: 24px;
       left: 50%;
-      max-width: calc(100vw - 30px);
-      padding: 10px 15px;
+      bottom: 100px;
       transform: translateX(-50%);
+      padding: 10px 15px;
       border: 1px solid #333;
+      background: #191919;
       border-radius: 10px;
-      background: #181818;
-      color: #eee;
       font-size: 12px;
+      z-index: 100;
       box-shadow: 0 8px 30px #0009;
     }
 
-    .toast[hidden] {
+    .toast.hidden {
       display: none;
     }
 
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 80;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background: #000b;
-    }
-
-    .modal-backdrop[hidden] {
-      display: none;
-    }
-
-    .modal {
-      width: min(100%, 380px);
-      padding: 20px;
-      border: 1px solid #303030;
-      border-radius: 15px;
-      background: #101010;
-    }
-
-    .modal h2 {
-      margin: 0 0 14px;
-      font-size: 17px;
-    }
-
-    .modal input {
-      width: 100%;
-      padding: 11px;
-      border: 1px solid #333;
-      border-radius: 8px;
-      background: #050505;
-      color: white;
-    }
-
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-top: 15px;
-    }
-
-    .modal-actions button {
-      padding: 8px 12px;
-      border: 1px solid #333;
-      border-radius: 8px;
-      background: #191919;
+    .empty-list {
+      padding: 10px;
+      color: #777;
       font-size: 12px;
-    }
-
-    .modal-actions .primary {
-      background: white;
-      color: black;
-    }
-
-    .mobile-backdrop {
-      display: none;
     }
 
     @media (max-width: 700px) {
       .sidebar {
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: min(85vw, 290px);
-        min-width: 0;
-        transform: translateX(-105%);
-        box-shadow: none;
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: min(285px, 85vw);
+        box-shadow: 15px 0 40px #0008;
       }
 
-      .sidebar.open {
-        transform: translateX(0);
-        box-shadow: 10px 0 40px #0009;
-      }
-
-      .mobile-backdrop.open {
-        display: block;
-        position: fixed;
-        inset: 0;
-        z-index: 15;
-        background: #0009;
+      .sidebar.hidden {
+        display: none;
       }
 
       .topbar {
-        min-height: 54px;
-        padding: 8px 10px;
+        padding: 0 10px;
       }
 
       .messages {
-        padding: 22px 15px 30px;
+        padding: 20px 14px 30px;
       }
 
-      .welcome {
-        padding-top: 30px;
+      .composer-area {
+        padding: 8px 10px calc(10px + env(safe-area-inset-bottom));
       }
 
-      .welcome-logo {
-        font-size: 34px;
+      .user-bubble {
+        max-width: 92%;
       }
 
       .suggestions {
         grid-template-columns: 1fr;
       }
 
-      .suggestion {
-        min-height: 55px;
+      .welcome {
+        padding: 25px 17px;
       }
 
-      .composer-area {
-        padding: 8px 9px max(10px, env(safe-area-inset-bottom));
-      }
-
-      .message.user .message-content {
-        max-width: 92%;
-      }
-
-      .composer textarea {
-        font-size: 16px;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        animation-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-        transition-duration: 0.01ms !important;
+      .chat-menu-button {
+        opacity: 1;
       }
     }
   </style>
 </head>
 
 <body>
-  <div class="app">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-top">
-        <div class="brand">kage</div>
-        <div class="sidebar-actions">
-          <button class="icon-btn" id="newChatTop" title="New chat" aria-label="New chat">＋</button>
-          <button class="icon-btn" id="closeSidebar" title="Close sidebar" aria-label="Close sidebar">×</button>
-        </div>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="brand">kage</div>
+      <button class="icon-button" id="close-sidebar" aria-label="close sidebar">‹</button>
+    </div>
+
+    <button class="new-chat" id="new-chat">
+      <span>＋</span><span>new chat</span>
+    </button>
+
+    <div class="section-label">your chats</div>
+    <div class="chat-list" id="chat-list"></div>
+
+    <div class="sidebar-bottom">
+      <button class="sidebar-action" id="export-chat">↗ <span>export chats</span></button>
+      <button class="sidebar-action" id="import-chat">↙ <span>import chats</span></button>
+      <button class="sidebar-action" id="sidebar-download">↓ <span>get kage on your device</span></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="top-left">
+        <button class="icon-button" id="open-sidebar" aria-label="open sidebar">☰</button>
+        <div class="model-label">kage <span style="color:#666;font-weight:400">/ chat</span></div>
       </div>
 
-      <button class="new-chat" id="newChat">
-        <span>＋</span>
-        <span>new chat</span>
-      </button>
+      <div class="top-right">
+        <div class="menu-wrap">
+          <button class="icon-button" id="download-button" aria-label="get kage on your device" title="get kage on your device">↓</button>
 
-      <div class="section-label">your chats</div>
-      <div class="chat-list" id="chatList"></div>
-
-      <div class="sidebar-bottom">
-        <button class="download-button" id="downloadButton" aria-expanded="false">
-          <span>↓</span>
-          <span>download kage</span>
-        </button>
-
-        <div class="download-menu" id="downloadMenu">
-          <button class="download-option" data-device="iPhone">📱 iPhone</button>
-          <button class="download-option" data-device="iPad">▣ iPad</button>
-          <button class="download-option" data-device="Android phone">📱 Android phone</button>
-          <button class="download-option" data-device="Android tablet">▣ Android / Samsung tablet</button>
-          <button class="download-option" data-device="Windows computer">🖥️ Windows computer</button>
-          <button class="download-option" data-device="Windows laptop">💻 Windows laptop</button>
-          <div class="download-note">
-            install options depend on your browser and device. this installs the web app when supported; it does not create a separate native app package.
+          <div class="dropdown hidden" id="download-menu">
+            <button data-device="iphone">iphone</button>
+            <button data-device="ipad">ipad</button>
+            <button data-device="android-phone">android phone</button>
+            <button data-device="android-tablet">android / samsung tablet</button>
+            <button data-device="computer">windows computer</button>
+            <button data-device="laptop">laptop</button>
+            <div class="download-info" id="download-info">
+              choose your device for installation instructions.
+            </div>
           </div>
         </div>
       </div>
-    </aside>
+    </header>
 
-    <div class="mobile-backdrop" id="mobileBackdrop"></div>
+    <section class="conversation" id="conversation">
+      <div class="welcome" id="welcome">
+        <h1>what's on your mind?</h1>
+        <p>just talk. kage's here.</p>
 
-    <main class="main">
-      <header class="topbar">
-        <div class="topbar-left">
-          <button class="icon-btn" id="openSidebar" aria-label="Open sidebar" title="Chats">☰</button>
-          <span class="topbar-title">kage ai</span>
+        <div class="suggestions">
+          <button class="suggestion" data-prompt="explain something complicated in a simple way">explain something complicated simply</button>
+          <button class="suggestion" data-prompt="help me solve a problem step by step">help me solve a problem</button>
+          <button class="suggestion" data-prompt="give me some creative ideas">come up with ideas</button>
+          <button class="suggestion" data-prompt="tell me what's happening in the world right now">what's happening right now?</button>
         </div>
+      </div>
 
-        <div class="topbar-right">
-          <button class="icon-btn" id="exportChat" title="Export chat" aria-label="Export chat">⇩</button>
-        </div>
-      </header>
+      <div class="messages" id="messages" hidden></div>
+    </section>
 
-      <section class="conversation" id="conversation">
-        <div class="messages" id="messages"></div>
-      </section>
+    <div class="composer-area">
+      <div class="composer-wrap">
+        <div class="status" id="status"></div>
+        <div class="attachment-preview" id="attachment-preview"></div>
 
-      <div class="composer-area">
-        <form class="composer" id="composer">
-          <div class="attachment-preview" id="attachmentPreview"></div>
-
-          <textarea
-            id="messageInput"
-            rows="1"
-            placeholder="message kage..."
-            aria-label="Message Kage"
-          ></textarea>
+        <div class="composer">
+          <textarea id="prompt" rows="1" placeholder="message kage..." aria-label="message kage"></textarea>
 
           <div class="composer-bottom">
             <div class="composer-tools">
-              <button type="button" class="tool-btn" id="attachButton" title="Attach files" aria-label="Attach files">＋</button>
-              <input id="fileInput" type="file" multiple hidden
-                accept="image/*,text/*,.pdf,.doc,.docx,.json,.csv,.md,.js,.html,.css,.py,.txt,.xml,.yaml,.yml,.log,.mp4,.webm,.mov,.mp3,.wav,.m4a">
-
-              <button type="button" class="tool-btn" id="voiceButton" title="Voice input" aria-label="Voice input">🎙</button>
-              <button type="button" class="tool-btn" id="speakButton" title="Read last answer aloud" aria-label="Read last answer aloud">◖))</button>
+              <button class="tool-button" id="attach-button" aria-label="attach files" title="attach files">＋</button>
+              <button class="tool-button" id="voice-button" aria-label="voice input" title="voice input">🎙</button>
             </div>
 
-            <div class="composer-send-tools">
-              <button type="button" class="tool-btn" id="clearFiles" title="Remove attachments" aria-label="Remove attachments">×</button>
-              <button type="submit" class="send-btn" id="sendButton" title="Send message" aria-label="Send message">↑</button>
+            <div class="composer-send">
+              <button class="tool-button" id="speak-button" aria-label="read replies aloud" title="read replies aloud">◖))</button>
+              <button class="send-button" id="send-button" aria-label="send message" title="send">↑</button>
             </div>
           </div>
-        </form>
+        </div>
 
-        <div class="disclaimer">kage can make mistakes. verify important information.</div>
-      </div>
-    </main>
-  </div>
-
-  <div class="toast" id="toast" hidden></div>
-
-  <div class="modal-backdrop" id="renameModal" hidden>
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="renameTitle">
-      <h2 id="renameTitle">rename chat</h2>
-      <input id="renameInput" maxlength="60" placeholder="chat name">
-      <div class="modal-actions">
-        <button id="renameCancel">cancel</button>
-        <button class="primary" id="renameSave">save</button>
+        <div class="footnote">kage can make mistakes. check important information.</div>
       </div>
     </div>
-  </div>
+  </main>
+</div>
 
-  <script>
-    (() => {
-      "use strict";
+<input type="file" id="file-input" hidden multiple>
+<input type="file" id="import-input" hidden accept=".json,application/json">
+<div class="toast hidden" id="toast"></div>
 
-      const STORAGE_KEY = "kage-chats-v4";
-      const ACTIVE_KEY = "kage-active-v4";
+<script>
+(() => {
+  "use strict";
 
-      const $ = id => document.getElementById(id);
+  const $ = id => document.getElementById(id);
 
-      const elements = {
-        sidebar: $("sidebar"),
-        chatList: $("chatList"),
-        conversation: $("conversation"),
-        messages: $("messages"),
-        composer: $("composer"),
-        input: $("messageInput"),
-        send: $("sendButton"),
-        fileInput: $("fileInput"),
-        attachmentPreview: $("attachmentPreview"),
-        toast: $("toast"),
-        renameModal: $("renameModal"),
-        renameInput: $("renameInput"),
-        downloadMenu: $("downloadMenu"),
-        downloadButton: $("downloadButton"),
-        mobileBackdrop: $("mobileBackdrop")
-      };
+  const STORAGE_CHATS = "kage-chats-v4";
+  const STORAGE_ACTIVE = "kage-active-v4";
 
-      let chats = loadChats();
-      let activeChatId = localStorage.getItem(ACTIVE_KEY);
-      let attachments = [];
-      let busy = false;
-      let abortController = null;
-      let toastTimer = null;
-      let renameTarget = null;
-      let recognition = null;
-      let lastAssistantText = "";
+  const state = {
+    chats: [],
+    activeId: null,
+    busy: false,
+    attachments: [],
+    lastMessages: [],
+    speaking: false
+  };
 
-      function uid() {
-        return crypto.randomUUID
-          ? crypto.randomUUID()
-          : Date.now().toString(36) + Math.random().toString(36).slice(2);
+  const sidebar = $("sidebar");
+  const chatList = $("chat-list");
+  const conversation = $("conversation");
+  const welcome = $("welcome");
+  const messagesEl = $("messages");
+  const promptEl = $("prompt");
+  const sendButton = $("send-button");
+  const statusEl = $("status");
+  const attachmentPreview = $("attachment-preview");
+  const downloadMenu = $("download-menu");
+  const downloadInfo = $("download-info");
+
+  function id() {
+    return crypto.randomUUID
+      ? crypto.randomUUID()
+      : Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+
+  function activeChat() {
+    return state.chats.find(chat => chat.id === state.activeId);
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_CHATS, JSON.stringify(state.chats));
+      localStorage.setItem(STORAGE_ACTIVE, state.activeId || "");
+    } catch (error) {
+      showToast("couldn't save all chats in this browser");
+    }
+  }
+
+  function createChat() {
+    const chat = {
+      id: id(),
+      title: "New Chat",
+      messages: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+
+    state.chats.unshift(chat);
+    state.activeId = chat.id;
+    state.attachments = [];
+
+    save();
+    renderAll();
+    promptEl.focus();
+
+    return chat;
+  }
+
+  function load() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_CHATS) || "[]");
+
+      if (Array.isArray(saved)) {
+        state.chats = saved.filter(chat =>
+          chat &&
+          typeof chat.id === "string" &&
+          Array.isArray(chat.messages)
+        );
       }
+    } catch {
+      state.chats = [];
+    }
 
-      function loadChats() {
-        try {
-          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-          return Array.isArray(saved) ? saved : [];
-        } catch {
-          return [];
-        }
+    const storedActive = localStorage.getItem(STORAGE_ACTIVE);
+    state.activeId = state.chats.some(c => c.id === storedActive)
+      ? storedActive
+      : state.chats[0]?.id || null;
+
+    if (!state.chats.length) createChat();
+    else renderAll();
+  }
+
+  function showToast(text) {
+    const toast = $("toast");
+    toast.textContent = text;
+    toast.classList.remove("hidden");
+
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => toast.classList.add("hidden"), 2300);
+  }
+
+  function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, character => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[character]);
+  }
+
+  function safeURL(value) {
+    try {
+      const url = new URL(value, location.href);
+      if (url.protocol === "http:" || url.protocol === "https:") {
+        return url.href;
       }
+    } catch {}
+    return "";
+  }
 
-      function saveChats() {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
-          if (activeChatId) localStorage.setItem(ACTIVE_KEY, activeChatId);
-        } catch {
-          toast("couldn't save chat history in this browser");
-        }
+  function renderMarkdown(input) {
+    let text = escapeHTML(input || "");
+    const codeBlocks = [];
+
+    text = text.replace(/```([a-zA-Z0-9_-]*)\n?([\s\S]*?)```/g, (_, language, code) => {
+      const index = codeBlocks.length;
+      codeBlocks.push(
+        `<pre><code>${code.replace(/\n$/, "")}</code></pre>`
+      );
+      return `@@CODEBLOCK${index}@@`;
+    });
+
+    text = text.replace(/`([^`\n]+)`/g, "<code>$1</code>");
+    text = text.replace(/^### (.+)$/gm, "<h3>$1</h3>");
+    text = text.replace(/^## (.+)$/gm, "<h2>$1</h2>");
+    text = text.replace(/^# (.+)$/gm, "<h1>$1</h1>");
+    text = text.replace(/^&gt; ?(.*)$/gm, "<blockquote>$1</blockquote>");
+    text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    text = text.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+
+    text = text.replace(
+      /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+      (_, label, url) => {
+        const safe = safeURL(url);
+        return safe
+          ? `<a href="${escapeHTML(safe)}" target="_blank" rel="noopener noreferrer">${label}</a>`
+          : label;
       }
+    );
 
-      function currentChat() {
-        return chats.find(chat => chat.id === activeChatId) || null;
+    text = text.replace(
+      /(^|\s)(https?:\/\/[^\s<]+)/g,
+      (full, before, rawUrl) => {
+        const trimmed = rawUrl.replace(/[.,!?;:)]+$/, "");
+        const suffix = rawUrl.slice(trimmed.length);
+        const safe = safeURL(trimmed);
+        return safe
+          ? `${before}<a href="${escapeHTML(safe)}" target="_blank" rel="noopener noreferrer">${trimmed}</a>${suffix}`
+          : full;
       }
+    );
 
-      function createChat() {
-        const chat = {
-          id: uid(),
-          title: "New Chat",
-          messages: [],
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        };
+    text = text.replace(/^\s*[-*] (.+)$/gm, "<li>$1</li>");
+    text = text.replace(/(?:<li>.*<\/li>\n?)+/gs, match => `<ul>${match}</ul>`);
+    text = text.replace(/^\s*\d+\. (.+)$/gm, "<li>$1</li>");
+    text = text.replace(/\n{2,}/g, "</p><p>");
+    text = text.replace(/\n/g, "<br>");
 
-        chats.unshift(chat);
-        activeChatId = chat.id;
-        saveChats();
+    text = `<p>${text}</p>`;
+
+    text = text.replace(
+      /<p>(<h[1-3]>[\s\S]*?<\/h[1-3]>)<\/p>/g,
+      "$1"
+    );
+
+    text = text.replace(
+      /@@CODEBLOCK(\d+)@@/g,
+      (_, index) => codeBlocks[Number(index)] || ""
+    );
+
+    return text;
+  }
+
+  function renderChatList() {
+    chatList.innerHTML = "";
+
+    if (!state.chats.length) {
+      chatList.innerHTML = '<div class="empty-list">no chats yet</div>';
+      return;
+    }
+
+    for (const chat of state.chats) {
+      const row = document.createElement("div");
+      row.className = "chat-item" + (chat.id === state.activeId ? " active" : "");
+
+      const select = document.createElement("button");
+      select.className = "chat-select";
+      select.textContent = chat.title || "New Chat";
+      select.title = select.textContent;
+      select.addEventListener("click", () => {
+        state.activeId = chat.id;
+        state.attachments = [];
+        save();
+        renderAll();
+      });
+
+      const menuButton = document.createElement("button");
+      menuButton.className = "chat-menu-button";
+      menuButton.textContent = "···";
+      menuButton.title = "chat options";
+      menuButton.setAttribute("aria-label", "chat options");
+
+      menuButton.addEventListener("click", event => {
+        event.stopPropagation();
+        showChatOptions(chat.id);
+      });
+
+      row.append(select, menuButton);
+      chatList.append(row);
+    }
+  }
+
+  function showChatOptions(chatId) {
+    const chat = state.chats.find(c => c.id === chatId);
+    if (!chat) return;
+
+    const action = window.prompt(
+      `chat: ${chat.title}\n\nenter 1 to rename\nenter 2 to delete`
+    );
+
+    if (action === "1") {
+      const nextTitle = window.prompt("new chat name:", chat.title);
+      if (nextTitle && nextTitle.trim()) {
+        chat.title = nextTitle.trim().slice(0, 80);
+        save();
         renderChatList();
-        renderMessages();
-        closeSidebarMobile();
-        elements.input.focus();
+      }
+    }
+
+    if (action === "2") {
+      if (!window.confirm(`delete "${chat.title}"?`)) return;
+
+      state.chats = state.chats.filter(c => c.id !== chatId);
+
+      if (state.activeId === chatId) {
+        state.activeId = state.chats[0]?.id || null;
       }
 
-      function ensureChat() {
-        let chat = currentChat();
-        if (!chat) {
-          createChat();
-          chat = currentChat();
+      if (!state.chats.length) createChat();
+
+      save();
+      renderAll();
+    }
+  }
+
+  function renderMessages() {
+    const chat = activeChat();
+
+    welcome.hidden = !!(chat && chat.messages.length);
+    messagesEl.hidden = !(chat && chat.messages.length);
+    messagesEl.innerHTML = "";
+
+    if (!chat) return;
+
+    for (let index = 0; index < chat.messages.length; index++) {
+      const message = chat.messages[index];
+      const wrapper = document.createElement("article");
+      wrapper.className = `message ${message.role}`;
+
+      if (message.role === "user") {
+        const bubble = document.createElement("div");
+        bubble.className = "user-bubble";
+
+        if (message.attachments?.length) {
+          const files = document.createElement("div");
+          files.className = "file-chips";
+
+          for (const file of message.attachments) {
+            const chip = document.createElement("div");
+            chip.className = "file-chip";
+            chip.textContent = file.name;
+            files.append(chip);
+          }
+
+          bubble.append(files);
         }
-        return chat;
-      }
-
-      function updateChatTimestamp(chat) {
-        chat.updatedAt = Date.now();
-        chats.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-      }
-
-      function toast(message) {
-        elements.toast.textContent = message;
-        elements.toast.hidden = false;
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => {
-          elements.toast.hidden = true;
-        }, 2400);
-      }
-
-      function escapeHTML(value) {
-        return String(value)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#39;");
-      }
-
-      function safeURL(value) {
-        try {
-          const url = new URL(value, location.href);
-          if (["http:", "https:"].includes(url.protocol)) {
-            return url.href;
-          }
-        } catch {}
-        return "";
-      }
-
-      function inlineMarkdown(text) {
-        let safe = escapeHTML(text);
-
-        safe = safe.replace(
-          /`([^`\n]+)`/g,
-          "<code>$1</code>"
-        );
-
-        safe = safe.replace(
-          /\*\*(.+?)\*\*/g,
-          "<strong>$1</strong>"
-        );
-
-        safe = safe.replace(
-          /(^|[^*])\*([^*\n]+)\*/g,
-          "$1<em>$2</em>"
-        );
-
-        safe = safe.replace(
-          /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
-          (whole, label, rawUrl) => {
-            const url = safeURL(rawUrl);
-            return url
-              ? `<a href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">${label}</a>`
-              : label;
-          }
-        );
-
-        return safe;
-      }
-
-      function renderMarkdown(source) {
-        const text = String(source || "").replace(/\r\n/g, "\n");
-        const codeBlocks = [];
-
-        let content = text.replace(
-          /```([^\n`]*)\n([\s\S]*?)```/g,
-          (_, language, code) => {
-            const index = codeBlocks.length;
-            codeBlocks.push({
-              language: language.trim() || "code",
-              code
-            });
-            return `\n@@KAGECODE${index}@@\n`;
-          }
-        );
-
-        const lines = content.split("\n");
-        const output = [];
-        let paragraph = [];
-        let listType = null;
-        let listItems = [];
-
-        function flushParagraph() {
-          if (paragraph.length) {
-            output.push(
-              `<p>${paragraph.map(inlineMarkdown).join("<br>")}</p>`
-            );
-            paragraph = [];
-          }
-        }
-
-        function flushList() {
-          if (listType && listItems.length) {
-            output.push(
-              `<${listType}>${listItems.map(item =>
-                `<li>${inlineMarkdown(item)}</li>`
-              ).join("")}</${listType}>`
-            );
-          }
-
-          listType = null;
-          listItems = [];
-        }
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-
-          const codeMarker = trimmed.match(/^@@KAGECODE(\d+)@@$/);
-          if (codeMarker) {
-            flushParagraph();
-            flushList();
-
-            const block = codeBlocks[Number(codeMarker[1])];
-            const language = escapeHTML(block.language);
-            const code = escapeHTML(block.code);
-
-            output.push(
-              `<div class="code-wrap">
-                <div class="code-header">
-                  <span>${language}</span>
-                  <button type="button" data-copy-code>copy code</button>
-                </div>
-                <pre><code>${code}</code></pre>
-              </div>`
-            );
-            continue;
-          }
-
-          if (!trimmed) {
-            flushParagraph();
-            flushList();
-            continue;
-          }
-
-          const heading = trimmed.match(/^(#{1,3})\s+(.+)$/);
-          if (heading) {
-            flushParagraph();
-            flushList();
-            const level = heading[1].length;
-            output.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
-            continue;
-          }
-
-          const bullet = trimmed.match(/^[-*+]\s+(.+)$/);
-          const numbered = trimmed.match(/^\d+[.)]\s+(.+)$/);
-          const quote = trimmed.match(/^>\s?(.*)$/);
-
-          if (bullet || numbered) {
-            flushParagraph();
-            const type = bullet ? "ul" : "ol";
-
-            if (listType && listType !== type) flushList();
-
-            listType = type;
-            listItems.push((bullet || numbered)[1]);
-            continue;
-          }
-
-          flushList();
-
-          if (quote) {
-            flushParagraph();
-            output.push(`<blockquote>${inlineMarkdown(quote[1])}</blockquote>`);
-            continue;
-          }
-
-          paragraph.push(trimmed);
-        }
-
-        flushParagraph();
-        flushList();
-
-        return output.join("\n");
-      }
-
-      function scrollToBottom() {
-        elements.conversation.scrollTop = elements.conversation.scrollHeight;
-      }
-
-      function renderChatList() {
-        elements.chatList.innerHTML = "";
-
-        if (!chats.length) {
-          const empty = document.createElement("div");
-          empty.style.cssText = "padding:12px;color:#777;font-size:12px";
-          empty.textContent = "your chats will show up here";
-          elements.chatList.appendChild(empty);
-          return;
-        }
-
-        for (const chat of chats) {
-          const row = document.createElement("div");
-          row.className = "chat-item" + (chat.id === activeChatId ? " active" : "");
-
-          const select = document.createElement("button");
-          select.className = "chat-select";
-          select.textContent = chat.title || "New Chat";
-          select.title = chat.title || "New Chat";
-          select.addEventListener("click", () => {
-            activeChatId = chat.id;
-            saveChats();
-            renderChatList();
-            renderMessages();
-            closeSidebarMobile();
-          });
-
-          const menu = document.createElement("button");
-          menu.className = "chat-menu-btn";
-          menu.textContent = "···";
-          menu.title = "Chat options";
-          menu.setAttribute("aria-label", "Chat options");
-
-          menu.addEventListener("click", event => {
-            event.stopPropagation();
-
-            const action = prompt(
-              "type rename or delete for this chat:",
-              "rename"
-            );
-
-            if (!action) return;
-
-            if (action.toLowerCase() === "rename") {
-              openRename(chat);
-            } else if (action.toLowerCase() === "delete") {
-              deleteChat(chat.id);
-            }
-          });
-
-          row.append(select, menu);
-
-          let pressTimer;
-          let longPressed = false;
-
-          select.addEventListener("contextmenu", event => {
-            event.preventDefault();
-            openRename(chat);
-          });
-
-          select.addEventListener("touchstart", () => {
-            longPressed = false;
-            pressTimer = setTimeout(() => {
-              longPressed = true;
-              openRename(chat);
-            }, 650);
-          }, { passive: true });
-
-          ["touchend", "touchmove", "touchcancel"].forEach(type => {
-            select.addEventListener(type, () => clearTimeout(pressTimer), {
-              passive: true
-            });
-          });
-
-          select.addEventListener("click", event => {
-            if (longPressed) {
-              event.preventDefault();
-              event.stopImmediatePropagation();
-              longPressed = false;
-            }
-          }, true);
-
-          elements.chatList.appendChild(row);
-        }
-      }
-
-      function renderMessages() {
-        const chat = currentChat();
-        elements.messages.innerHTML = "";
-
-        if (!chat || !chat.messages.length) {
-          const welcome = document.createElement("div");
-          welcome.className = "welcome";
-          welcome.innerHTML = `
-            <div class="welcome-logo">kage</div>
-            <div class="welcome-subtitle">what's on your mind?</div>
-            <div class="suggestions">
-              <button class="suggestion" data-prompt="explain something i'm confused about in a simple way">explain something simply</button>
-              <button class="suggestion" data-prompt="help me study for a test with a fun quiz">help me study for a test</button>
-              <button class="suggestion" data-prompt="help me come up with a creative idea">come up with an idea</button>
-              <button class="suggestion" data-prompt="help me solve a problem step by step">help me solve a problem</button>
-            </div>
-          `;
-
-          welcome.querySelectorAll("[data-prompt]").forEach(button => {
-            button.addEventListener("click", () => {
-              elements.input.value = button.dataset.prompt;
-              autoResize();
-              elements.input.focus();
-            });
-          });
-
-          elements.messages.appendChild(welcome);
-          return;
-        }
-
-        chat.messages.forEach((message, index) => {
-          elements.messages.appendChild(createMessageElement(message, index));
-        });
-
-        scrollToBottom();
-      }
-
-      function createMessageElement(message, index) {
-        const wrapper = document.createElement("article");
-        wrapper.className = "message " + message.role;
 
         const content = document.createElement("div");
-        content.className = "message-content";
+        content.textContent = message.content || "";
+        bubble.append(content);
+        wrapper.append(bubble);
+      } else {
+        const body = document.createElement("div");
+        body.className = "assistant-message";
+        body.innerHTML = renderMarkdown(message.content || "");
+        wrapper.append(body);
 
-        if (message.role === "assistant") {
-          content.innerHTML = renderMarkdown(message.content || "");
-        } else {
-          content.textContent = message.content || "";
-        }
+        const actions = document.createElement("div");
+        actions.className = "message-actions";
 
-        wrapper.appendChild(content);
+        const copy = document.createElement("button");
+        copy.textContent = "copy";
+        copy.addEventListener("click", () => copyText(message.content || ""));
 
-        if (message.attachments && message.attachments.length) {
-          const fileList = document.createElement("div");
-          fileList.style.cssText = "margin-top:6px;color:#888;font-size:11px";
+        const regenerate = document.createElement("button");
+        regenerate.textContent = "regenerate";
+        regenerate.addEventListener("click", () => regenerateResponse(index));
 
-          fileList.textContent = message.attachments
-            .map(file => "📎 " + file.name)
-            .join(" · ");
-
-          wrapper.appendChild(fileList);
-        }
-
-        if (message.role === "assistant" && !message.pending) {
-          const actions = document.createElement("div");
-          actions.className = "message-actions";
-
-          const copy = document.createElement("button");
-          copy.textContent = "copy";
-          copy.addEventListener("click", () => copyText(message.content || ""));
-
-          const regenerate = document.createElement("button");
-          regenerate.textContent = "regenerate";
-          regenerate.addEventListener("click", () => regenerateAnswer(index));
-
-          actions.append(copy, regenerate);
-          wrapper.appendChild(actions);
-        }
-
-        if (message.role === "user" && !message.pending) {
-          const actions = document.createElement("div");
-          actions.className = "message-actions";
-
-          const edit = document.createElement("button");
-          edit.textContent = "edit";
-          edit.addEventListener("click", () => editMessage(index));
-
-          actions.appendChild(edit);
-          wrapper.appendChild(actions);
-        }
-
-        if (message.pending) {
-          const typing = document.createElement("div");
-          typing.className = "typing";
-          typing.innerHTML = "<span></span><span></span><span></span>";
-          wrapper.appendChild(typing);
-        }
-
-        return wrapper;
+        actions.append(copy, regenerate);
+        wrapper.append(actions);
       }
 
-      function openRename(chat) {
-        renameTarget = chat.id;
-        elements.renameInput.value = chat.title || "";
-        elements.renameModal.hidden = false;
-        elements.renameInput.focus();
-        elements.renameInput.select();
+      if (message.role === "user") {
+        const actions = document.createElement("div");
+        actions.className = "message-actions";
+
+        const edit = document.createElement("button");
+        edit.textContent = "edit";
+        edit.addEventListener("click", () => editMessage(index));
+
+        const copy = document.createElement("button");
+        copy.textContent = "copy";
+        copy.addEventListener("click", () => copyText(message.content || ""));
+
+        actions.append(edit, copy);
+        wrapper.append(actions);
       }
 
-      function closeRename() {
-        elements.renameModal.hidden = true;
-        renameTarget = null;
+      messagesEl.append(wrapper);
+    }
+
+    conversation.scrollTop = conversation.scrollHeight;
+  }
+
+  function renderAttachments() {
+    attachmentPreview.innerHTML = "";
+
+    state.attachments.forEach((file, index) => {
+      const item = document.createElement("div");
+      item.className = "attachment-item";
+
+      const name = document.createElement("span");
+      name.textContent = file.name;
+      name.title = file.name;
+
+      const remove = document.createElement("button");
+      remove.textContent = "×";
+      remove.setAttribute("aria-label", `remove ${file.name}`);
+      remove.addEventListener("click", () => {
+        state.attachments.splice(index, 1);
+        renderAttachments();
+      });
+
+      item.append(name, remove);
+      attachmentPreview.append(item);
+    });
+  }
+
+  function renderAll() {
+    renderChatList();
+    renderMessages();
+    renderAttachments();
+  }
+
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast("copied");
+    } catch {
+      const temp = document.createElement("textarea");
+      temp.value = text;
+      document.body.append(temp);
+      temp.select();
+      document.execCommand("copy");
+      temp.remove();
+      showToast("copied");
+    }
+  }
+
+  async function updateTitle(chat) {
+    if (!chat || !chat.messages.some(m => m.role === "user")) return;
+
+    try {
+      const response = await fetch("/api/title", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: chat.messages })
+      });
+
+      if (!response.ok) return;
+
+      const data = await response.json();
+      const title = String(data.title || "")
+        .trim()
+        .split(/\s+/)
+        .slice(0, 3)
+        .join(" ");
+
+      if (title) {
+        chat.title = title;
+        chat.updatedAt = Date.now();
+        save();
+        renderChatList();
       }
+    } catch {
+      // Keep the existing title if automatic naming is temporarily unavailable.
+    }
+  }
 
-      function saveRename() {
-        const chat = chats.find(item => item.id === renameTarget);
-        const title = elements.renameInput.value.trim();
+  async function readFile(file) {
+    const MAX_FILE_SIZE = 4 * 1024 * 1024;
 
-        if (chat && title) {
-          chat.title = title.slice(0, 60);
-          updateChatTimestamp(chat);
-          saveChats();
-          renderChatList();
-        }
+    if (file.size > MAX_FILE_SIZE) {
+      throw new Error(`${file.name} is larger than 4 MB`);
+    }
 
-        closeRename();
-      }
+    const base = {
+      name: file.name,
+      type: file.type || "application/octet-stream",
+      size: file.size
+    };
 
-      function deleteChat(id) {
-        const chat = chats.find(item => item.id === id);
-        if (!chat) return;
-
-        if (!confirm(`delete "${chat.title || "New Chat"}"?`)) return;
-
-        chats = chats.filter(item => item.id !== id);
-
-        if (activeChatId === id) {
-          activeChatId = chats[0]?.id || null;
-        }
-
-        saveChats();
-
-        if (!activeChatId) {
-          createChat();
-        } else {
-          renderChatList();
-          renderMessages();
-        }
-      }
-
-      function autoResize() {
-        elements.input.style.height = "auto";
-        elements.input.style.height =
-          Math.min(elements.input.scrollHeight, 200) + "px";
-      }
-
-      function updateTitle(chat) {
-        if (!chat || !chat.messages.some(m => m.role === "user")) return;
-
-        fetch("/api/title", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: chat.messages
-              .filter(m => m.role === "user" || m.role === "assistant")
-              .map(m => ({ role: m.role, content: m.content }))
-          })
-        })
-          .then(response => {
-            if (!response.ok) throw new Error("title request failed");
-            return response.json();
-          })
-          .then(data => {
-            if (!data.title || currentChat()?.id !== chat.id) return;
-
-            const words = String(data.title).trim().split(/\s+/).slice(0, 3);
-            chat.title = words.join(" ");
-            updateChatTimestamp(chat);
-            saveChats();
-            renderChatList();
-          })
-          .catch(() => {
-            if (!chat.messages.some(m => m.role === "assistant")) return;
-            if (chat.title !== "New Chat") return;
-
-            const firstUser = chat.messages.find(m => m.role === "user");
-            if (firstUser) {
-              chat.title = firstUser.content
-                .trim()
-                .split(/\s+/)
-                .slice(0, 3)
-                .join(" ");
-              saveChats();
-              renderChatList();
-            }
-          });
-      }
-
-      function readFileAsDataURL(file) {
-        return new Promise((resolve, reject) => {
+    if (file.type.startsWith("image/")) {
+      return {
+        ...base,
+        dataUrl: await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result);
           reader.onerror = reject;
           reader.readAsDataURL(file);
-        });
+        })
+      };
+    }
+
+    const textLike =
+      file.type.startsWith("text/") ||
+      /\.(txt|md|csv|json|js|jsx|ts|tsx|html|css|xml|yaml|yml|py|java|c|cpp|h|sql|log)$/i.test(file.name);
+
+    if (textLike) {
+      const text = await file.text();
+
+      return {
+        ...base,
+        text: text.slice(0, 60000)
+      };
+    }
+
+    return {
+      ...base,
+      text: ""
+    };
+  }
+
+  async function attachFiles(files) {
+    for (const file of Array.from(files || [])) {
+      try {
+        const parsed = await readFile(file);
+        state.attachments.push(parsed);
+      } catch (error) {
+        showToast(error.message || "couldn't read that file");
       }
+    }
 
-      function readFileAsText(file) {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(String(reader.result || ""));
-          reader.onerror = reject;
-          reader.readAsText(file);
-        });
-      }
+    renderAttachments();
+  }
 
-      async function addFiles(fileList) {
-        const selected = Array.from(fileList || []);
+  function buildUserContent(text, attachments) {
+    const sections = [];
 
-        for (const file of selected) {
-          if (file.size > 4 * 1024 * 1024) {
-            toast(file.name + " is too large (max 4 MB)");
-            continue;
-          }
+    if (text.trim()) sections.push(text.trim());
 
-          const attachment = {
-            id: uid(),
-            name: file.name,
-            type: file.type || "application/octet-stream",
-            size: file.size,
-            dataUrl: null,
-            text: null
-          };
-
-          try {
-            if (file.type.startsWith("image/")) {
-              attachment.dataUrl = await readFileAsDataURL(file);
-            } else if (
-              file.type.startsWith("text/") ||
-              /\.(txt|md|json|csv|js|html|css|py|xml|yaml|yml|log)$/i.test(file.name)
-            ) {
-              attachment.text = (await readFileAsText(file)).slice(0, 60000);
-            }
-          } catch {
-            toast("couldn't read " + file.name);
-            continue;
-          }
-
-          attachments.push(attachment);
-        }
-
-        renderAttachments();
-        elements.fileInput.value = "";
-      }
-
-      function renderAttachments() {
-        elements.attachmentPreview.innerHTML = "";
-
-        attachments.forEach(file => {
-          const chip = document.createElement("div");
-          chip.className = "attachment-chip";
-
-          const label = document.createElement("span");
-          label.textContent = file.name;
-          label.title = file.name;
-
-          const remove = document.createElement("button");
-          remove.type = "button";
-          remove.textContent = "×";
-          remove.title = "Remove file";
-          remove.addEventListener("click", () => {
-            attachments = attachments.filter(item => item.id !== file.id);
-            renderAttachments();
-          });
-
-          chip.append(label, remove);
-          elements.attachmentPreview.appendChild(chip);
-        });
-
-        $("clearFiles").style.visibility = attachments.length ? "visible" : "hidden";
-      }
-
-      function makeUserContent(text, files) {
-        const pieces = [];
-
-        if (text.trim()) pieces.push(text.trim());
-
-        files.forEach(file => {
-          if (file.text) {
-            pieces.push(`\n[file: ${file.name}]\n${file.text}`);
-          } else if (file.dataUrl) {
-            pieces.push(`[image attached: ${file.name}]`);
-          } else {
-            pieces.push(`[file attached: ${file.name}]`);
-          }
-        });
-
-        return pieces.join("\n\n");
-      }
-
-      async function readStream(response, onChunk) {
-        if (!response.body) {
-          const text = await response.text();
-          onChunk(text);
-          return text;
-        }
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let fullText = "";
-        let buffer = "";
-        let isSSE = false;
-
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-
-          if (!isSSE && buffer.startsWith("data:")) {
-            isSSE = true;
-          }
-
-          if (!isSSE) {
-            fullText += decoder.decode(value, { stream: false });
-            onChunk(fullText);
-            continue;
-          }
-
-          const lines = buffer.split("\n");
-          buffer = lines.pop() || "";
-
-          for (const line of lines) {
-            if (!line.startsWith("data:")) continue;
-
-            const payload = line.slice(5).trim();
-            if (!payload || payload === "[DONE]") continue;
-
-            try {
-              const data = JSON.parse(payload);
-
-              if (data.response) {
-                fullText += data.response;
-                onChunk(fullText);
-              } else if (data.text) {
-                fullText += data.text;
-                onChunk(fullText);
-              } else if (data.error) {
-                throw new Error(data.error);
-              }
-            } catch (error) {
-              if (error instanceof SyntaxError) continue;
-              throw error;
-            }
-          }
-        }
-
-        if (buffer.trim() && !isSSE) {
-          fullText += buffer;
-          onChunk(fullText);
-        }
-
-        return fullText;
-      }
-
-      async function sendMessage(textOverride = null) {
-        if (busy) return;
-
-        const text = textOverride !== null
-          ? textOverride
-          : elements.input.value;
-
-        const files = attachments.slice();
-
-        if (!text.trim() && !files.length) return;
-
-        const chat = ensureChat();
-        const userContent = makeUserContent(text, files);
-
-        chat.messages.push({
-          role: "user",
-          content: userContent,
-          attachments: files.map(file => ({ name: file.name, type: file.type }))
-        });
-
-        attachments = [];
-        renderAttachments();
-        elements.input.value = "";
-        autoResize();
-
-        busy = true;
-        abortController = new AbortController();
-        elements.send.textContent = "■";
-        elements.send.classList.add("stop");
-        elements.send.title = "Stop generating";
-
-        const assistantMessage = {
-          role: "assistant",
-          content: "",
-          pending: true
-        };
-
-        chat.messages.push(assistantMessage);
-        updateChatTimestamp(chat);
-        saveChats();
-        renderChatList();
-        renderMessages();
-
-        const image = files.find(file => file.dataUrl)?.dataUrl || null;
-
-        const payloadMessages = chat.messages
-          .filter(message => !message.pending)
-          .map(message => ({
-            role: message.role,
-            content: message.content
-          }));
-
-        const last = payloadMessages[payloadMessages.length - 1];
-
-        if (last && last.role === "user" && image) {
-          last.content += "\n[an image is attached to this message]";
-        }
-
-        try {
-          const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            signal: abortController.signal,
-            body: JSON.stringify({
-              messages: payloadMessages,
-              image,
-              attachments: files.map(file => ({
-                name: file.name,
-                type: file.type,
-                text: file.text,
-                dataUrl: file.dataUrl
-              }))
-            })
-          });
-
-          if (!response.ok) {
-            let message = "request failed (" + response.status + ")";
-
-            try {
-              const data = await response.json();
-              if (data.error) message = data.error;
-              if (data.details) message += ": " + data.details;
-            } catch {}
-
-            throw new Error(message);
-          }
-
-          const contentType = response.headers.get("content-type") || "";
-
-          if (contentType.includes("application/json")) {
-            const data = await response.json();
-            if (data.error) throw new Error(data.error);
-
-            assistantMessage.content = data.response || data.text || "";
-          } else {
-            await readStream(response, fullText => {
-              assistantMessage.content = fullText;
-              assistantMessage.pending = false;
-              lastAssistantText = fullText;
-
-              if (currentChat()?.id === chat.id) {
-                renderMessages();
-              }
-            });
-          }
-
-          assistantMessage.pending = false;
-
-          if (!assistantMessage.content.trim()) {
-            assistantMessage.content = "i didn't get a response back. try sending that again.";
-          }
-
-          lastAssistantText = assistantMessage.content;
-        } catch (error) {
-          assistantMessage.pending = false;
-
-          if (error.name === "AbortError") {
-            if (!assistantMessage.content.trim()) {
-              chat.messages = chat.messages.filter(m => m !== assistantMessage);
-            }
-          } else {
-            assistantMessage.content =
-              "something went wrong: " + (error.message || "request failed");
-            assistantMessage.isError = true;
-          }
-        } finally {
-          busy = false;
-          abortController = null;
-          elements.send.textContent = "↑";
-          elements.send.classList.remove("stop");
-          elements.send.title = "Send message";
-
-          updateChatTimestamp(chat);
-          saveChats();
-
-          if (currentChat()?.id === chat.id) {
-            renderMessages();
-          }
-
-          renderChatList();
-          updateTitle(chat);
-          elements.input.focus();
-        }
-      }
-
-      async function regenerateAnswer(index) {
-        if (busy) return;
-
-        const chat = currentChat();
-        if (!chat) return;
-
-        const assistantIndex = index;
-        const previousUserIndex = chat.messages
-          .slice(0, assistantIndex)
-          .map(message => message.role)
-          .lastIndexOf("user");
-
-        if (previousUserIndex < 0) return;
-
-        chat.messages = chat.messages.slice(0, assistantIndex);
-        saveChats();
-        renderMessages();
-
-        const userMessage = chat.messages[previousUserIndex];
-        await sendMessage(userMessage.content);
-      }
-
-      function editMessage(index) {
-        if (busy) return;
-
-        const chat = currentChat();
-        if (!chat) return;
-
-        const message = chat.messages[index];
-        if (!message || message.role !== "user") return;
-
-        elements.input.value = message.content;
-        chat.messages = chat.messages.slice(0, index);
-        saveChats();
-        renderMessages();
-        autoResize();
-        elements.input.focus();
-      }
-
-      async function copyText(text) {
-        try {
-          await navigator.clipboard.writeText(text);
-          toast("copied");
-        } catch {
-          const area = document.createElement("textarea");
-          area.value = text;
-          document.body.appendChild(area);
-          area.select();
-
-          try {
-            document.execCommand("copy");
-            toast("copied");
-          } catch {
-            toast("couldn't copy");
-          }
-
-          area.remove();
-        }
-      }
-
-      function exportChat() {
-        const chat = currentChat();
-        if (!chat) {
-          toast("no chat to export");
-          return;
-        }
-
-        const blob = new Blob(
-          [JSON.stringify(chat, null, 2)],
-          { type: "application/json" }
+    for (const file of attachments) {
+      if (file.text) {
+        sections.push(
+          `\n[file: ${file.name}]\n${file.text}\n[/file]`
         );
+      } else {
+        sections.push(`[attached file: ${file.name}]`);
+      }
+    }
 
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
+    return sections.join("\n\n");
+  }
 
-        link.href = url;
-        link.download =
-          (chat.title || "kage-chat")
-            .replace(/[^\w -]/g, "")
-            .replace(/\s+/g, "-")
-            .slice(0, 60) + ".json";
+  function getApiMessages(chat) {
+    return chat.messages.map(message => ({
+      role: message.role,
+      content: message.content || ""
+    }));
+  }
 
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
+  async function sendMessage(textOverride) {
+    if (state.busy) return;
+
+    const text = typeof textOverride === "string"
+      ? textOverride
+      : promptEl.value;
+
+    const attachments = state.attachments.slice();
+
+    if (!text.trim() && !attachments.length) return;
+
+    let chat = activeChat();
+    if (!chat) chat = createChat();
+
+    const content = buildUserContent(text, attachments);
+
+    chat.messages.push({
+      role: "user",
+      content,
+      attachments: attachments.map(file => ({
+        name: file.name,
+        type: file.type,
+        size: file.size
+      })),
+      timestamp: Date.now()
+    });
+
+    chat.updatedAt = Date.now();
+
+    if (chat.title === "New Chat") {
+      const firstWords = text.trim().split(/\s+/).slice(0, 3).join(" ");
+      if (firstWords) chat.title = firstWords;
+    }
+
+    state.attachments = [];
+    promptEl.value = "";
+    resizePrompt();
+    renderAll();
+    save();
+
+    await requestReply(chat);
+  }
+
+  async function requestReply(chat) {
+    if (state.busy) return;
+
+    state.busy = true;
+    sendButton.disabled = true;
+    statusEl.textContent = "thinking...";
+
+    const assistantMessage = {
+      role: "assistant",
+      content: "",
+      timestamp: Date.now()
+    };
+
+    chat.messages.push(assistantMessage);
+    renderMessages();
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: getApiMessages(chat)
+        })
+      });
+
+      if (!response.ok) {
+        let errorMessage = `request failed (${response.status})`;
+
+        try {
+          const errorData = await response.json();
+          if (errorData.error) errorMessage = errorData.error;
+          if (errorData.details) errorMessage += `: ${errorData.details}`;
+        } catch {}
+
+        throw new Error(errorMessage);
       }
 
-      function toggleSidebar() {
-        elements.sidebar.classList.toggle("open");
-        elements.mobileBackdrop.classList.toggle("open");
+      if (!response.body) {
+        throw new Error("the server returned an empty response");
       }
 
-      function closeSidebarMobile() {
-        elements.sidebar.classList.remove("open");
-        elements.mobileBackdrop.classList.remove("open");
-      }
+      statusEl.textContent = "";
 
-      function startVoiceInput() {
-        const SpeechRecognition =
-          window.SpeechRecognition || window.webkitSpeechRecognition;
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
 
-        if (!SpeechRecognition) {
-          toast("voice input isn't supported in this browser");
-          return;
-        }
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
 
-        if (recognition) {
-          recognition.stop();
-          recognition = null;
-          $("voiceButton").style.color = "";
-          return;
-        }
+        buffer += decoder.decode(value, { stream: true });
 
-        recognition = new SpeechRecognition();
-        recognition.lang = navigator.language || "en-US";
-        recognition.interimResults = true;
-        recognition.continuous = false;
+        const lines = buffer.split(/\r?\n/);
+        buffer = lines.pop() || "";
 
-        const originalText = elements.input.value;
+        for (const line of lines) {
+          if (!line.startsWith("data:")) continue;
 
-        recognition.onstart = () => {
-          $("voiceButton").style.color = "#fff";
-          toast("listening...");
-        };
+          const payload = line.slice(5).trim();
+          if (!payload || payload === "[DONE]") continue;
 
-        recognition.onresult = event => {
-          let transcript = "";
+          try {
+            const parsed = JSON.parse(payload);
 
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            transcript += event.results[i][0].transcript;
+            if (parsed.response) {
+              assistantMessage.content += parsed.response;
+            } else if (parsed.choices?.[0]?.delta?.content) {
+              assistantMessage.content += parsed.choices[0].delta.content;
+            } else if (parsed.delta) {
+              assistantMessage.content += parsed.delta;
+            } else if (parsed.text) {
+              assistantMessage.content += parsed.text;
+            }
+          } catch {
+            // Ignore non-JSON SSE lines.
           }
 
-          elements.input.value = originalText
-            ? originalText + " " + transcript
-            : transcript;
-
-          autoResize();
-        };
-
-        recognition.onerror = () => {
-          toast("couldn't hear that. try again");
-        };
-
-        recognition.onend = () => {
-          recognition = null;
-          $("voiceButton").style.color = "";
-        };
-
-        recognition.start();
-      }
-
-      function speakLastAnswer() {
-        if (!("speechSynthesis" in window)) {
-          toast("read aloud isn't supported in this browser");
-          return;
-        }
-
-        const chat = currentChat();
-        const latest = chat?.messages
-          .slice()
-          .reverse()
-          .find(message => message.role === "assistant" && message.content);
-
-        if (!latest) {
-          toast("no answer to read yet");
-          return;
-        }
-
-        speechSynthesis.cancel();
-
-        const utterance = new SpeechSynthesisUtterance(latest.content);
-        utterance.rate = 1.05;
-        speechSynthesis.speak(utterance);
-      }
-
-      function handleCodeCopy(event) {
-        const button = event.target.closest("[data-copy-code]");
-        if (!button) return;
-
-        const code = button.closest(".code-wrap")?.querySelector("pre code");
-        if (code) copyText(code.textContent);
-      }
-
-      elements.messages.addEventListener("click", handleCodeCopy);
-
-      $("newChat").addEventListener("click", createChat);
-      $("newChatTop").addEventListener("click", createChat);
-
-      $("openSidebar").addEventListener("click", toggleSidebar);
-      $("closeSidebar").addEventListener("click", closeSidebarMobile);
-      elements.mobileBackdrop.addEventListener("click", closeSidebarMobile);
-
-      elements.downloadButton.addEventListener("click", () => {
-        const open = elements.downloadMenu.classList.toggle("open");
-        elements.downloadButton.setAttribute("aria-expanded", String(open));
-      });
-
-      document.querySelectorAll(".download-option").forEach(button => {
-        button.addEventListener("click", async () => {
-          const device = button.dataset.device;
-          elements.downloadMenu.classList.remove("open");
-          elements.downloadButton.setAttribute("aria-expanded", "false");
-
-          const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-
-          if (isStandalone) {
-            toast("kage is already installed in this browser");
-            return;
-          }
-
-          if (window.deferredInstallPrompt) {
-            window.deferredInstallPrompt.prompt();
-            await window.deferredInstallPrompt.userChoice;
-            window.deferredInstallPrompt = null;
-            return;
-          }
-
-          let instructions;
-
-          if (/iphone|ipad/i.test(device)) {
-            instructions =
-              "on your apple device, open kage in safari, tap share, then tap 'add to home screen'.";
-          } else if (/android/i.test(device)) {
-            instructions =
-              "open kage in chrome, tap the browser menu, then choose 'install app' or 'add to home screen'.";
-          } else {
-            instructions =
-              "open kage in edge or chrome and use the install icon in the address bar, or open the browser menu and choose 'install this site as an app' if available.";
-          }
-
-          alert(device + "\n\n" + instructions);
-        });
-      });
-
-      window.addEventListener("beforeinstallprompt", event => {
-        event.preventDefault();
-        window.deferredInstallPrompt = event;
-      });
-
-      $("exportChat").addEventListener("click", exportChat);
-
-      $("attachButton").addEventListener("click", () => {
-        elements.fileInput.click();
-      });
-
-      elements.fileInput.addEventListener("change", event => {
-        addFiles(event.target.files);
-      });
-
-      $("clearFiles").addEventListener("click", () => {
-        attachments = [];
-        renderAttachments();
-      });
-
-      $("voiceButton").addEventListener("click", startVoiceInput);
-      $("speakButton").addEventListener("click", speakLastAnswer);
-
-      elements.composer.addEventListener("submit", event => {
-        event.preventDefault();
-
-        if (busy && abortController) {
-          abortController.abort();
-          return;
-        }
-
-        sendMessage();
-      });
-
-      elements.input.addEventListener("input", autoResize);
-
-      elements.input.addEventListener("keydown", event => {
-        if (event.key === "Enter" && !event.shiftKey) {
-          event.preventDefault();
-
-          if (busy) return;
-          sendMessage();
-        }
-      });
-
-      $("renameCancel").addEventListener("click", closeRename);
-      $("renameSave").addEventListener("click", saveRename);
-
-      elements.renameInput.addEventListener("keydown", event => {
-        if (event.key === "Enter") saveRename();
-        if (event.key === "Escape") closeRename();
-      });
-
-      elements.renameModal.addEventListener("click", event => {
-        if (event.target === elements.renameModal) closeRename();
-      });
-
-      document.addEventListener("click", event => {
-        if (
-          !elements.downloadMenu.contains(event.target) &&
-          !elements.downloadButton.contains(event.target)
-        ) {
-          elements.downloadMenu.classList.remove("open");
-          elements.downloadButton.setAttribute("aria-expanded", "false");
-        }
-      });
-
-      window.addEventListener("storage", event => {
-        if (event.key === STORAGE_KEY) {
-          chats = loadChats();
-          renderChatList();
           renderMessages();
         }
-      });
-
-      if (!chats.length) {
-        createChat();
-      } else {
-        if (!chats.some(chat => chat.id === activeChatId)) {
-          activeChatId = chats[0].id;
-        }
-
-        saveChats();
-        renderChatList();
-        renderMessages();
       }
 
-      renderAttachments();
-      autoResize();
-    })();
-  </script>
+      if (!assistantMessage.content.trim()) {
+        throw new Error("the model returned no readable text");
+      }
+
+      chat.updatedAt = Date.now();
+      save();
+      await updateTitle(chat);
+    } catch (error) {
+      assistantMessage.content = assistantMessage.content
+        ? assistantMessage.content + "\n\nsomething interrupted the response. try again."
+        : `couldn't get a reply: ${error.message}`;
+
+      save();
+      renderMessages();
+    } finally {
+      state.busy = false;
+      sendButton.disabled = false;
+      statusEl.textContent = "";
+      renderChatList();
+      promptEl.focus();
+    }
+  }
+
+  function editMessage(index) {
+    const chat = activeChat();
+    if (!chat || state.busy) return;
+
+    const message = chat.messages[index];
+    if (!message || message.role !== "user") return;
+
+    const updated = window.prompt("edit your message:", message.content);
+    if (updated === null) return;
+
+    chat.messages = chat.messages.slice(0, index);
+    chat.messages.push({
+      role: "user",
+      content: updated,
+      timestamp: Date.now()
+    });
+
+    save();
+    renderMessages();
+    requestReply(chat);
+  }
+
+  function regenerateResponse(index) {
+    const chat = activeChat();
+    if (!chat || state.busy) return;
+
+    chat.messages = chat.messages.slice(0, index);
+    save();
+    renderMessages();
+    requestReply(chat);
+  }
+
+  function resizePrompt() {
+    promptEl.style.height = "auto";
+    promptEl.style.height = Math.min(promptEl.scrollHeight, 190) + "px";
+  }
+
+  function toggleSidebar() {
+    sidebar.classList.toggle("hidden");
+  }
+
+  function closeMenus(except) {
+    if (except !== downloadMenu) downloadMenu.classList.add("hidden");
+  }
+
+  function openDownloadMenu() {
+    downloadMenu.classList.toggle("hidden");
+  }
+
+  function deviceInstructions(device) {
+    const instructions = {
+      iphone:
+        "open kage in safari, tap the share button, then choose “add to home screen.” this creates a home-screen shortcut.",
+      ipad:
+        "open kage in safari, tap the share button, then choose “add to home screen.”",
+      "android-phone":
+        "open kage in chrome, tap the three-dot menu, then choose “install app” or “add to home screen” if available.",
+      "android-tablet":
+        "open kage in chrome, tap the three-dot menu, then choose “install app” or “add to home screen” if available.",
+      computer:
+        "open kage in microsoft edge or chrome. use the browser's install option if available, or create a desktop shortcut.",
+      laptop:
+        "open kage in your browser. use its install option if available, or create a shortcut from the browser menu."
+    };
+
+    downloadInfo.textContent = instructions[device] ||
+      "open kage in your device's browser and use its install or add-to-home-screen option if available.";
+  }
+
+  function exportChats() {
+    const blob = new Blob(
+      [JSON.stringify(state.chats, null, 2)],
+      { type: "application/json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "kage-chats.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function importChats(file) {
+    if (!file) return;
+
+    try {
+      const parsed = JSON.parse(await file.text());
+      if (!Array.isArray(parsed)) throw new Error("invalid chat file");
+
+      const valid = parsed.filter(chat =>
+        chat &&
+        typeof chat.id === "string" &&
+        Array.isArray(chat.messages)
+      );
+
+      if (!valid.length) throw new Error("no valid chats found");
+
+      const existingIds = new Set(state.chats.map(chat => chat.id));
+
+      for (const chat of valid) {
+        if (existingIds.has(chat.id)) chat.id = id();
+        state.chats.push(chat);
+      }
+
+      state.chats.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      state.activeId = valid[0].id;
+
+      save();
+      renderAll();
+      showToast("chats imported");
+    } catch (error) {
+      showToast(error.message || "couldn't import chats");
+    }
+  }
+
+  async function toggleVoiceInput() {
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!Recognition) {
+      showToast("voice input isn't supported in this browser");
+      return;
+    }
+
+    const recognition = new Recognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    recognition.onstart = () => {
+      statusEl.textContent = "listening...";
+      $("voice-button").style.color = "#fff";
+    };
+
+    recognition.onresult = event => {
+      let result = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        result += event.results[i][0].transcript;
+      }
+
+      promptEl.value = result;
+      resizePrompt();
+    };
+
+    recognition.onerror = () => {
+      statusEl.textContent = "";
+      showToast("voice input stopped");
+    };
+
+    recognition.onend = () => {
+      statusEl.textContent = "";
+      $("voice-button").style.color = "";
+    };
+
+    recognition.start();
+  }
+
+  function speakLastReply() {
+    if (!("speechSynthesis" in window)) {
+      showToast("read aloud isn't supported in this browser");
+      return;
+    }
+
+    if (speechSynthesis.speaking) {
+      speechSynthesis.cancel();
+      state.speaking = false;
+      return;
+    }
+
+    const chat = activeChat();
+    const lastReply = [...(chat?.messages || [])]
+      .reverse()
+      .find(message => message.role === "assistant" && message.content);
+
+    if (!lastReply) {
+      showToast("no reply to read yet");
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(lastReply.content);
+    utterance.rate = 1.05;
+    utterance.onend = () => {
+      state.speaking = false;
+    };
+
+    state.speaking = true;
+    speechSynthesis.speak(utterance);
+  }
+
+  $("new-chat").addEventListener("click", createChat);
+  $("open-sidebar").addEventListener("click", toggleSidebar);
+  $("close-sidebar").addEventListener("click", toggleSidebar);
+
+  $("send-button").addEventListener("click", () => sendMessage());
+
+  promptEl.addEventListener("input", resizePrompt);
+
+  promptEl.addEventListener("keydown", event => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+
+  $("attach-button").addEventListener("click", () => $("file-input").click());
+
+  $("file-input").addEventListener("change", async event => {
+    await attachFiles(event.target.files);
+    event.target.value = "";
+  });
+
+  $("voice-button").addEventListener("click", toggleVoiceInput);
+  $("speak-button").addEventListener("click", speakLastReply);
+
+  $("export-chat").addEventListener("click", exportChats);
+  $("import-chat").addEventListener("click", () => $("import-input").click());
+
+  $("import-input").addEventListener("change", async event => {
+    await importChats(event.target.files[0]);
+    event.target.value = "";
+  });
+
+  $("download-button").addEventListener("click", event => {
+    event.stopPropagation();
+    openDownloadMenu();
+  });
+
+  $("sidebar-download").addEventListener("click", () => {
+    downloadMenu.classList.remove("hidden");
+    downloadInfo.textContent =
+      "choose your device above for installation instructions.";
+    if (window.innerWidth <= 700) sidebar.classList.add("hidden");
+  });
+
+  downloadMenu.querySelectorAll("[data-device]").forEach(button => {
+    button.addEventListener("click", () => {
+      deviceInstructions(button.dataset.device);
+    });
+  });
+
+  document.addEventListener("click", event => {
+    if (!event.target.closest(".menu-wrap")) closeMenus();
+  });
+
+  document.querySelectorAll("[data-prompt]").forEach(button => {
+    button.addEventListener("click", () => {
+      promptEl.value = button.dataset.prompt;
+      resizePrompt();
+      promptEl.focus();
+    });
+  });
+
+  window.addEventListener("beforeunload", save);
+
+  load();
+})();
+</script>
 </body>
 </html>
