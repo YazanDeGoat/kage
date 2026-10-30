@@ -1,1599 +1,2132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#000000">
-<meta name="description" content="kage ai">
-<link rel="manifest" href="/manifest.json">
-<title>kage</title>
-
-<style>
-:root {
-  color-scheme: dark;
-  --bg: #000;
-  --panel: #080808;
-  --hover: #141414;
-  --border: #242424;
-  --text: #f5f5f5;
-  --muted: #858585;
-}
-
-* { box-sizing: border-box; }
-
-html, body {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  background: #000;
-  color: var(--text);
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Helvetica, Arial, sans-serif;
-  font-size: 14px;
-}
-
-body { overflow: hidden; }
-button, textarea { font: inherit; }
-button { color: inherit; cursor: pointer; }
-button:focus-visible, textarea:focus-visible {
-  outline: 1px solid #777;
-  outline-offset: 2px;
-}
-
-button:disabled { opacity: .5; cursor: not-allowed; }
-
-.app { display: flex; width: 100%; height: 100dvh; background: #000; }
-
-.sidebar {
-  width: 254px;
-  min-width: 254px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: #050505;
-  border-right: 1px solid #181818;
-  padding: 17px 12px 12px;
-  transition: transform .2s ease;
-}
-
-.sidebar-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 7px 23px;
-}
-
-.brand {
-  color: #fff;
-  font-size: 19px;
-  font-weight: 650;
-  letter-spacing: -1px;
-  text-decoration: none;
-}
-
-.brand-dot {
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  margin-left: 2px;
-  border-radius: 50%;
-  background: white;
-  vertical-align: middle;
-}
-
-.icon-button {
-  width: 34px;
-  height: 34px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid transparent;
-  border-radius: 9px;
-  background: transparent;
-  color: #aaa;
-  font-size: 17px;
-  flex-shrink: 0;
-}
-
-.icon-button:hover { background: #141414; color: #fff; }
-
-.new-chat {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 12px;
-  background: #fff;
-  color: #000;
-  border: 0;
-  border-radius: 10px;
-  font-weight: 600;
-  text-align: left;
-}
-
-.new-chat:hover { background: #ddd; }
-.new-chat .plus { font-size: 21px; font-weight: 400; }
-
-.section-label {
-  padding: 26px 9px 9px;
-  color: #656565;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-}
-
-.chat-list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #333 transparent;
-}
-
-.chat-item {
-  width: 100%;
-  min-height: 39px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 8px 0 11px;
-  margin-bottom: 3px;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  color: #aaa;
-  text-align: left;
-}
-
-.chat-item:hover, .chat-item.active {
-  background: #141414;
-  color: #fff;
-}
-
-.chat-title {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  background: transparent;
-  border: 0;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.chat-menu {
-  color: #888;
-  opacity: 0;
-  font-size: 17px;
-  padding: 2px 4px;
-  background: transparent;
-  border: 0;
-}
-
-.chat-item:hover .chat-menu,
-.chat-item.active .chat-menu { opacity: 1; }
-
-.sidebar-bottom { padding-top: 12px; border-top: 1px solid #1b1b1b; }
-
-.profile-row { display: flex; align-items: center; gap: 10px; padding: 9px 7px 3px; }
-
-.profile-mark {
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  border: 1px solid #333;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.profile-name { color: #ddd; font-size: 12px; }
-.profile-status { margin-top: 3px; color: #666; font-size: 11px; }
-
-.main {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: #000;
-}
-
-.topbar {
-  height: 58px;
-  min-height: 58px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 0 24px;
-  border-bottom: 1px solid #151515;
-}
-
-.topbar-left, .topbar-right { display: flex; align-items: center; gap: 9px; }
-.mobile-menu { display: none; }
-
-.model-label { color: #eee; font-size: 13px; font-weight: 600; }
-.model-sub { color: #696969; font-size: 11px; margin-left: 7px; }
-
-.status { display: flex; align-items: center; gap: 7px; color: #888; font-size: 11px; }
-.status-dot { width: 6px; height: 6px; border-radius: 50%; background: #777; }
-
-.conversation {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #292929 transparent;
-  scroll-behavior: smooth;
-}
-
-.messages { width: 100%; max-width: 790px; margin: 0 auto; padding: 36px 28px 38px; }
-
-.welcome {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 30px 0 70px;
-}
-
-.welcome-mark {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  margin-bottom: 27px;
-  border: 1px solid #303030;
-  border-radius: 15px;
-  background: #080808;
-  color: white;
-  font-size: 23px;
-}
-
-.welcome h1 {
-  margin: 0;
-  color: #f7f7f7;
-  font-size: clamp(25px, 3vw, 34px);
-  font-weight: 550;
-  letter-spacing: -1.5px;
-  text-align: center;
-}
-
-.welcome p {
-  max-width: 340px;
-  margin: 12px 0 29px;
-  color: #777;
-  font-size: 13px;
-  line-height: 1.7;
-  text-align: center;
-}
-
-.suggestions {
-  width: 100%;
-  max-width: 530px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 9px;
-}
-
-.suggestion {
-  min-height: 67px;
-  padding: 13px 14px;
-  background: #050505;
-  border: 1px solid #242424;
-  border-radius: 10px;
-  color: #ccc;
-  text-align: left;
-}
-
-.suggestion:hover { background: #0c0c0c; border-color: #555; }
-.suggestion strong { display: block; margin-bottom: 5px; color: #eee; font-size: 12px; }
-.suggestion span { display: block; color: #777; font-size: 11px; line-height: 1.5; }
-
-.message { display: flex; flex-direction: column; margin: 0 0 29px; min-width: 0; }
-.message.user { align-items: flex-end; }
-.message.assistant { align-items: flex-start; }
-
-.message-role {
-  margin: 0 0 8px 2px;
-  color: #777;
-  font-size: 10px;
-  font-weight: 650;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-.message.user .message-role { display: none; }
-
-.message-content {
-  max-width: 100%;
-  min-width: 0;
-  color: #e9e9e9;
-  font-size: 14px;
-  line-height: 1.8;
-  overflow-wrap: anywhere;
-}
-
-.message.user .message-content {
-  max-width: min(85%, 560px);
-  padding: 10px 14px;
-  background: #151515;
-  border: 1px solid #252525;
-  border-radius: 15px 15px 4px 15px;
-  color: #f7f7f7;
-  white-space: pre-wrap;
-}
-
-.message.assistant .message-content { width: 100%; }
-.message-content p { margin: 0 0 12px; }
-.message-content p:last-child { margin-bottom: 0; }
-
-.message-content pre {
-  max-width: 100%;
-  overflow-x: auto;
-  padding: 14px;
-  background: #080808;
-  border: 1px solid #292929;
-  border-radius: 9px;
-  color: #eee;
-  font-size: 12px;
-  line-height: 1.65;
-  white-space: pre;
-}
-
-.message-content code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-}
-
-.message-content :not(pre) > code {
-  padding: 2px 5px;
-  background: #161616;
-  border: 1px solid #252525;
-  border-radius: 4px;
-  font-size: .9em;
-}
-
-.message-content a {
-  color: #fff;
-  text-decoration: underline;
-  text-decoration-color: #777;
-  text-underline-offset: 3px;
-}
-
-.message-content ul, .message-content ol { padding-left: 22px; }
-.message-content li { margin: 4px 0; }
-
-.message-actions { display: flex; gap: 3px; margin: 8px 0 0; opacity: .7; }
-.message-actions button {
-  padding: 5px 8px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background: transparent;
-  color: #888;
-  font-size: 11px;
-}
-
-.message-actions button:hover { background: #151515; color: #fff; }
-
-.typing { display: flex; align-items: center; gap: 5px; padding: 8px 2px; }
-.typing span {
-  width: 5px;
-  height: 5px;
-  background: #777;
-  border-radius: 50%;
-  animation: blink 1.2s infinite ease-in-out;
-}
-
-.typing span:nth-child(2) { animation-delay: .15s; }
-.typing span:nth-child(3) { animation-delay: .3s; }
-
-@keyframes blink {
-  0%, 60%, 100% { opacity: .3; transform: translateY(0); }
-  30% { opacity: 1; transform: translateY(-3px); }
-}
-
-.attachment-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-
-.attachment-chip {
-  max-width: 230px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 7px 10px;
-  background: #111;
-  border: 1px solid #292929;
-  border-radius: 8px;
-  color: #ccc;
-  font-size: 11px;
-}
-
-.attachment-chip button { border: 0; background: transparent; color: #999; padding: 0 2px; }
-
-.composer-area { width: 100%; padding: 12px 24px 17px; background: #000; }
-.composer-wrap { width: 100%; max-width: 790px; margin: 0 auto; }
-
-.composer {
-  padding: 11px 12px 9px;
-  background: #080808;
-  border: 1px solid #303030;
-  border-radius: 15px;
-  transition: border-color .15s;
-}
-
-.composer:focus-within { border-color: #505050; }
-
-#prompt {
-  display: block;
-  width: 100%;
-  min-height: 30px;
-  max-height: 190px;
-  resize: none;
-  overflow-y: auto;
-  padding: 5px 4px 8px;
-  border: 0;
-  outline: none;
-  background: transparent;
-  color: #f5f5f5;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-#prompt::placeholder { color: #686868; }
-
-.composer-tools { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.tool-left, .tool-right { display: flex; align-items: center; gap: 5px; }
-
-.tool-button {
-  min-height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 0 9px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: transparent;
-  color: #999;
-  font-size: 11px;
-  white-space: nowrap;
-}
-
-.tool-button:hover { background: #171717; color: #fff; }
-.tool-button.selected { background: #171717; border-color: #333; color: #fff; }
-
-.send-button {
-  width: 33px;
-  height: 33px;
-  display: grid;
-  place-items: center;
-  border: 0;
-  border-radius: 9px;
-  background: #fff;
-  color: #000;
-  font-size: 17px;
-  font-weight: 700;
-}
-
-.send-button:hover { background: #ddd; }
-.send-button.stop { background: #222; color: #fff; border: 1px solid #444; }
-
-.composer-note { padding-top: 10px; color: #555; font-size: 10px; text-align: center; }
-.hidden { display: none !important; }
-#file-input { display: none; }
-
-.toast {
-  position: fixed;
-  left: 50%;
-  bottom: 110px;
-  z-index: 100;
-  transform: translateX(-50%);
-  padding: 10px 14px;
-  border: 1px solid #333;
-  border-radius: 9px;
-  background: #111;
-  color: #eee;
-  font-size: 12px;
-  box-shadow: 0 8px 35px #000;
-}
-
-/* download menu */
-
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: grid;
-  place-items: center;
-  padding: 18px;
-  background: #000c;
-}
-
-.modal {
-  width: min(100%, 490px);
-  max-height: 85dvh;
-  overflow-y: auto;
-  padding: 22px;
-  background: #050505;
-  border: 1px solid #303030;
-  border-radius: 15px;
-  box-shadow: 0 20px 80px #000;
-}
-
-.modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
-.modal h2 { margin: 0; font-size: 19px; letter-spacing: -.5px; }
-.modal-subtitle { margin: 8px 0 18px; color: #888; font-size: 12px; line-height: 1.6; }
-
-.device-options { display: grid; gap: 8px; }
-
-.device-option {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  padding: 13px;
-  border: 1px solid #252525;
-  border-radius: 10px;
-  background: #080808;
-  text-align: left;
-}
-
-.device-option:hover { background: #121212; border-color: #555; }
-
-.device-icon {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  border: 1px solid #333;
-  border-radius: 9px;
-  color: #fff;
-  font-size: 17px;
-}
-
-.device-copy { flex: 1; min-width: 0; }
-.device-copy strong { display: block; font-size: 12px; font-weight: 600; }
-.device-copy span { display: block; margin-top: 4px; color: #888; font-size: 11px; line-height: 1.5; }
-.device-arrow { color: #888; font-size: 17px; }
-
-.instructions {
-  margin-top: 14px;
-  padding: 13px;
-  border: 1px solid #303030;
-  border-radius: 9px;
-  background: #0a0a0a;
-  color: #ccc;
-  font-size: 12px;
-  line-height: 1.8;
-}
-
-.instructions strong { color: #fff; }
-.instructions ol { padding-left: 20px; }
-.instructions button {
-  padding: 8px 11px;
-  margin-top: 8px;
-  border: 1px solid #444;
-  border-radius: 7px;
-  background: #fff;
-  color: #000;
-}
-
-.mobile-overlay { display: none; }
-
-@media (max-width: 760px) {
-  .sidebar {
-    position: fixed;
-    inset: 0 auto 0 0;
-    z-index: 30;
-    width: 270px;
-    min-width: 270px;
-    transform: translateX(-100%);
-    box-shadow: none;
-  }
-
-  .sidebar.open { transform: translateX(0); box-shadow: 15px 0 50px #000b; }
-
-  .mobile-overlay.open {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 25;
-    background: #0009;
-  }
-
-  .mobile-menu { display: inline-flex; }
-  .topbar { padding: 0 13px; }
-  .model-sub, .status { display: none; }
-  .messages { padding: 27px 17px 30px; }
-  .composer-area { padding: 8px 12px 12px; }
-  .welcome { padding-bottom: 30px; }
-  .welcome h1 { font-size: 28px; }
-  .suggestions { grid-template-columns: 1fr; }
-  .suggestion { min-height: 59px; }
-  .tool-button { padding: 0 7px; }
-}
-
-@media (max-width: 390px) {
-  .tool-label { display: none; }
-  .tool-button { min-width: 32px; }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Kage AI">
+  <title>Kage AI</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #000;
+      --panel: #0b0b0b;
+      --panel-hover: #171717;
+      --border: #242424;
+      --text: #f5f5f5;
+      --muted: #999;
+      --accent: #fff;
+      --sidebar-width: 260px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    textarea,
+    input {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    textarea:focus-visible,
+    input:focus-visible {
+      outline: 2px solid #777;
+      outline-offset: 2px;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    .app {
+      display: flex;
+      width: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      min-width: var(--sidebar-width);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: #080808;
+      border-right: 1px solid var(--border);
+      transition: transform 0.2s ease;
+      z-index: 20;
+    }
+
+    .sidebar-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 17px 14px;
+    }
+
+    .brand {
+      font-size: 21px;
+      font-weight: 750;
+      letter-spacing: -1px;
+    }
+
+    .sidebar-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      background: transparent;
+      color: #ccc;
+      font-size: 17px;
+    }
+
+    .icon-btn:hover {
+      background: #191919;
+      border-color: #292929;
+      color: white;
+    }
+
+    .new-chat {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 10px 15px;
+      padding: 11px 12px;
+      border: 1px solid #292929;
+      border-radius: 11px;
+      background: #101010;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .new-chat:hover {
+      background: #191919;
+    }
+
+    .section-label {
+      padding: 8px 16px;
+      color: #777;
+      font-size: 11px;
+      font-weight: 650;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 8px 12px;
+    }
+
+    .chat-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin: 2px 0;
+      padding: 3px;
+      border-radius: 9px;
+    }
+
+    .chat-item.active {
+      background: #1b1b1b;
+    }
+
+    .chat-item:hover {
+      background: #141414;
+    }
+
+    .chat-select {
+      flex: 1;
+      min-width: 0;
+      padding: 9px 8px;
+      overflow: hidden;
+      border: 0;
+      background: transparent;
+      color: #ccc;
+      text-align: left;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 12.5px;
+    }
+
+    .chat-item.active .chat-select {
+      color: #fff;
+    }
+
+    .chat-menu-btn {
+      flex-shrink: 0;
+      width: 30px;
+      height: 30px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: #888;
+    }
+
+    .chat-menu-btn:hover {
+      background: #292929;
+      color: white;
+    }
+
+    .sidebar-bottom {
+      padding: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .download-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #303030;
+      border-radius: 10px;
+      background: #151515;
+      font-size: 13px;
+    }
+
+    .download-button:hover {
+      background: #222;
+    }
+
+    .download-menu {
+      display: none;
+      margin-top: 8px;
+      padding: 6px;
+      border: 1px solid #292929;
+      border-radius: 11px;
+      background: #101010;
+    }
+
+    .download-menu.open {
+      display: block;
+    }
+
+    .download-option {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      text-align: left;
+      font-size: 12px;
+    }
+
+    .download-option:hover {
+      background: #222;
+    }
+
+    .download-note {
+      padding: 8px 10px 5px;
+      color: #888;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .main {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      min-width: 0;
+      height: 100%;
+      position: relative;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 58px;
+      padding: 10px 18px;
+      border-bottom: 1px solid #171717;
+    }
+
+    .topbar-left,
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .topbar-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ddd;
+    }
+
+    .conversation {
+      flex: 1;
+      width: 100%;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    .messages {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 28px 24px 40px;
+    }
+
+    .welcome {
+      display: flex;
+      min-height: 100%;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 45px 20px 20px;
+    }
+
+    .welcome-logo {
+      margin-bottom: 14px;
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -2px;
+    }
+
+    .welcome-subtitle {
+      margin-bottom: 28px;
+      color: #999;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .suggestions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      width: min(100%, 530px);
+    }
+
+    .suggestion {
+      min-height: 70px;
+      padding: 13px;
+      border: 1px solid #252525;
+      border-radius: 12px;
+      background: #080808;
+      color: #ddd;
+      text-align: left;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .suggestion:hover {
+      background: #141414;
+      border-color: #3a3a3a;
+    }
+
+    .message {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 27px;
+      min-width: 0;
+    }
+
+    .message.user {
+      align-items: flex-end;
+    }
+
+    .message.assistant {
+      align-items: flex-start;
+    }
+
+    .message-content {
+      max-width: 100%;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .message.user .message-content {
+      max-width: min(85%, 590px);
+      padding: 11px 15px;
+      border: 1px solid #262626;
+      border-radius: 17px 17px 5px 17px;
+      background: #171717;
+      white-space: pre-wrap;
+    }
+
+    .message.assistant .message-content {
+      width: 100%;
+    }
+
+    .message-content p {
+      margin: 0 0 13px;
+    }
+
+    .message-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    .message-content h1,
+    .message-content h2,
+    .message-content h3 {
+      margin: 20px 0 9px;
+      line-height: 1.35;
+    }
+
+    .message-content h1 {
+      font-size: 23px;
+    }
+
+    .message-content h2 {
+      font-size: 19px;
+    }
+
+    .message-content h3 {
+      font-size: 16px;
+    }
+
+    .message-content ul,
+    .message-content ol {
+      padding-left: 24px;
+    }
+
+    .message-content li {
+      margin: 5px 0;
+    }
+
+    .message-content a {
+      color: #c8dcff;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .message-content blockquote {
+      margin: 12px 0;
+      padding: 4px 0 4px 14px;
+      border-left: 3px solid #555;
+      color: #bbb;
+    }
+
+    .message-content code {
+      padding: 2px 5px;
+      border-radius: 5px;
+      background: #202020;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.9em;
+    }
+
+    .code-wrap {
+      width: 100%;
+      margin: 12px 0;
+      overflow: hidden;
+      border: 1px solid #303030;
+      border-radius: 10px;
+      background: #090909;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-bottom: 1px solid #242424;
+      color: #aaa;
+      font-size: 11px;
+    }
+
+    .code-header button {
+      padding: 4px 8px;
+      border: 1px solid #333;
+      border-radius: 6px;
+      background: #171717;
+      font-size: 11px;
+    }
+
+    .code-wrap pre {
+      max-width: 100%;
+      margin: 0;
+      padding: 14px;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.55;
+    }
+
+    .code-wrap pre code {
+      padding: 0;
+      background: transparent;
+      font-size: 12px;
+    }
+
+    .message-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      margin-top: 8px;
+      opacity: 0.7;
+    }
+
+    .message-actions button {
+      padding: 5px 7px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: #999;
+      font-size: 11px;
+    }
+
+    .message-actions button:hover {
+      background: #191919;
+      color: white;
+    }
+
+    .message-error {
+      color: #ff9292;
+    }
+
+    .typing {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 0;
+    }
+
+    .typing span {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #888;
+      animation: pulse 1s infinite ease-in-out;
+    }
+
+    .typing span:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .typing span:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes pulse {
+      0%, 60%, 100% {
+        opacity: 0.35;
+        transform: translateY(0);
+      }
+      30% {
+        opacity: 1;
+        transform: translateY(-3px);
+      }
+    }
+
+    .composer-area {
+      width: 100%;
+      padding: 10px 20px 15px;
+      background: linear-gradient(to bottom, transparent, #000 18%);
+    }
+
+    .composer {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      border: 1px solid #303030;
+      border-radius: 18px;
+      background: #101010;
+      box-shadow: 0 8px 35px #0008;
+    }
+
+    .attachment-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      padding: 10px 12px 0;
+    }
+
+    .attachment-chip {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      max-width: 220px;
+      padding: 6px 9px;
+      border: 1px solid #303030;
+      border-radius: 8px;
+      background: #191919;
+      color: #ccc;
+      font-size: 11px;
+    }
+
+    .attachment-chip span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .attachment-chip button {
+      border: 0;
+      background: transparent;
+      color: #aaa;
+    }
+
+    .composer textarea {
+      display: block;
+      width: 100%;
+      min-height: 52px;
+      max-height: 200px;
+      padding: 15px 15px 8px;
+      resize: none;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: #f5f5f5;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .composer textarea::placeholder {
+      color: #777;
+    }
+
+    .composer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 5px 9px 9px;
+    }
+
+    .composer-tools,
+    .composer-send-tools {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .tool-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 35px;
+      height: 35px;
+      padding: 0 10px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      background: transparent;
+      color: #aaa;
+      font-size: 17px;
+    }
+
+    .tool-btn:hover {
+      background: #242424;
+      color: white;
+    }
+
+    .send-btn {
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 50%;
+      background: #f5f5f5;
+      color: #000;
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .send-btn:hover {
+      background: #ddd;
+    }
+
+    .send-btn.stop {
+      background: #333;
+      color: white;
+    }
+
+    .disclaimer {
+      margin: 9px auto 0;
+      color: #666;
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 100;
+      bottom: 24px;
+      left: 50%;
+      max-width: calc(100vw - 30px);
+      padding: 10px 15px;
+      transform: translateX(-50%);
+      border: 1px solid #333;
+      border-radius: 10px;
+      background: #181818;
+      color: #eee;
+      font-size: 12px;
+      box-shadow: 0 8px 30px #0009;
+    }
+
+    .toast[hidden] {
+      display: none;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: #000b;
+    }
+
+    .modal-backdrop[hidden] {
+      display: none;
+    }
+
+    .modal {
+      width: min(100%, 380px);
+      padding: 20px;
+      border: 1px solid #303030;
+      border-radius: 15px;
+      background: #101010;
+    }
+
+    .modal h2 {
+      margin: 0 0 14px;
+      font-size: 17px;
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #333;
+      border-radius: 8px;
+      background: #050505;
+      color: white;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 15px;
+    }
+
+    .modal-actions button {
+      padding: 8px 12px;
+      border: 1px solid #333;
+      border-radius: 8px;
+      background: #191919;
+      font-size: 12px;
+    }
+
+    .modal-actions .primary {
+      background: white;
+      color: black;
+    }
+
+    .mobile-backdrop {
+      display: none;
+    }
+
+    @media (max-width: 700px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: min(85vw, 290px);
+        min-width: 0;
+        transform: translateX(-105%);
+        box-shadow: none;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 10px 0 40px #0009;
+      }
+
+      .mobile-backdrop.open {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 15;
+        background: #0009;
+      }
+
+      .topbar {
+        min-height: 54px;
+        padding: 8px 10px;
+      }
+
+      .messages {
+        padding: 22px 15px 30px;
+      }
+
+      .welcome {
+        padding-top: 30px;
+      }
+
+      .welcome-logo {
+        font-size: 34px;
+      }
+
+      .suggestions {
+        grid-template-columns: 1fr;
+      }
+
+      .suggestion {
+        min-height: 55px;
+      }
+
+      .composer-area {
+        padding: 8px 9px max(10px, env(safe-area-inset-bottom));
+      }
+
+      .message.user .message-content {
+        max-width: 92%;
+      }
+
+      .composer textarea {
+        font-size: 16px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
 </head>
 
 <body>
-<div class="app">
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-top">
-      <a class="brand" href="#" id="brand-home">kage<span class="brand-dot"></span></a>
-      <button class="icon-button" id="close-sidebar" aria-label="close sidebar">×</button>
-    </div>
-
-    <button class="new-chat" id="new-chat"><span class="plus">+</span><span>new chat</span></button>
-    <div class="section-label">your chats</div>
-    <div class="chat-list" id="chat-list"></div>
-
-    <div class="sidebar-bottom">
-      <div class="profile-row">
-        <div class="profile-mark">K</div>
-        <div><div class="profile-name">kage ai</div><div class="profile-status">your space</div></div>
-      </div>
-    </div>
-  </aside>
-
-  <div class="mobile-overlay" id="mobile-overlay"></div>
-
-  <main class="main">
-    <header class="topbar">
-      <div class="topbar-left">
-        <button class="icon-button mobile-menu" id="open-sidebar" aria-label="open sidebar">☰</button>
-        <div><span class="model-label">kage</span><span class="model-sub">your ai, your way</span></div>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <div class="brand">kage</div>
+        <div class="sidebar-actions">
+          <button class="icon-btn" id="newChatTop" title="New chat" aria-label="New chat">＋</button>
+          <button class="icon-btn" id="closeSidebar" title="Close sidebar" aria-label="Close sidebar">×</button>
+        </div>
       </div>
 
-      <div class="topbar-right">
-        <div class="status"><span class="status-dot"></span><span id="connection-label">ready</span></div>
-        <button class="icon-button" id="download-button" title="get kage on your device" aria-label="download kage">↓</button>
-        <button class="icon-button" id="export-chat" title="export chat" aria-label="export chat">⇩</button>
-      </div>
-    </header>
+      <button class="new-chat" id="newChat">
+        <span>＋</span>
+        <span>new chat</span>
+      </button>
 
-    <section class="conversation" id="conversation">
-      <div class="messages" id="messages"></div>
-    </section>
+      <div class="section-label">your chats</div>
+      <div class="chat-list" id="chatList"></div>
 
-    <footer class="composer-area">
-      <div class="composer-wrap">
-        <div class="attachment-preview hidden" id="attachment-preview"></div>
-        <div class="composer">
-          <textarea id="prompt" rows="1" placeholder="message kage..." aria-label="message kage"></textarea>
-          <div class="composer-tools">
-            <div class="tool-left">
-              <button class="tool-button" id="attach-button" title="attach a file"><span>＋</span><span class="tool-label">attach</span></button>
-              <input id="file-input" type="file" multiple accept="image/*,.txt,.md,.json,.csv,.js,.ts,.html,.css,.py,.java,.c,.cpp,.xml,.yaml,.yml,.log,.pdf,.docx,.xlsx,.pptx,.mp4,.webm,.mov">
-              <button class="tool-button" id="search-button" title="request web search"><span>⌕</span><span class="tool-label">search</span></button>
-              <button class="tool-button" id="voice-button" title="dictate a message"><span>◉</span><span class="tool-label">voice</span></button>
-            </div>
-            <div class="tool-right"><button class="send-button" id="send-button" title="send message" aria-label="send message">↑</button></div>
+      <div class="sidebar-bottom">
+        <button class="download-button" id="downloadButton" aria-expanded="false">
+          <span>↓</span>
+          <span>download kage</span>
+        </button>
+
+        <div class="download-menu" id="downloadMenu">
+          <button class="download-option" data-device="iPhone">📱 iPhone</button>
+          <button class="download-option" data-device="iPad">▣ iPad</button>
+          <button class="download-option" data-device="Android phone">📱 Android phone</button>
+          <button class="download-option" data-device="Android tablet">▣ Android / Samsung tablet</button>
+          <button class="download-option" data-device="Windows computer">🖥️ Windows computer</button>
+          <button class="download-option" data-device="Windows laptop">💻 Windows laptop</button>
+          <div class="download-note">
+            install options depend on your browser and device. this installs the web app when supported; it does not create a separate native app package.
           </div>
         </div>
-        <div class="composer-note">kage can make mistakes. check important information.</div>
       </div>
-    </footer>
-  </main>
-</div>
+    </aside>
 
-<div class="modal-backdrop hidden" id="download-modal" role="dialog" aria-modal="true" aria-labelledby="download-title">
-  <div class="modal">
-    <div class="modal-head">
-      <h2 id="download-title">get kage on your device</h2>
-      <button class="icon-button" id="close-download" aria-label="close download menu">×</button>
-    </div>
-    <p class="modal-subtitle">choose your device to see the installation option for it.</p>
+    <div class="mobile-backdrop" id="mobileBackdrop"></div>
 
-    <div class="device-options">
-      <button class="device-option" data-device="iphone"><span class="device-icon">▯</span><span class="device-copy"><strong>iphone</strong><span>add kage to your home screen using safari</span></span><span class="device-arrow">›</span></button>
-      <button class="device-option" data-device="ipad"><span class="device-icon">▯</span><span class="device-copy"><strong>ipad</strong><span>install kage as a home-screen web app</span></span><span class="device-arrow">›</span></button>
-      <button class="device-option" data-device="android-phone"><span class="device-icon">▯</span><span class="device-copy"><strong>android phone</strong><span>install from chrome when available</span></span><span class="device-arrow">›</span></button>
-      <button class="device-option" data-device="android-tablet"><span class="device-icon">▭</span><span class="device-copy"><strong>android tablet</strong><span>install from chrome when available</span></span><span class="device-arrow">›</span></button>
-      <button class="device-option" data-device="computer"><span class="device-icon">▣</span><span class="device-copy"><strong>computer</strong><span>install in a supported desktop browser</span></span><span class="device-arrow">›</span></button>
-      <button class="device-option" data-device="laptop"><span class="device-icon">▱</span><span class="device-copy"><strong>laptop</strong><span>install in a supported desktop browser</span></span><span class="device-arrow">›</span></button>
-    </div>
-
-    <div class="instructions hidden" id="download-instructions"></div>
-  </div>
-</div>
-
-<div class="toast hidden" id="toast"></div>
-
-<script>
-(() => {
-  "use strict";
-
-  const $ = selector => document.querySelector(selector);
-  const STORAGE_KEY = "kage-chats-v4";
-  const ACTIVE_KEY = "kage-active-v4";
-
-  const SYSTEM_PROMPT = [
-    "you are kage, a helpful, capable ai assistant.",
-    "communicate in lowercase by default, in a relaxed, nonchalant, natural teenage texting style. stay clear and intelligent, not forced or full of slang.",
-    "your job is to understand the user's intent, not just their exact words.",
-    "interpret typos, shorthand, slang, incomplete sentences, references to earlier messages, and casual wording using the conversation context.",
-    "when the user says 'it', 'that', 'the other one', 'same thing', or similar, look back through the conversation to identify the most likely referent.",
-    "if the request is reasonably clear from context, act on the best interpretation instead of asking the user to explain it again.",
-    "never use generic excuses such as 'that's not in my programming', 'i don't know what you want', or 'i cannot understand your request'. if something is genuinely ambiguous, ask one short, specific question. if a tool or capability is unavailable, explain the actual limitation and give the closest useful alternative.",
-    "follow the user's requested format and instructions as closely as possible. do not claim to have completed actions you did not perform.",
-    "use prior messages as conversation context. don't treat each message as an isolated request.",
-    "for code requests, provide complete, usable code for the requested file whenever possible.",
-    "be accurate, don't fabricate facts, and follow applicable safety requirements."
-  ].join(" ");
-
-  const state = {
-    chats: [],
-    activeId: null,
-    attachments: [],
-    searching: false,
-    busy: false,
-    controller: null,
-    recognition: null,
-    installPrompt: null
-  };
-
-  function uid() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  }
-
-  function escapeHTML(value) {
-    return String(value).replace(/[&<>"']/g, char => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-    })[char]);
-  }
-
-  function activeChat() {
-    return state.chats.find(chat => chat.id === state.activeId);
-  }
-
-  function save() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.chats));
-      localStorage.setItem(ACTIVE_KEY, state.activeId || "");
-    } catch {
-      showToast("couldn't save more chat history in this browser");
-    }
-  }
-
-  function load() {
-    try {
-      const chats = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-      if (Array.isArray(chats)) state.chats = chats;
-      state.activeId = localStorage.getItem(ACTIVE_KEY) || null;
-    } catch {
-      state.chats = [];
-      state.activeId = null;
-    }
-
-    if (!activeChat()) state.activeId = null;
-    if (!state.activeId && state.chats.length) state.activeId = state.chats[0].id;
-    if (!state.activeId) createChat(false);
-    renderAll();
-  }
-
-  function createChat(focus = true) {
-    if (state.busy) stopGeneration();
-
-    const chat = {
-      id: uid(),
-      title: "new chat",
-      messages: [],
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    };
-
-    state.chats.unshift(chat);
-    state.activeId = chat.id;
-    state.attachments = [];
-    save();
-    renderAll();
-    renderAttachments();
-    closeMobileSidebar();
-    if (focus) $("#prompt").focus();
-  }
-
-  function setActive(id) {
-    if (state.busy) stopGeneration();
-    if (!state.chats.some(chat => chat.id === id)) return;
-
-    state.activeId = id;
-    state.attachments = [];
-    save();
-    renderAll();
-    renderAttachments();
-    closeMobileSidebar();
-  }
-
-  function renameChat(id) {
-    const chat = state.chats.find(item => item.id === id);
-    if (!chat) return;
-
-    const next = prompt("rename chat", chat.title);
-    if (next === null || !next.trim()) return;
-
-    chat.title = next.trim().split(/\s+/).slice(0, 8).join(" ").slice(0, 100);
-    chat.updatedAt = Date.now();
-    save();
-    renderSidebar();
-  }
-
-  function deleteChat(id) {
-    const index = state.chats.findIndex(chat => chat.id === id);
-    if (index < 0) return;
-
-    if (id === state.activeId && state.busy) stopGeneration();
-    state.chats.splice(index, 1);
-
-    if (id === state.activeId) {
-      state.activeId = state.chats[0]?.id || null;
-      if (!state.activeId) createChat(false);
-    }
-
-    save();
-    renderAll();
-  }
-
-  function renderSidebar() {
-    const list = $("#chat-list");
-    list.replaceChildren();
-
-    for (const chat of state.chats) {
-      const row = document.createElement("div");
-      row.className = "chat-item" + (chat.id === state.activeId ? " active" : "");
-
-      const title = document.createElement("button");
-      title.className = "chat-title";
-      title.textContent = chat.title || "new chat";
-      title.title = title.textContent;
-      title.addEventListener("click", () => setActive(chat.id));
-
-      const menu = document.createElement("button");
-      menu.className = "chat-menu";
-      menu.textContent = "···";
-      menu.title = "chat options";
-      menu.setAttribute("aria-label", "chat options");
-
-      menu.addEventListener("click", event => {
-        event.stopPropagation();
-        const choice = prompt("type rename to rename this chat, or delete to delete it", "rename");
-        if (!choice) return;
-        if (choice.toLowerCase() === "rename") renameChat(chat.id);
-        if (choice.toLowerCase() === "delete") deleteChat(chat.id);
-      });
-
-      row.append(title, menu);
-      list.append(row);
-    }
-  }
-
-  function renderWelcome() {
-    return `
-      <div class="welcome">
-        <div class="welcome-mark">k</div>
-        <h1>what's on your mind?</h1>
-        <p>ask something, work through an idea, or build something useful.</p>
-        <div class="suggestions">
-          <button class="suggestion" data-prompt="help me understand something difficult"><strong>explain something</strong><span>make a difficult topic easier to understand</span></button>
-          <button class="suggestion" data-prompt="help me build an app. start with working code."><strong>build something</strong><span>turn an idea into a working project</span></button>
-          <button class="suggestion" data-prompt="help me solve this problem step by step"><strong>solve a problem</strong><span>work through it without extra fluff</span></button>
-          <button class="suggestion" data-prompt="give me a few creative ideas for something new"><strong>think of ideas</strong><span>explore different ways to approach a project</span></button>
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-btn" id="openSidebar" aria-label="Open sidebar" title="Chats">☰</button>
+          <span class="topbar-title">kage ai</span>
         </div>
-      </div>`;
-  }
 
-  function renderMarkdown(text) {
-    let safe = escapeHTML(text);
-    const codeBlocks = [];
+        <div class="topbar-right">
+          <button class="icon-btn" id="exportChat" title="Export chat" aria-label="Export chat">⇩</button>
+        </div>
+      </header>
 
-    safe = safe.replace(/```([a-zA-Z0-9_-]*)\n?([\s\S]*?)```/g, (_, lang, code) => {
-      const token = `%%CODEBLOCK${codeBlocks.length}%%`;
-      codeBlocks.push(`<pre><code>${code.replace(/\n$/, "")}</code></pre>`);
-      return token;
-    });
+      <section class="conversation" id="conversation">
+        <div class="messages" id="messages"></div>
+      </section>
 
-    safe = safe.replace(/`([^`\n]+)`/g, "<code>$1</code>");
-    safe = safe.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-    safe = safe.replace(/\*([^*\n]+)\*/g, "<em>$1</em>");
-    safe = safe.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-    safe = safe.replace(/^(#{1,3})\s+(.+)$/gm, (_, hashes, title) =>
-      `<h${hashes.length}>${title}</h${hashes.length}>`);
-    safe = safe.replace(/^\s*[-*]\s+(.+)$/gm, "<li>$1</li>");
-    safe = safe.replace(/(?:<li>.*<\/li>\n?)+/g, match => `<ul>${match}</ul>`);
-    safe = safe.replace(/\n/g, "<br>");
+      <div class="composer-area">
+        <form class="composer" id="composer">
+          <div class="attachment-preview" id="attachmentPreview"></div>
 
-    codeBlocks.forEach((block, index) => {
-      safe = safe.replace(`%%CODEBLOCK${index}%%`, block);
-    });
+          <textarea
+            id="messageInput"
+            rows="1"
+            placeholder="message kage..."
+            aria-label="Message Kage"
+          ></textarea>
 
-    return safe;
-  }
+          <div class="composer-bottom">
+            <div class="composer-tools">
+              <button type="button" class="tool-btn" id="attachButton" title="Attach files" aria-label="Attach files">＋</button>
+              <input id="fileInput" type="file" multiple hidden
+                accept="image/*,text/*,.pdf,.doc,.docx,.json,.csv,.md,.js,.html,.css,.py,.txt,.xml,.yaml,.yml,.log,.mp4,.webm,.mov,.mp3,.wav,.m4a">
 
-  function renderMessages() {
-    const container = $("#messages");
-    const chat = activeChat();
+              <button type="button" class="tool-btn" id="voiceButton" title="Voice input" aria-label="Voice input">🎙</button>
+              <button type="button" class="tool-btn" id="speakButton" title="Read last answer aloud" aria-label="Read last answer aloud">◖))</button>
+            </div>
 
-    if (!chat || !chat.messages.length) {
-      container.innerHTML = renderWelcome();
-      container.querySelectorAll("[data-prompt]").forEach(button => {
-        button.addEventListener("click", () => {
-          $("#prompt").value = button.dataset.prompt;
-          resizeTextarea();
-          $("#prompt").focus();
+            <div class="composer-send-tools">
+              <button type="button" class="tool-btn" id="clearFiles" title="Remove attachments" aria-label="Remove attachments">×</button>
+              <button type="submit" class="send-btn" id="sendButton" title="Send message" aria-label="Send message">↑</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="disclaimer">kage can make mistakes. verify important information.</div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <div class="modal-backdrop" id="renameModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="renameTitle">
+      <h2 id="renameTitle">rename chat</h2>
+      <input id="renameInput" maxlength="60" placeholder="chat name">
+      <div class="modal-actions">
+        <button id="renameCancel">cancel</button>
+        <button class="primary" id="renameSave">save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const STORAGE_KEY = "kage-chats-v4";
+      const ACTIVE_KEY = "kage-active-v4";
+
+      const $ = id => document.getElementById(id);
+
+      const elements = {
+        sidebar: $("sidebar"),
+        chatList: $("chatList"),
+        conversation: $("conversation"),
+        messages: $("messages"),
+        composer: $("composer"),
+        input: $("messageInput"),
+        send: $("sendButton"),
+        fileInput: $("fileInput"),
+        attachmentPreview: $("attachmentPreview"),
+        toast: $("toast"),
+        renameModal: $("renameModal"),
+        renameInput: $("renameInput"),
+        downloadMenu: $("downloadMenu"),
+        downloadButton: $("downloadButton"),
+        mobileBackdrop: $("mobileBackdrop")
+      };
+
+      let chats = loadChats();
+      let activeChatId = localStorage.getItem(ACTIVE_KEY);
+      let attachments = [];
+      let busy = false;
+      let abortController = null;
+      let toastTimer = null;
+      let renameTarget = null;
+      let recognition = null;
+      let lastAssistantText = "";
+
+      function uid() {
+        return crypto.randomUUID
+          ? crypto.randomUUID()
+          : Date.now().toString(36) + Math.random().toString(36).slice(2);
+      }
+
+      function loadChats() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+          return Array.isArray(saved) ? saved : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveChats() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+          if (activeChatId) localStorage.setItem(ACTIVE_KEY, activeChatId);
+        } catch {
+          toast("couldn't save chat history in this browser");
+        }
+      }
+
+      function currentChat() {
+        return chats.find(chat => chat.id === activeChatId) || null;
+      }
+
+      function createChat() {
+        const chat = {
+          id: uid(),
+          title: "New Chat",
+          messages: [],
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        };
+
+        chats.unshift(chat);
+        activeChatId = chat.id;
+        saveChats();
+        renderChatList();
+        renderMessages();
+        closeSidebarMobile();
+        elements.input.focus();
+      }
+
+      function ensureChat() {
+        let chat = currentChat();
+        if (!chat) {
+          createChat();
+          chat = currentChat();
+        }
+        return chat;
+      }
+
+      function updateChatTimestamp(chat) {
+        chat.updatedAt = Date.now();
+        chats.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      }
+
+      function toast(message) {
+        elements.toast.textContent = message;
+        elements.toast.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          elements.toast.hidden = true;
+        }, 2400);
+      }
+
+      function escapeHTML(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function safeURL(value) {
+        try {
+          const url = new URL(value, location.href);
+          if (["http:", "https:"].includes(url.protocol)) {
+            return url.href;
+          }
+        } catch {}
+        return "";
+      }
+
+      function inlineMarkdown(text) {
+        let safe = escapeHTML(text);
+
+        safe = safe.replace(
+          /`([^`\n]+)`/g,
+          "<code>$1</code>"
+        );
+
+        safe = safe.replace(
+          /\*\*(.+?)\*\*/g,
+          "<strong>$1</strong>"
+        );
+
+        safe = safe.replace(
+          /(^|[^*])\*([^*\n]+)\*/g,
+          "$1<em>$2</em>"
+        );
+
+        safe = safe.replace(
+          /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+          (whole, label, rawUrl) => {
+            const url = safeURL(rawUrl);
+            return url
+              ? `<a href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">${label}</a>`
+              : label;
+          }
+        );
+
+        return safe;
+      }
+
+      function renderMarkdown(source) {
+        const text = String(source || "").replace(/\r\n/g, "\n");
+        const codeBlocks = [];
+
+        let content = text.replace(
+          /```([^\n`]*)\n([\s\S]*?)```/g,
+          (_, language, code) => {
+            const index = codeBlocks.length;
+            codeBlocks.push({
+              language: language.trim() || "code",
+              code
+            });
+            return `\n@@KAGECODE${index}@@\n`;
+          }
+        );
+
+        const lines = content.split("\n");
+        const output = [];
+        let paragraph = [];
+        let listType = null;
+        let listItems = [];
+
+        function flushParagraph() {
+          if (paragraph.length) {
+            output.push(
+              `<p>${paragraph.map(inlineMarkdown).join("<br>")}</p>`
+            );
+            paragraph = [];
+          }
+        }
+
+        function flushList() {
+          if (listType && listItems.length) {
+            output.push(
+              `<${listType}>${listItems.map(item =>
+                `<li>${inlineMarkdown(item)}</li>`
+              ).join("")}</${listType}>`
+            );
+          }
+
+          listType = null;
+          listItems = [];
+        }
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+
+          const codeMarker = trimmed.match(/^@@KAGECODE(\d+)@@$/);
+          if (codeMarker) {
+            flushParagraph();
+            flushList();
+
+            const block = codeBlocks[Number(codeMarker[1])];
+            const language = escapeHTML(block.language);
+            const code = escapeHTML(block.code);
+
+            output.push(
+              `<div class="code-wrap">
+                <div class="code-header">
+                  <span>${language}</span>
+                  <button type="button" data-copy-code>copy code</button>
+                </div>
+                <pre><code>${code}</code></pre>
+              </div>`
+            );
+            continue;
+          }
+
+          if (!trimmed) {
+            flushParagraph();
+            flushList();
+            continue;
+          }
+
+          const heading = trimmed.match(/^(#{1,3})\s+(.+)$/);
+          if (heading) {
+            flushParagraph();
+            flushList();
+            const level = heading[1].length;
+            output.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
+            continue;
+          }
+
+          const bullet = trimmed.match(/^[-*+]\s+(.+)$/);
+          const numbered = trimmed.match(/^\d+[.)]\s+(.+)$/);
+          const quote = trimmed.match(/^>\s?(.*)$/);
+
+          if (bullet || numbered) {
+            flushParagraph();
+            const type = bullet ? "ul" : "ol";
+
+            if (listType && listType !== type) flushList();
+
+            listType = type;
+            listItems.push((bullet || numbered)[1]);
+            continue;
+          }
+
+          flushList();
+
+          if (quote) {
+            flushParagraph();
+            output.push(`<blockquote>${inlineMarkdown(quote[1])}</blockquote>`);
+            continue;
+          }
+
+          paragraph.push(trimmed);
+        }
+
+        flushParagraph();
+        flushList();
+
+        return output.join("\n");
+      }
+
+      function scrollToBottom() {
+        elements.conversation.scrollTop = elements.conversation.scrollHeight;
+      }
+
+      function renderChatList() {
+        elements.chatList.innerHTML = "";
+
+        if (!chats.length) {
+          const empty = document.createElement("div");
+          empty.style.cssText = "padding:12px;color:#777;font-size:12px";
+          empty.textContent = "your chats will show up here";
+          elements.chatList.appendChild(empty);
+          return;
+        }
+
+        for (const chat of chats) {
+          const row = document.createElement("div");
+          row.className = "chat-item" + (chat.id === activeChatId ? " active" : "");
+
+          const select = document.createElement("button");
+          select.className = "chat-select";
+          select.textContent = chat.title || "New Chat";
+          select.title = chat.title || "New Chat";
+          select.addEventListener("click", () => {
+            activeChatId = chat.id;
+            saveChats();
+            renderChatList();
+            renderMessages();
+            closeSidebarMobile();
+          });
+
+          const menu = document.createElement("button");
+          menu.className = "chat-menu-btn";
+          menu.textContent = "···";
+          menu.title = "Chat options";
+          menu.setAttribute("aria-label", "Chat options");
+
+          menu.addEventListener("click", event => {
+            event.stopPropagation();
+
+            const action = prompt(
+              "type rename or delete for this chat:",
+              "rename"
+            );
+
+            if (!action) return;
+
+            if (action.toLowerCase() === "rename") {
+              openRename(chat);
+            } else if (action.toLowerCase() === "delete") {
+              deleteChat(chat.id);
+            }
+          });
+
+          row.append(select, menu);
+
+          let pressTimer;
+          let longPressed = false;
+
+          select.addEventListener("contextmenu", event => {
+            event.preventDefault();
+            openRename(chat);
+          });
+
+          select.addEventListener("touchstart", () => {
+            longPressed = false;
+            pressTimer = setTimeout(() => {
+              longPressed = true;
+              openRename(chat);
+            }, 650);
+          }, { passive: true });
+
+          ["touchend", "touchmove", "touchcancel"].forEach(type => {
+            select.addEventListener(type, () => clearTimeout(pressTimer), {
+              passive: true
+            });
+          });
+
+          select.addEventListener("click", event => {
+            if (longPressed) {
+              event.preventDefault();
+              event.stopImmediatePropagation();
+              longPressed = false;
+            }
+          }, true);
+
+          elements.chatList.appendChild(row);
+        }
+      }
+
+      function renderMessages() {
+        const chat = currentChat();
+        elements.messages.innerHTML = "";
+
+        if (!chat || !chat.messages.length) {
+          const welcome = document.createElement("div");
+          welcome.className = "welcome";
+          welcome.innerHTML = `
+            <div class="welcome-logo">kage</div>
+            <div class="welcome-subtitle">what's on your mind?</div>
+            <div class="suggestions">
+              <button class="suggestion" data-prompt="explain something i'm confused about in a simple way">explain something simply</button>
+              <button class="suggestion" data-prompt="help me study for a test with a fun quiz">help me study for a test</button>
+              <button class="suggestion" data-prompt="help me come up with a creative idea">come up with an idea</button>
+              <button class="suggestion" data-prompt="help me solve a problem step by step">help me solve a problem</button>
+            </div>
+          `;
+
+          welcome.querySelectorAll("[data-prompt]").forEach(button => {
+            button.addEventListener("click", () => {
+              elements.input.value = button.dataset.prompt;
+              autoResize();
+              elements.input.focus();
+            });
+          });
+
+          elements.messages.appendChild(welcome);
+          return;
+        }
+
+        chat.messages.forEach((message, index) => {
+          elements.messages.appendChild(createMessageElement(message, index));
         });
-      });
-      return;
-    }
 
-    container.replaceChildren();
+        scrollToBottom();
+      }
 
-    for (const message of chat.messages) {
-      const wrapper = document.createElement("article");
-      wrapper.className = "message " + message.role;
+      function createMessageElement(message, index) {
+        const wrapper = document.createElement("article");
+        wrapper.className = "message " + message.role;
 
-      const role = document.createElement("div");
-      role.className = "message-role";
-      role.textContent = message.role === "assistant" ? "kage" : "you";
+        const content = document.createElement("div");
+        content.className = "message-content";
 
-      const content = document.createElement("div");
-      content.className = "message-content";
+        if (message.role === "assistant") {
+          content.innerHTML = renderMarkdown(message.content || "");
+        } else {
+          content.textContent = message.content || "";
+        }
 
-      if (message.role === "user") content.textContent = message.content;
-      else content.innerHTML = renderMarkdown(message.content || "");
+        wrapper.appendChild(content);
 
-      wrapper.append(role, content);
+        if (message.attachments && message.attachments.length) {
+          const fileList = document.createElement("div");
+          fileList.style.cssText = "margin-top:6px;color:#888;font-size:11px";
 
-      if (message.role === "assistant" && message.content) {
-        const actions = document.createElement("div");
-        actions.className = "message-actions";
+          fileList.textContent = message.attachments
+            .map(file => "📎 " + file.name)
+            .join(" · ");
 
-        const copy = document.createElement("button");
-        copy.textContent = "copy";
-        copy.addEventListener("click", async () => {
+          wrapper.appendChild(fileList);
+        }
+
+        if (message.role === "assistant" && !message.pending) {
+          const actions = document.createElement("div");
+          actions.className = "message-actions";
+
+          const copy = document.createElement("button");
+          copy.textContent = "copy";
+          copy.addEventListener("click", () => copyText(message.content || ""));
+
+          const regenerate = document.createElement("button");
+          regenerate.textContent = "regenerate";
+          regenerate.addEventListener("click", () => regenerateAnswer(index));
+
+          actions.append(copy, regenerate);
+          wrapper.appendChild(actions);
+        }
+
+        if (message.role === "user" && !message.pending) {
+          const actions = document.createElement("div");
+          actions.className = "message-actions";
+
+          const edit = document.createElement("button");
+          edit.textContent = "edit";
+          edit.addEventListener("click", () => editMessage(index));
+
+          actions.appendChild(edit);
+          wrapper.appendChild(actions);
+        }
+
+        if (message.pending) {
+          const typing = document.createElement("div");
+          typing.className = "typing";
+          typing.innerHTML = "<span></span><span></span><span></span>";
+          wrapper.appendChild(typing);
+        }
+
+        return wrapper;
+      }
+
+      function openRename(chat) {
+        renameTarget = chat.id;
+        elements.renameInput.value = chat.title || "";
+        elements.renameModal.hidden = false;
+        elements.renameInput.focus();
+        elements.renameInput.select();
+      }
+
+      function closeRename() {
+        elements.renameModal.hidden = true;
+        renameTarget = null;
+      }
+
+      function saveRename() {
+        const chat = chats.find(item => item.id === renameTarget);
+        const title = elements.renameInput.value.trim();
+
+        if (chat && title) {
+          chat.title = title.slice(0, 60);
+          updateChatTimestamp(chat);
+          saveChats();
+          renderChatList();
+        }
+
+        closeRename();
+      }
+
+      function deleteChat(id) {
+        const chat = chats.find(item => item.id === id);
+        if (!chat) return;
+
+        if (!confirm(`delete "${chat.title || "New Chat"}"?`)) return;
+
+        chats = chats.filter(item => item.id !== id);
+
+        if (activeChatId === id) {
+          activeChatId = chats[0]?.id || null;
+        }
+
+        saveChats();
+
+        if (!activeChatId) {
+          createChat();
+        } else {
+          renderChatList();
+          renderMessages();
+        }
+      }
+
+      function autoResize() {
+        elements.input.style.height = "auto";
+        elements.input.style.height =
+          Math.min(elements.input.scrollHeight, 200) + "px";
+      }
+
+      function updateTitle(chat) {
+        if (!chat || !chat.messages.some(m => m.role === "user")) return;
+
+        fetch("/api/title", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: chat.messages
+              .filter(m => m.role === "user" || m.role === "assistant")
+              .map(m => ({ role: m.role, content: m.content }))
+          })
+        })
+          .then(response => {
+            if (!response.ok) throw new Error("title request failed");
+            return response.json();
+          })
+          .then(data => {
+            if (!data.title || currentChat()?.id !== chat.id) return;
+
+            const words = String(data.title).trim().split(/\s+/).slice(0, 3);
+            chat.title = words.join(" ");
+            updateChatTimestamp(chat);
+            saveChats();
+            renderChatList();
+          })
+          .catch(() => {
+            if (!chat.messages.some(m => m.role === "assistant")) return;
+            if (chat.title !== "New Chat") return;
+
+            const firstUser = chat.messages.find(m => m.role === "user");
+            if (firstUser) {
+              chat.title = firstUser.content
+                .trim()
+                .split(/\s+/)
+                .slice(0, 3)
+                .join(" ");
+              saveChats();
+              renderChatList();
+            }
+          });
+      }
+
+      function readFileAsDataURL(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ""));
+          reader.onerror = reject;
+          reader.readAsText(file);
+        });
+      }
+
+      async function addFiles(fileList) {
+        const selected = Array.from(fileList || []);
+
+        for (const file of selected) {
+          if (file.size > 4 * 1024 * 1024) {
+            toast(file.name + " is too large (max 4 MB)");
+            continue;
+          }
+
+          const attachment = {
+            id: uid(),
+            name: file.name,
+            type: file.type || "application/octet-stream",
+            size: file.size,
+            dataUrl: null,
+            text: null
+          };
+
           try {
-            await navigator.clipboard.writeText(message.content);
-            showToast("copied");
+            if (file.type.startsWith("image/")) {
+              attachment.dataUrl = await readFileAsDataURL(file);
+            } else if (
+              file.type.startsWith("text/") ||
+              /\.(txt|md|json|csv|js|html|css|py|xml|yaml|yml|log)$/i.test(file.name)
+            ) {
+              attachment.text = (await readFileAsText(file)).slice(0, 60000);
+            }
           } catch {
-            showToast("couldn't copy this message");
+            toast("couldn't read " + file.name);
+            continue;
+          }
+
+          attachments.push(attachment);
+        }
+
+        renderAttachments();
+        elements.fileInput.value = "";
+      }
+
+      function renderAttachments() {
+        elements.attachmentPreview.innerHTML = "";
+
+        attachments.forEach(file => {
+          const chip = document.createElement("div");
+          chip.className = "attachment-chip";
+
+          const label = document.createElement("span");
+          label.textContent = file.name;
+          label.title = file.name;
+
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.textContent = "×";
+          remove.title = "Remove file";
+          remove.addEventListener("click", () => {
+            attachments = attachments.filter(item => item.id !== file.id);
+            renderAttachments();
+          });
+
+          chip.append(label, remove);
+          elements.attachmentPreview.appendChild(chip);
+        });
+
+        $("clearFiles").style.visibility = attachments.length ? "visible" : "hidden";
+      }
+
+      function makeUserContent(text, files) {
+        const pieces = [];
+
+        if (text.trim()) pieces.push(text.trim());
+
+        files.forEach(file => {
+          if (file.text) {
+            pieces.push(`\n[file: ${file.name}]\n${file.text}`);
+          } else if (file.dataUrl) {
+            pieces.push(`[image attached: ${file.name}]`);
+          } else {
+            pieces.push(`[file attached: ${file.name}]`);
           }
         });
 
-        const regenerate = document.createElement("button");
-        regenerate.textContent = "regenerate";
-        regenerate.addEventListener("click", regenerateLast);
-
-        actions.append(copy, regenerate);
-        wrapper.append(actions);
+        return pieces.join("\n\n");
       }
 
-      container.append(wrapper);
-    }
+      async function readStream(response, onChunk) {
+        if (!response.body) {
+          const text = await response.text();
+          onChunk(text);
+          return text;
+        }
 
-    if (state.busy) {
-      const typing = document.createElement("div");
-      typing.className = "typing";
-      typing.innerHTML = "<span></span><span></span><span></span>";
-      container.append(typing);
-    }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullText = "";
+        let buffer = "";
+        let isSSE = false;
 
-    scrollToBottom();
-  }
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
 
-  function renderAll() {
-    renderSidebar();
-    renderMessages();
-  }
+          buffer += decoder.decode(value, { stream: true });
 
-  function scrollToBottom() {
-    requestAnimationFrame(() => {
-      const area = $("#conversation");
-      area.scrollTop = area.scrollHeight;
-    });
-  }
+          if (!isSSE && buffer.startsWith("data:")) {
+            isSSE = true;
+          }
 
-  function showToast(message) {
-    const toast = $("#toast");
-    toast.textContent = message;
-    toast.classList.remove("hidden");
-    clearTimeout(showToast.timer);
-    showToast.timer = setTimeout(() => toast.classList.add("hidden"), 2400);
-  }
+          if (!isSSE) {
+            fullText += decoder.decode(value, { stream: false });
+            onChunk(fullText);
+            continue;
+          }
 
-  function setStatus(text) {
-    $("#connection-label").textContent = text;
-  }
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
 
-  function resizeTextarea() {
-    const area = $("#prompt");
-    area.style.height = "auto";
-    area.style.height = Math.min(area.scrollHeight, 190) + "px";
-  }
+          for (const line of lines) {
+            if (!line.startsWith("data:")) continue;
 
-  function renderAttachments() {
-    const preview = $("#attachment-preview");
-    preview.replaceChildren();
+            const payload = line.slice(5).trim();
+            if (!payload || payload === "[DONE]") continue;
 
-    if (!state.attachments.length) {
-      preview.classList.add("hidden");
-      return;
-    }
+            try {
+              const data = JSON.parse(payload);
 
-    preview.classList.remove("hidden");
+              if (data.response) {
+                fullText += data.response;
+                onChunk(fullText);
+              } else if (data.text) {
+                fullText += data.text;
+                onChunk(fullText);
+              } else if (data.error) {
+                throw new Error(data.error);
+              }
+            } catch (error) {
+              if (error instanceof SyntaxError) continue;
+              throw error;
+            }
+          }
+        }
 
-    state.attachments.forEach((file, index) => {
-      const chip = document.createElement("div");
-      chip.className = "attachment-chip";
+        if (buffer.trim() && !isSSE) {
+          fullText += buffer;
+          onChunk(fullText);
+        }
 
-      const label = document.createElement("span");
-      label.textContent = file.name;
+        return fullText;
+      }
 
-      const remove = document.createElement("button");
-      remove.textContent = "×";
-      remove.title = "remove attachment";
-      remove.addEventListener("click", () => {
-        state.attachments.splice(index, 1);
+      async function sendMessage(textOverride = null) {
+        if (busy) return;
+
+        const text = textOverride !== null
+          ? textOverride
+          : elements.input.value;
+
+        const files = attachments.slice();
+
+        if (!text.trim() && !files.length) return;
+
+        const chat = ensureChat();
+        const userContent = makeUserContent(text, files);
+
+        chat.messages.push({
+          role: "user",
+          content: userContent,
+          attachments: files.map(file => ({ name: file.name, type: file.type }))
+        });
+
+        attachments = [];
+        renderAttachments();
+        elements.input.value = "";
+        autoResize();
+
+        busy = true;
+        abortController = new AbortController();
+        elements.send.textContent = "■";
+        elements.send.classList.add("stop");
+        elements.send.title = "Stop generating";
+
+        const assistantMessage = {
+          role: "assistant",
+          content: "",
+          pending: true
+        };
+
+        chat.messages.push(assistantMessage);
+        updateChatTimestamp(chat);
+        saveChats();
+        renderChatList();
+        renderMessages();
+
+        const image = files.find(file => file.dataUrl)?.dataUrl || null;
+
+        const payloadMessages = chat.messages
+          .filter(message => !message.pending)
+          .map(message => ({
+            role: message.role,
+            content: message.content
+          }));
+
+        const last = payloadMessages[payloadMessages.length - 1];
+
+        if (last && last.role === "user" && image) {
+          last.content += "\n[an image is attached to this message]";
+        }
+
+        try {
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            signal: abortController.signal,
+            body: JSON.stringify({
+              messages: payloadMessages,
+              image,
+              attachments: files.map(file => ({
+                name: file.name,
+                type: file.type,
+                text: file.text,
+                dataUrl: file.dataUrl
+              }))
+            })
+          });
+
+          if (!response.ok) {
+            let message = "request failed (" + response.status + ")";
+
+            try {
+              const data = await response.json();
+              if (data.error) message = data.error;
+              if (data.details) message += ": " + data.details;
+            } catch {}
+
+            throw new Error(message);
+          }
+
+          const contentType = response.headers.get("content-type") || "";
+
+          if (contentType.includes("application/json")) {
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            assistantMessage.content = data.response || data.text || "";
+          } else {
+            await readStream(response, fullText => {
+              assistantMessage.content = fullText;
+              assistantMessage.pending = false;
+              lastAssistantText = fullText;
+
+              if (currentChat()?.id === chat.id) {
+                renderMessages();
+              }
+            });
+          }
+
+          assistantMessage.pending = false;
+
+          if (!assistantMessage.content.trim()) {
+            assistantMessage.content = "i didn't get a response back. try sending that again.";
+          }
+
+          lastAssistantText = assistantMessage.content;
+        } catch (error) {
+          assistantMessage.pending = false;
+
+          if (error.name === "AbortError") {
+            if (!assistantMessage.content.trim()) {
+              chat.messages = chat.messages.filter(m => m !== assistantMessage);
+            }
+          } else {
+            assistantMessage.content =
+              "something went wrong: " + (error.message || "request failed");
+            assistantMessage.isError = true;
+          }
+        } finally {
+          busy = false;
+          abortController = null;
+          elements.send.textContent = "↑";
+          elements.send.classList.remove("stop");
+          elements.send.title = "Send message";
+
+          updateChatTimestamp(chat);
+          saveChats();
+
+          if (currentChat()?.id === chat.id) {
+            renderMessages();
+          }
+
+          renderChatList();
+          updateTitle(chat);
+          elements.input.focus();
+        }
+      }
+
+      async function regenerateAnswer(index) {
+        if (busy) return;
+
+        const chat = currentChat();
+        if (!chat) return;
+
+        const assistantIndex = index;
+        const previousUserIndex = chat.messages
+          .slice(0, assistantIndex)
+          .map(message => message.role)
+          .lastIndexOf("user");
+
+        if (previousUserIndex < 0) return;
+
+        chat.messages = chat.messages.slice(0, assistantIndex);
+        saveChats();
+        renderMessages();
+
+        const userMessage = chat.messages[previousUserIndex];
+        await sendMessage(userMessage.content);
+      }
+
+      function editMessage(index) {
+        if (busy) return;
+
+        const chat = currentChat();
+        if (!chat) return;
+
+        const message = chat.messages[index];
+        if (!message || message.role !== "user") return;
+
+        elements.input.value = message.content;
+        chat.messages = chat.messages.slice(0, index);
+        saveChats();
+        renderMessages();
+        autoResize();
+        elements.input.focus();
+      }
+
+      async function copyText(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          toast("copied");
+        } catch {
+          const area = document.createElement("textarea");
+          area.value = text;
+          document.body.appendChild(area);
+          area.select();
+
+          try {
+            document.execCommand("copy");
+            toast("copied");
+          } catch {
+            toast("couldn't copy");
+          }
+
+          area.remove();
+        }
+      }
+
+      function exportChat() {
+        const chat = currentChat();
+        if (!chat) {
+          toast("no chat to export");
+          return;
+        }
+
+        const blob = new Blob(
+          [JSON.stringify(chat, null, 2)],
+          { type: "application/json" }
+        );
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download =
+          (chat.title || "kage-chat")
+            .replace(/[^\w -]/g, "")
+            .replace(/\s+/g, "-")
+            .slice(0, 60) + ".json";
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      function toggleSidebar() {
+        elements.sidebar.classList.toggle("open");
+        elements.mobileBackdrop.classList.toggle("open");
+      }
+
+      function closeSidebarMobile() {
+        elements.sidebar.classList.remove("open");
+        elements.mobileBackdrop.classList.remove("open");
+      }
+
+      function startVoiceInput() {
+        const SpeechRecognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+          toast("voice input isn't supported in this browser");
+          return;
+        }
+
+        if (recognition) {
+          recognition.stop();
+          recognition = null;
+          $("voiceButton").style.color = "";
+          return;
+        }
+
+        recognition = new SpeechRecognition();
+        recognition.lang = navigator.language || "en-US";
+        recognition.interimResults = true;
+        recognition.continuous = false;
+
+        const originalText = elements.input.value;
+
+        recognition.onstart = () => {
+          $("voiceButton").style.color = "#fff";
+          toast("listening...");
+        };
+
+        recognition.onresult = event => {
+          let transcript = "";
+
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+          }
+
+          elements.input.value = originalText
+            ? originalText + " " + transcript
+            : transcript;
+
+          autoResize();
+        };
+
+        recognition.onerror = () => {
+          toast("couldn't hear that. try again");
+        };
+
+        recognition.onend = () => {
+          recognition = null;
+          $("voiceButton").style.color = "";
+        };
+
+        recognition.start();
+      }
+
+      function speakLastAnswer() {
+        if (!("speechSynthesis" in window)) {
+          toast("read aloud isn't supported in this browser");
+          return;
+        }
+
+        const chat = currentChat();
+        const latest = chat?.messages
+          .slice()
+          .reverse()
+          .find(message => message.role === "assistant" && message.content);
+
+        if (!latest) {
+          toast("no answer to read yet");
+          return;
+        }
+
+        speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(latest.content);
+        utterance.rate = 1.05;
+        speechSynthesis.speak(utterance);
+      }
+
+      function handleCodeCopy(event) {
+        const button = event.target.closest("[data-copy-code]");
+        if (!button) return;
+
+        const code = button.closest(".code-wrap")?.querySelector("pre code");
+        if (code) copyText(code.textContent);
+      }
+
+      elements.messages.addEventListener("click", handleCodeCopy);
+
+      $("newChat").addEventListener("click", createChat);
+      $("newChatTop").addEventListener("click", createChat);
+
+      $("openSidebar").addEventListener("click", toggleSidebar);
+      $("closeSidebar").addEventListener("click", closeSidebarMobile);
+      elements.mobileBackdrop.addEventListener("click", closeSidebarMobile);
+
+      elements.downloadButton.addEventListener("click", () => {
+        const open = elements.downloadMenu.classList.toggle("open");
+        elements.downloadButton.setAttribute("aria-expanded", String(open));
+      });
+
+      document.querySelectorAll(".download-option").forEach(button => {
+        button.addEventListener("click", async () => {
+          const device = button.dataset.device;
+          elements.downloadMenu.classList.remove("open");
+          elements.downloadButton.setAttribute("aria-expanded", "false");
+
+          const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+
+          if (isStandalone) {
+            toast("kage is already installed in this browser");
+            return;
+          }
+
+          if (window.deferredInstallPrompt) {
+            window.deferredInstallPrompt.prompt();
+            await window.deferredInstallPrompt.userChoice;
+            window.deferredInstallPrompt = null;
+            return;
+          }
+
+          let instructions;
+
+          if (/iphone|ipad/i.test(device)) {
+            instructions =
+              "on your apple device, open kage in safari, tap share, then tap 'add to home screen'.";
+          } else if (/android/i.test(device)) {
+            instructions =
+              "open kage in chrome, tap the browser menu, then choose 'install app' or 'add to home screen'.";
+          } else {
+            instructions =
+              "open kage in edge or chrome and use the install icon in the address bar, or open the browser menu and choose 'install this site as an app' if available.";
+          }
+
+          alert(device + "\n\n" + instructions);
+        });
+      });
+
+      window.addEventListener("beforeinstallprompt", event => {
+        event.preventDefault();
+        window.deferredInstallPrompt = event;
+      });
+
+      $("exportChat").addEventListener("click", exportChat);
+
+      $("attachButton").addEventListener("click", () => {
+        elements.fileInput.click();
+      });
+
+      elements.fileInput.addEventListener("change", event => {
+        addFiles(event.target.files);
+      });
+
+      $("clearFiles").addEventListener("click", () => {
+        attachments = [];
         renderAttachments();
       });
 
-      chip.append(label, remove);
-      preview.append(chip);
-    });
-  }
+      $("voiceButton").addEventListener("click", startVoiceInput);
+      $("speakButton").addEventListener("click", speakLastAnswer);
 
-  async function readFile(file) {
-    const maxBytes = 4 * 1024 * 1024;
-    if (file.size > maxBytes) throw new Error(file.name + " is over the 4 MB per-file limit.");
+      elements.composer.addEventListener("submit", event => {
+        event.preventDefault();
 
-    const isImage = file.type.startsWith("image/");
-    const isText = /\.(txt|md|json|csv|js|ts|html|css|py|java|c|cpp|xml|ya?ml|log)$/i.test(file.name)
-      || file.type.startsWith("text/") || file.type === "application/json";
-
-    const item = { name: file.name, type: file.type || "application/octet-stream", size: file.size, data: null, text: null };
-
-    if (isImage) {
-      item.data = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(new Error("couldn't read " + file.name));
-        reader.readAsDataURL(file);
-      });
-    } else if (isText) {
-      item.text = await file.text();
-      if (item.text.length > 60000) item.text = item.text.slice(0, 60000) + "\n[content truncated]";
-    } else {
-      item.text = "[attached file: " + file.name + ". this browser client cannot extract its contents automatically.]";
-    }
-
-    return item;
-  }
-
-  async function addFiles(fileList) {
-    for (const file of Array.from(fileList || [])) {
-      try {
-        state.attachments.push(await readFile(file));
-      } catch (error) {
-        showToast(error.message || "couldn't attach that file");
-      }
-    }
-    renderAttachments();
-  }
-
-  function makeUserContent(text, attachments) {
-    const parts = [];
-
-    for (const file of attachments) {
-      if (file.text) parts.push("[file: " + file.name + "]\n" + file.text);
-      else if (file.data) parts.push("[image attached: " + file.name + "]");
-    }
-
-    return [text, ...parts].filter(Boolean).join("\n\n");
-  }
-
-  function fallbackTitle(messages) {
-    const lastUser = [...messages].reverse().find(message => message.role === "user");
-    if (!lastUser) return "new chat";
-
-    const words = lastUser.content
-      .replace(/https?:\/\/\S+/g, "")
-      .replace(/[^\p{L}\p{N}' -]/gu, " ")
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean);
-
-    if (!words.length) return "new chat";
-
-    const stop = new Set(["the", "and", "for", "that", "this", "with", "what", "how", "can", "you", "please", "make", "help", "me", "it", "just", "want", "need", "about"]);
-    const useful = words.filter(word => !stop.has(word.toLowerCase()));
-    const chosen = (useful.length >= 2 ? useful : words).slice(0, 3);
-    return chosen.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
-  }
-
-  async function updateChatTitle(chat) {
-    if (!chat || !chat.messages.some(message => message.role === "user")) return;
-
-    try {
-      const response = await fetch("/api/title", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: chat.messages
-            .filter(message => message.role === "user" || message.role === "assistant")
-            .slice(-16)
-            .map(message => ({ role: message.role, content: message.content }))
-        })
-      });
-
-      if (!response.ok) throw new Error("title request failed");
-
-      const data = await response.json();
-      const title = normalizeTitle(data.title || "");
-
-      if (title && state.chats.some(item => item.id === chat.id)) {
-        chat.title = title;
-        chat.updatedAt = Date.now();
-        save();
-        renderSidebar();
-      }
-    } catch {
-      // Keep the chat usable if title generation fails.
-      const title = normalizeTitle(fallbackTitle(chat.messages));
-      if (title) {
-        chat.title = title;
-        save();
-        renderSidebar();
-      }
-    }
-  }
-
-  function normalizeTitle(value) {
-    const cleaned = String(value)
-      .replace(/^["'`#\s]+|["'`#\s]+$/g, "")
-      .replace(/^(chat title|title)\s*:\s*/i, "")
-      .replace(/[.!?]+$/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-
-    const words = cleaned.split(" ").filter(Boolean);
-    if (!words.length) return "";
-
-    return words.slice(0, 3).join(" ").slice(0, 60);
-  }
-
-  async function parseAIResponse(response, onText) {
-    if (!response.ok) {
-      const detail = await response.text().catch(() => "");
-      throw new Error(detail || `request failed (${response.status})`);
-    }
-
-    const type = response.headers.get("content-type") || "";
-
-    if (type.includes("application/json")) {
-      const result = await response.json();
-      const reply = result.reply ?? result.response ?? result.result?.response ?? "";
-      if (typeof reply !== "string" || !reply) throw new Error("the server returned no reply");
-      onText(reply);
-      return reply;
-    }
-
-    if (!response.body) {
-      const text = await response.text();
-      onText(text);
-      return text;
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-    let output = "";
-
-    function processEvent(eventText) {
-      for (const line of eventText.split(/\r?\n/)) {
-        if (!line.startsWith("data:")) continue;
-
-        const data = line.slice(5).trim();
-        if (!data || data === "[DONE]") continue;
-
-        let parsed;
-        try {
-          parsed = JSON.parse(data);
-        } catch {
-          output += data;
-          onText(output);
-          continue;
+        if (busy && abortController) {
+          abortController.abort();
+          return;
         }
 
-        const chunk = parsed.response
-          ?? parsed.choices?.[0]?.delta?.content
-          ?? parsed.choices?.[0]?.message?.content
-          ?? parsed.delta
-          ?? "";
+        sendMessage();
+      });
 
-        if (typeof chunk === "string" && chunk) {
-          output += chunk;
-          onText(output);
+      elements.input.addEventListener("input", autoResize);
+
+      elements.input.addEventListener("keydown", event => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+
+          if (busy) return;
+          sendMessage();
         }
-      }
-    }
-
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const events = buffer.split(/\r?\n\r?\n/);
-      buffer = events.pop() || "";
-      events.forEach(processEvent);
-    }
-
-    buffer += decoder.decode();
-    if (buffer.trim()) processEvent(buffer);
-
-    if (!output.trim()) throw new Error("the server returned an empty reply");
-    return output;
-  }
-
-  async function sendMessage(explicitText = null, regenerate = false) {
-    if (state.busy) return;
-
-    const chat = activeChat();
-    if (!chat) return;
-
-    let text = explicitText ?? $("#prompt").value.trim();
-
-    if (regenerate) {
-      const lastUserIndex = chat.messages.map(message => message.role).lastIndexOf("user");
-      if (lastUserIndex < 0) return;
-
-      text = chat.messages[lastUserIndex].content;
-      if (chat.messages[chat.messages.length - 1]?.role === "assistant") chat.messages.pop();
-    }
-
-    if (!text && !state.attachments.length) return;
-
-    const attachments = regenerate ? [] : state.attachments.slice();
-
-    if (!regenerate) {
-      chat.messages.push({ role: "user", content: makeUserContent(text, attachments) });
-      $("#prompt").value = "";
-      resizeTextarea();
-      state.attachments = [];
-      renderAttachments();
-    }
-
-    const assistantMessage = { role: "assistant", content: "" };
-    chat.messages.push(assistantMessage);
-
-    state.busy = true;
-    state.controller = new AbortController();
-    $("#send-button").textContent = "■";
-    $("#send-button").classList.add("stop");
-    setStatus("thinking");
-    renderAll();
-
-    // Start naming early, then refresh the name after the assistant responds.
-    updateChatTitle(chat);
-
-    try {
-      const history = chat.messages
-        .filter(message => message.content && ["user", "assistant"].includes(message.role))
-        .slice(0, -1)
-        .slice(-30)
-        .map(message => ({ role: message.role, content: message.content }));
-
-      const image = attachments.find(file => file.data)?.data || null;
-
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: state.controller.signal,
-        body: JSON.stringify({
-          messages: [
-            { role: "system", content: SYSTEM_PROMPT },
-            ...history,
-            {
-              role: "user",
-              content: text || "please examine the attached file."
-            }
-          ],
-          image,
-          search: state.searching,
-          searchResults: [],
-          attachments: attachments.map(file => ({
-            name: file.name,
-            type: file.type,
-            text: file.text
-          }))
-        })
       });
 
-      await parseAIResponse(response, content => {
-        assistantMessage.content = content;
-        renderMessages();
+      $("renameCancel").addEventListener("click", closeRename);
+      $("renameSave").addEventListener("click", saveRename);
+
+      elements.renameInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") saveRename();
+        if (event.key === "Escape") closeRename();
       });
 
-      setStatus("ready");
-    } catch (error) {
-      if (error.name === "AbortError") {
-        if (!assistantMessage.content) chat.messages.pop();
-        setStatus("stopped");
+      elements.renameModal.addEventListener("click", event => {
+        if (event.target === elements.renameModal) closeRename();
+      });
+
+      document.addEventListener("click", event => {
+        if (
+          !elements.downloadMenu.contains(event.target) &&
+          !elements.downloadButton.contains(event.target)
+        ) {
+          elements.downloadMenu.classList.remove("open");
+          elements.downloadButton.setAttribute("aria-expanded", "false");
+        }
+      });
+
+      window.addEventListener("storage", event => {
+        if (event.key === STORAGE_KEY) {
+          chats = loadChats();
+          renderChatList();
+          renderMessages();
+        }
+      });
+
+      if (!chats.length) {
+        createChat();
       } else {
-        assistantMessage.content =
-          "couldn't get a response from the server.\n\n" +
-          "error: " + (error.message || "unknown error") +
-          "\n\ncheck that your cloudflare worker is deployed and that /api/chat is working.";
-        setStatus("error");
-      }
-    } finally {
-      state.busy = false;
-      state.controller = null;
-      $("#send-button").textContent = "↑";
-      $("#send-button").classList.remove("stop");
-      chat.updatedAt = Date.now();
-      save();
-      renderAll();
-
-      // Recalculate the title from the updated conversation, not just the first message.
-      updateChatTitle(chat);
-    }
-  }
-
-  function regenerateLast() {
-    sendMessage(null, true);
-  }
-
-  function stopGeneration() {
-    if (state.controller) state.controller.abort();
-  }
-
-  function toggleSearch() {
-    state.searching = !state.searching;
-    $("#search-button").classList.toggle("selected", state.searching);
-    showToast(state.searching ? "search requested for the next message" : "search request turned off");
-  }
-
-  function startVoice() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      showToast("voice input isn't supported in this browser");
-      return;
-    }
-
-    if (state.recognition) {
-      state.recognition.stop();
-      state.recognition = null;
-      $("#voice-button").classList.remove("selected");
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = navigator.language || "en-US";
-    recognition.interimResults = true;
-    recognition.continuous = false;
-    state.recognition = recognition;
-
-    recognition.onstart = () => {
-      $("#voice-button").classList.add("selected");
-      showToast("listening...");
-    };
-
-    recognition.onresult = event => {
-      let result = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) result += event.results[i][0].transcript;
-      $("#prompt").value = result;
-      resizeTextarea();
-    };
-
-    recognition.onerror = () => showToast("couldn't hear that. try again");
-    recognition.onend = () => {
-      state.recognition = null;
-      $("#voice-button").classList.remove("selected");
-    };
-
-    recognition.start();
-  }
-
-  function exportChat() {
-    const chat = activeChat();
-    if (!chat) return;
-
-    const blob = new Blob([JSON.stringify(chat, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = (chat.title || "kage-chat").replace(/[^a-z0-9-_ ]/gi, "").replace(/\s+/g, "-") + ".json";
-    link.click();
-
-    URL.revokeObjectURL(url);
-  }
-
-  function closeMobileSidebar() {
-    $("#sidebar").classList.remove("open");
-    $("#mobile-overlay").classList.remove("open");
-  }
-
-  function openDownloadMenu() {
-    $("#download-modal").classList.remove("hidden");
-    $("#download-instructions").classList.add("hidden");
-  }
-
-  function closeDownloadMenu() {
-    $("#download-modal").classList.add("hidden");
-  }
-
-  function deviceInstructions(device) {
-    const instructions = {
-      iphone: {
-        title: "install on iphone",
-        steps: [
-          "open this Kage website in Safari.",
-          "tap the Share button.",
-          "choose “Add to Home Screen”.",
-          "if shown, enable “Open as Web App”, then tap Add."
-        ]
-      },
-      ipad: {
-        title: "install on ipad",
-        steps: [
-          "open this Kage website in Safari.",
-          "tap the Share button.",
-          "choose “Add to Home Screen”.",
-          "tap Add to put Kage on your home screen."
-        ]
-      },
-      "android-phone": {
-        title: "install on android phone",
-        steps: [
-          "open this Kage website in Chrome.",
-          "open the browser menu (⋮).",
-          "tap “Install app” or “Add to Home screen” if available.",
-          "confirm the installation."
-        ]
-      },
-      "android-tablet": {
-        title: "install on android tablet",
-        steps: [
-          "open this Kage website in Chrome.",
-          "open the browser menu (⋮).",
-          "tap “Install app” or “Add to Home screen” if available.",
-          "confirm the installation."
-        ]
-      },
-      computer: {
-        title: "install on computer",
-        steps: [
-          "open this Kage website in a supported browser such as Chrome or Edge.",
-          "look for the install icon in the address bar, or open the browser menu.",
-          "choose “Install Kage” or “Install this site as an app” if available.",
-          "confirm the installation."
-        ]
-      },
-      laptop: {
-        title: "install on laptop",
-        steps: [
-          "open this Kage website in a supported browser such as Chrome or Edge.",
-          "look for the install icon in the address bar, or open the browser menu.",
-          "choose “Install Kage” or “Install this site as an app” if available.",
-          "confirm the installation."
-        ]
-      }
-    };
-
-    return instructions[device];
-  }
-
-  async function showDeviceInstructions(device) {
-    const box = $("#download-instructions");
-    const item = deviceInstructions(device);
-    box.replaceChildren();
-
-    const title = document.createElement("strong");
-    title.textContent = item.title;
-
-    const list = document.createElement("ol");
-    item.steps.forEach(step => {
-      const li = document.createElement("li");
-      li.textContent = step;
-      list.append(li);
-    });
-
-    box.append(title, list);
-    box.classList.remove("hidden");
-
-    if (state.installPrompt && !/iphone|ipad/.test(device)) {
-      const button = document.createElement("button");
-      button.textContent = "install kage now";
-      button.addEventListener("click", async () => {
-        try {
-          state.installPrompt.prompt();
-          await state.installPrompt.userChoice;
-        } catch {
-          showToast("use the browser's install option instead");
+        if (!chats.some(chat => chat.id === activeChatId)) {
+          activeChatId = chats[0].id;
         }
-        state.installPrompt = null;
-      });
-      box.append(button);
-    }
-  }
 
-  window.addEventListener("beforeinstallprompt", event => {
-    event.preventDefault();
-    state.installPrompt = event;
-  });
+        saveChats();
+        renderChatList();
+        renderMessages();
+      }
 
-  window.addEventListener("appinstalled", () => {
-    state.installPrompt = null;
-    showToast("kage installed");
-  });
-
-  $("#new-chat").addEventListener("click", () => createChat());
-  $("#brand-home").addEventListener("click", event => {
-    event.preventDefault();
-    createChat();
-  });
-
-  $("#send-button").addEventListener("click", () => {
-    if (state.busy) stopGeneration();
-    else sendMessage();
-  });
-
-  $("#prompt").addEventListener("input", resizeTextarea);
-
-  $("#prompt").addEventListener("keydown", event => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      sendMessage();
-    }
-  });
-
-  $("#attach-button").addEventListener("click", () => $("#file-input").click());
-
-  $("#file-input").addEventListener("change", async event => {
-    await addFiles(event.target.files);
-    event.target.value = "";
-  });
-
-  $("#search-button").addEventListener("click", toggleSearch);
-  $("#voice-button").addEventListener("click", startVoice);
-  $("#export-chat").addEventListener("click", exportChat);
-  $("#download-button").addEventListener("click", openDownloadMenu);
-  $("#close-download").addEventListener("click", closeDownloadMenu);
-
-  $("#download-modal").addEventListener("click", event => {
-    if (event.target === $("#download-modal")) closeDownloadMenu();
-  });
-
-  document.querySelectorAll("[data-device]").forEach(button => {
-    button.addEventListener("click", () => showDeviceInstructions(button.dataset.device));
-  });
-
-  $("#open-sidebar").addEventListener("click", () => {
-    $("#sidebar").classList.add("open");
-    $("#mobile-overlay").classList.add("open");
-  });
-
-  $("#close-sidebar").addEventListener("click", closeMobileSidebar);
-  $("#mobile-overlay").addEventListener("click", closeMobileSidebar);
-
-  if ("serviceWorker" in navigator && location.protocol === "https:") {
-    navigator.serviceWorker.register("/sw.js").catch(() => {});
-  }
-
-  load();
-})();
-</script>
+      renderAttachments();
+      autoResize();
+    })();
+  </script>
 </body>
 </html>
