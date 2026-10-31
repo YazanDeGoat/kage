@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101010">
-  <meta name="description" content="Kage AI assistant">
+  <meta name="description" content="Kage AI assistant with local and online AI modes">
   <title>Kage AI</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
@@ -30,9 +30,15 @@
 
     <main class="main">
       <header class="topbar">
-        <button id="menuButton" class="icon-button" aria-label="Toggle sidebar">☰</button>
-        <div class="top-title">Kage <span class="online-dot"></span></div>
-        <button id="exportButton" class="icon-button" title="Export chats">⇩</button>
+        <button id="menuButton" class="icon-button"
+          aria-label="Toggle sidebar">☰</button>
+
+        <div class="top-title">
+          Kage <span class="online-dot"></span>
+        </div>
+
+        <button id="exportButton" class="icon-button"
+          title="Export chats">⇩</button>
       </header>
 
       <section id="messages" class="messages">
@@ -40,10 +46,19 @@
           <div class="welcome-mark">K</div>
           <h1>what's on your mind?</h1>
           <p>ask anything. let's get to work.</p>
+
           <div class="suggestions">
-            <button data-prompt="Explain a difficult topic in simple words.">Explain something</button>
-            <button data-prompt="Help me brainstorm a creative project.">Brainstorm ideas</button>
-            <button data-prompt="Help me organize my goals into a practical plan.">Make a plan</button>
+            <button data-prompt="Explain a difficult topic in simple words.">
+              Explain something
+            </button>
+
+            <button data-prompt="Help me brainstorm a creative project.">
+              Brainstorm ideas
+            </button>
+
+            <button data-prompt="Help me organize my goals into a practical plan.">
+              Make a plan
+            </button>
           </div>
         </div>
 
@@ -51,23 +66,35 @@
       </section>
 
       <form id="composer" class="composer">
-        <textarea id="prompt" rows="1" placeholder="Message Kage..." aria-label="Message Kage"></textarea>
+        <textarea id="prompt" rows="1"
+          placeholder="Message Kage..."
+          aria-label="Message Kage"></textarea>
 
         <div class="composer-bottom">
           <div class="composer-tools">
-            <label class="tool-button" title="Attach a text file">＋
-              <input type="file" id="fileInput"
+            <label class="tool-button" title="Attach a text file">
+              ＋
+              <input
+                type="file"
+                id="fileInput"
                 accept=".txt,.md,.csv,.json,.js,.html,.css,.py,.xml,.yaml,.yml"
                 hidden>
             </label>
 
-            <button type="button" id="voiceButton" class="tool-button" title="Voice input">🎙</button>
-            <button type="button" id="searchButton" class="tool-button" aria-pressed="false">⌕ Search</button>
-            <button type="button" id="imageButton" class="tool-button" aria-pressed="false">▧ Image</button>
+            <button type="button" id="voiceButton"
+              class="tool-button" title="Voice input">🎙</button>
+
+            <button type="button" id="searchButton"
+              class="tool-button" aria-pressed="false">⌕ Search</button>
+
+            <button type="button" id="imageButton"
+              class="tool-button" aria-pressed="false">▧ Image</button>
+
             <span id="attachmentName" class="attachment-name"></span>
           </div>
 
-          <button type="submit" id="sendButton" class="send-button" aria-label="Send message">↑</button>
+          <button type="submit" id="sendButton"
+            class="send-button" aria-label="Send message">↑</button>
         </div>
       </form>
 
@@ -85,15 +112,21 @@
 
     <div class="dialog-content">
       <label for="apiUrl">Backend URL</label>
-      <input id="apiUrl" type="url" placeholder="https://your-worker.workers.dev">
+      <input id="apiUrl" type="url"
+        placeholder="https://your-worker.workers.dev">
 
       <label for="accessKey" class="settings-label">Private access key</label>
       <input id="accessKey" type="password" autocomplete="off"
         placeholder="Your Cloudflare Worker access key">
 
-      <p>The backend URL and access key are saved in this browser only. Never put your access key in GitHub code.</p>
+      <p>
+        The backend URL and access key are saved in this browser only.
+        Never put your access key in GitHub code.
+      </p>
 
-      <button id="saveSettings" class="primary-button" type="button">Save settings</button>
+      <button id="saveSettings" class="primary-button" type="button">
+        Save settings
+      </button>
 
       <hr>
 
@@ -101,10 +134,14 @@
         Clear this browser's Kage cache
       </button>
 
-      <p>Clearing the local cache does not delete the server database. Export important chats regularly.</p>
+      <p>
+        Clearing the local cache does not delete the server database.
+        Export important chats regularly.
+      </p>
     </div>
   </dialog>
 
   <script src="app.js"></script>
+  <script src="local-ai.js"></script>
 </body>
 </html>
