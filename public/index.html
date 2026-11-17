@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="theme-color" content="#000000">
+
+  <title>kage</title>
+
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icon.svg">
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-header">
+      <span class="brand">kage</span>
+      <button id="closeSidebar" class="icon-button">×</button>
+    </div>
+
+    <button id="newChat" class="new-chat">+ new chat</button>
+
+    <input id="searchChats" class="search" placeholder="search chats">
+
+    <div class="label">conversations</div>
+
+    <div id="chatList" class="chat-list"></div>
+
+    <div class="sidebar-bottom">
+      <button id="memoryButton">memory</button>
+      <button id="settingsButton">settings</button>
+      <button id="installButton">install kage</button>
+    </div>
+
+  </aside>
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <button id="menuButton" class="icon-button">☰</button>
+
+      <span class="top-brand">kage</span>
+
+      <div class="top-right">
+
+        <select id="modeSelect">
+          <option value="online">online ai</option>
+          <option value="local">local ai</option>
+        </select>
+
+      </div>
+
+    </header>
+
+    <section class="workspace">
+
+      <div id="welcome" class="welcome">
+
+        <div class="logo">kage</div>
+
+        <h1>what's on your mind?</h1>
+
+        <p>your personal ai assistant.</p>
+
+        <div class="suggestions">
+          <button data-prompt="explain something complicated simply">
+            explain something
+          </button>
+
+          <button data-prompt="help me brainstorm creative ideas">
+            brainstorm
+          </button>
+
+          <button data-prompt="help me write something">
+            help me write
+          </button>
+        </div>
+
+      </div>
+
+      <div id="messages" class="messages"></div>
+
+    </section>
+
+    <footer class="composer-area">
+
+      <div class="status-row">
+        <span id="status">online ai</span>
+
+        <button id="downloadModel">
+          download local model
+        </button>
+      </div>
+
+      <div class="tools-row">
+
+        <label class="search-toggle">
+          <input type="checkbox" id="webSearch">
+          web search
+        </label>
+
+        <button id="imageButton">generate image</button>
+
+      </div>
+
+      <div id="attachmentPreview"></div>
+
+      <form id="chatForm" class="composer">
+
+        <button type="button" id="attachButton">+</button>
+
+        <textarea
+          id="messageInput"
+          rows="1"
+          placeholder="message kage..."
+        ></textarea>
+
+        <button type="button" id="voiceButton">◉</button>
+
+        <button type="submit" id="sendButton">↑</button>
+
+      </form>
+
+      <input
+        id="fileInput"
+        type="file"
+        multiple
+        accept=".txt,.md,.csv,.json,.js,.html,.css,.py,.pdf,image/png,image/jpeg,image/webp"
+        hidden
+      >
+
+      <div class="disclaimer">
+        kage can make mistakes. check important information.
+      </div>
+
+    </footer>
+
+  </main>
+
+</div>
+
+<dialog id="memoryDialog">
+
+  <div class="dialog-content">
+
+    <h2>your memory</h2>
+
+    <p>information kage can use in future conversations.</p>
+
+    <textarea id="memoryInput"></textarea>
+
+    <div class="dialog-actions">
+      <button data-close="memoryDialog">cancel</button>
+      <button id="saveMemory">save</button>
+    </div>
+
+  </div>
+
+</dialog>
+
+<dialog id="settingsDialog">
+
+  <div class="dialog-content">
+
+    <h2>settings</h2>
+
+    <button id="exportChats">export conversations</button>
+    <button id="deleteAll" class="danger">delete all conversations</button>
+
+    <div class="dialog-actions">
+      <button data-close="settingsDialog">close</button>
+    </div>
+
+  </div>
+
+</dialog>
+
+<script type="module" src="/app.js"></script>
+
+</body>
+</html>
